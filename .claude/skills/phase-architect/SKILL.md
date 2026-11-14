@@ -87,7 +87,7 @@ Phases follow the build order in `docs/roadmap.md`: stage N is phase N, split in
 16. Write tests in their final formatted shape, and edit them with the Edit tool (exact text, one match), never `sed` regexes. Lint and format-check in the clone and again on the repository after `promote`.
 17. Expected values are literal (whole rows, whole messages, whole JSON bodies), never built by a helper, `str.format` or arithmetic. A date or time built from a number is zero-padded. Times come from `fixed_times`, with one entry per clock read the spec allows, refused retries included. Parametrized cases get readable `ids=`.
 18. A given migration runs up on a scratch database with rows in the tables it touches, and every CHECK is tried with a value it must refuse.
-19. Fail check with `phase_tools.py failcheck`: each test fails for the right reason (the missing behaviour, not a typo). Then run each against a draft of the fix of a few lines in a throwaway copy, see it pass, and delete the copy. Then `promote` and read the Start count.
+19. Fail check with `phase_tools.py failcheck`: each test fails for the right reason (the missing behaviour, not a typo). Then run each against a draft of the fix of a few lines in a throwaway copy, see it pass, and delete the copy. When the phase is one pure module, a draft that passes is the feature (Phase 1a's was 90 lines): instead, take every expected value from the spike's standard-library output, and check the probe's oracle with its own `assert` lines. Then `promote` and read the Start count.
 20. Every requirement has a given test, or a "Tests to write" bullet with its deciding input. Count the given tests with `pytest --collect-only -q`, never by hand.
 
 ### 5. Probe

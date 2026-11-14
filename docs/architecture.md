@@ -93,9 +93,11 @@ Only done and cancelled stop reminders. A new deadline, a new work time, a snooz
 
 ## Time rules (`docket.deadlines`, critical)
 
-- A deadline is a UTC instant plus the IANA zone it was given in. It is a fixed instant: travelling does not move it.
+- A deadline is a UTC instant plus the IANA zone it was given in, named exactly as `zoneinfo.available_timezones()` lists it. It is a fixed instant: travelling does not move it.
+- A wall time that doesn't exist (the spring-forward hour) moves forward; one that happens twice (the fall-back hour) is the first. Both are Python's `fold=0`.
+- A deadline is upcoming before its instant, due for the 30 minutes after it (until the first late reminder), then overdue.
 - A date with no time gets 17:00 in the given zone. The task remembers that no time was given, and cards show "Fri Nov 20 (17:00, no time given)".
-- A planned work time is a start instant plus a length (default `DOCKET_WORK_MINUTES`, 60), on one day. It must start before the deadline, when there is one. A task has at most one planned work time.
+- A planned work time is a start instant plus a length of 5 to 720 real minutes (default `DOCKET_WORK_MINUTES`, 60), on one day. It must end by midnight of that day in its zone, and by the deadline when there is one. A task has at most one planned work time.
 - Every offset (1 hour before, 30 minutes after) is computed from the stored instant. Days, such as the daily digest, are counted in your zone (`DOCKET_TIME_ZONE`), so daylight-saving changes never shift a reminder.
 
 ## Intake

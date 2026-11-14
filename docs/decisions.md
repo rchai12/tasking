@@ -21,12 +21,14 @@ Decisions from the original doc are dated Nov 9, 2026; later ones carry their ow
 | Quiet hours (Nov 14) | None; reminders fire when they come due | Your choice | 22:00 to 08:00 with an urgent flag |
 | Date-only deadline (Nov 14) | 17:00 in your time zone, shown on the card | End of the working day; the 1-hour reminder lands at 16:00 | 23:59; 09:00 |
 | Time handling | Deadlines stored as a UTC instant plus the IANA time zone they were given in | Daylight-saving safe | Local time strings |
+| Missing and repeated times (Nov 14) | A wall time that doesn't exist (02:30 on the spring-forward day) moves forward to 03:30; one that happens twice (01:30 on the fall-back day) is the first, so a deadline errs early. Both are Python's `fold=0` | Clear rules with no question asked for an hour a year | Refusing a missing time; the second of a repeated one |
+| Zone names (Nov 14) | Only exact names from `zoneinfo.available_timezones()` | macOS loads `america/new_york` too, so one zone could be stored under two spellings | Whatever `ZoneInfo` loads |
 | Travel (Nov 14) | A deadline is a fixed instant; travelling does not move it | Simplest; matches how calendars store events | Following the local clock; per-task choice |
 | Late backoff (Nov 14) | Late reminders at 30 minutes and 1 hour after the deadline, then hourly 3 times, then every 4 hours twice, then the daily digest | About half a day of pings, then one line a day | Gentler; every 30 minutes forever |
 | Calendar writes | One-way, tasks app to calendar | Simplest; no conflict rules | Two-way sync |
 | Write target (Nov 14) | A dedicated Tasks calendar under one Google account, named in settings | Easy to hide or recolor on your phone; the app never touches your own events | Your primary calendar |
 | What becomes an event (Nov 14) | A dated task becomes one due-date event with an alert; the app never adds a time block on its own | Narrow v1 | A time block made automatically for every dated task |
-| Planned work time (Nov 14) | A task may have one planned time to work on it, on one day (start and length), set by you or an approved Conductor step. It becomes a timed event on the Tasks calendar and gets a "Time to start" reminder | What "daily schedules" meant in the original doc | A schedule that repeats every day |
+| Planned work time (Nov 14) | A task may have one planned time to work on it, on one day (start and length: 5 to 720 real minutes, ending by the task's deadline and by midnight in its zone), set by you or an approved Conductor step. It becomes a timed event on the Tasks calendar and gets a "Time to start" reminder | What "daily schedules" meant in the original doc | A schedule that repeats every day |
 | Done on the calendar (Nov 14) | A done task's events stay, with "Done: " in front of the title; a cancelled task's events are deleted | The calendar keeps a record of what was finished | Deleting the event on Done |
 | Daily digest (Nov 14) | 07:00 in your time zone | Your choice | 09:00 |
 | Calendar reads | Live read at proposal and scheduling time, across every calendar that holds real events | The agent always sees your current calendar | Cached copy |

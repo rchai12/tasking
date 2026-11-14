@@ -27,9 +27,9 @@ Applies to every phase. Phase specs list the specific tests; this file sets the 
 A bug here loses a reminder, sends one twice, creates a task without approval, or leaks a secret. The list lives in `scripts/critical_modules.txt`; a phase that adds a critical module adds it there and here.
 
 - `config.py` and `keychain.py` (Phase 0)
-- `deadlines.py` (instants, zones, the 17:00 default; Phase 1)
-- `core.py` (the state rules and the audit log; Phase 1)
-- `store/` (every write whole or not at all; Phase 1)
+- `deadlines.py` (instants, exact zone names, the 17:00 default, work-time rules; Phase 1a)
+- `core.py` (the state rules and the audit log; Phase 1b)
+- `store/` (every write whole or not at all; Phase 1b)
 - `intake/` (who may create what, and retry safety; Phase 2)
 - `reminders.py` (nothing lost, nothing twice; Phase 3)
 - the press handler (who may press, and idempotency; Phase 4)
