@@ -43,3 +43,13 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - A non-email reference is refused unless provider, message id and link are all None.
 - Follow-ups:
   - None
+
+## Phase 1d: Settings and display text (2026-11-14)
+- Tests: 291 -> 345 (given 54)
+- New public names: `docket.config`: `TIME_ZONE_MESSAGE`, `TIME_ZONE_UNSET_MESSAGE`, `WORK_MINUTES_MESSAGE`, `home_zone`; `docket.views`: `when`, `deadline_text`, `work_text`, `status_text`
+- Changed files: 3
+- Deviations:
+  - An empty time zone becomes None before the name is checked against available_timezones().
+  - DOCKET_WORK_MINUTES uses Field bounds of 5 to 720, and get_settings maps that field's error to WORK_MINUTES_MESSAGE.
+- Follow-ups:
+  - None
