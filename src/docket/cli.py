@@ -8,10 +8,10 @@ import typer
 
 from docket import __version__, clock
 from docket.config import ConfigError, Settings, get_settings, home_zone
-from docket.core import CoreError, create_task
+from docket.core import CoreError, change_state, create_task
 from docket.deadlines import Deadline, make_deadline
 from docket.store import Store, StoreError, Task, open_store
-from docket.views import deadline_text, refusal_text, task_detail, task_line
+from docket.views import change_text, deadline_text, refusal_text, task_detail, task_line
 
 DUE_MESSAGE = "--due must be a date like 2026-11-20."
 AT_MESSAGE = "--at must be a time like 17:00."
@@ -81,6 +81,36 @@ def show(task_id: str) -> None:
         _fail(refusal_text("unknown_task", task_id))
     for line in task_detail(found, home, now):
         print(line)
+
+
+@tasks_app.command()
+def start(task_id: str) -> None:
+    _change(task_id, "start")
+
+
+@tasks_app.command()
+def done(task_id: str) -> None:
+    _change(task_id, "done")
+
+
+@tasks_app.command()
+def cancel(task_id: str) -> None:
+    _change(task_id, "cancel")
+
+
+@tasks_app.command()
+def reopen(task_id: str) -> None:
+    _change(task_id, "reopen")
+
+
+def _change(task_id: str, action: str) -> None:
+    settings, _zone = _home()
+    with _store(settings) as store:
+        try:
+            outcome = change_state(store, task_id, action, actor="owner")
+        except CoreError as error:
+            _fail(refusal_text(error.code, task_id))
+    print(change_text(action, outcome))
 
 
 def _home() -> tuple[Settings, str]:

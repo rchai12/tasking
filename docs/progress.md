@@ -63,3 +63,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - A date and a time share one shape check before fromisoformat.
 - Follow-ups:
   - None
+
+## Phase 1f: State commands (2026-11-14)
+- Tests: 414 -> 466 (given 52)
+- New public names: `docket.views`: `change_text`; `docket.cli`: `start`, `done`, `cancel`, `reopen`
+- Changed files: 3
+- Deviations:
+  - start, done, cancel and reopen share one helper that checks the zone, opens the store, and calls change_state with actor owner.
+- Follow-ups:
+  - None

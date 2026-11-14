@@ -1,6 +1,7 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from docket.core import Outcome
 from docket.deadlines import Deadline, WorkTime, status
 from docket.store import Task
 
@@ -74,6 +75,13 @@ def task_detail(task: Task, home: str, now: datetime) -> list[str]:
     return lines
 
 
+def change_text(action: str, outcome: Outcome) -> str:
+    task = outcome.task
+    if outcome.changed:
+        return f"{_VERBS[action]} {task.id}: {task.title}"
+    return f"{task.id} is already {_LABELS[task.state]}."
+
+
 def refusal_text(code: str, task_id: str | None = None) -> str:
     if code == "unknown_task":
         if task_id is None:
@@ -103,6 +111,8 @@ _REFUSALS = {
     "invalid_action": "That is not a state change.",
     "work_after_deadline": "The work time must end by the deadline.",
 }
+
+_VERBS = {"start": "Started", "done": "Done", "cancel": "Cancelled", "reopen": "Reopened"}
 
 _LABELS = {
     "open": "open",
