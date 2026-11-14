@@ -53,3 +53,13 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - DOCKET_WORK_MINUTES uses Field bounds of 5 to 720, and get_settings maps that field's error to WORK_MINUTES_MESSAGE.
 - Follow-ups:
   - None
+
+## Phase 1e: Adding and listing tasks (2026-11-14)
+- Tests: 345 -> 414 (given 66)
+- New public names: `docket.views`: `task_line`, `task_detail`, `refusal_text`; `docket.cli`: `DUE_MESSAGE`, `AT_MESSAGE`, `AT_WITHOUT_DUE_MESSAGE`, `NO_TASKS_MESSAGE`, `tasks_app`, `add`, `list_tasks`, `show`
+- Changed files: 1
+- Deviations:
+  - list and show open the store before the clock read, so a newer schema exits without reading the clock.
+  - A date and a time share one shape check before fromisoformat.
+- Follow-ups:
+  - None
