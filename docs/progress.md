@@ -33,3 +33,13 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - A task id matches re.fullmatch of t followed by a non-zero ASCII number.
 - Follow-ups:
   - None
+
+## Phase 1c: Task rules (2026-11-14)
+- Tests: 202 -> 291 (given 89)
+- New public names: `docket.core`: `UNKNOWN_TASK`, `INVALID_TITLE`, `INVALID_SOURCE`, `INVALID_REFERENCE`, `INVALID_ACTOR`, `INVALID_ACTION`, `TASK_ENDED`, `WORK_AFTER_DEADLINE`, `CoreError`, `Outcome`, `check_title`, `create_task`, `change_state`, `edit_task`
+- Changed files: 2
+- Deviations:
+  - An email reference checks the message id and link before the provider, still as one INVALID_REFERENCE.
+  - A non-email reference is refused unless provider, message id and link are all None.
+- Follow-ups:
+  - None
