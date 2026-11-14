@@ -23,3 +23,13 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - make_work_time uses WorkTime's length check, so a stored value and a new work time share that rule.
 - Follow-ups:
   - None
+
+## Phase 1b: Task store (2026-11-14)
+- Tests: 152 -> 202 (given 50)
+- New public names: `docket.store`: `DB_FILENAME`, `SCHEMA_MESSAGE`, `TRANSACTION_MESSAGE`, `NESTED_MESSAGE`, `UNKNOWN_TASK_MESSAGE`, `UNCHANGED`, `StoreError`, `Task`, `AuditEntry`, `Store`, `open_store`
+- Changed files: 2
+- Deviations:
+  - Migration SQL is split with sqlite3.complete_statement so each trigger stays one statement inside the transaction.
+  - A task id matches re.fullmatch of t followed by a non-zero ASCII number.
+- Follow-ups:
+  - None
