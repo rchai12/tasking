@@ -76,7 +76,9 @@ The data folder is `DOCKET_DATA_DIR`, by default `~/Library/Application Support/
 | `alerts`, `problems` | As in the email service: each problem once when it starts and once when it is fixed |
 | `audit_log` | Every change: when (UTC), what, who or what caused it (press, command, agent, email), before and after |
 
-Task ids are ASCII letters, digits, `-` and `_`, as the email service requires.
+Task ids are `t` followed by the row's number (`t1`, `t2`), given out in order and never reused once committed; they fit the email service's rule (ASCII letters, digits, `-` and `_`). Titles are 1 to 100 characters with no leading or trailing whitespace and no control, format or line-separator characters (Unicode categories Cc, Cf, Zl, Zp); a title that breaks the rule is refused, never rewritten.
+
+The store (`docket.store`, Phase 1b) is one SQLite file, `docket.sqlite3`, mode `0600`, in WAL mode with a 5-second busy timeout, so the service, the `docket` command and the MCP server can each open it. Every write runs inside `Store.transaction()` (`BEGIN IMMEDIATE`), so a change and its audit row commit together or not at all. Tasks are never deleted and audit rows never changed or removed; triggers enforce both.
 
 ## Task states
 
@@ -87,7 +89,8 @@ Stored states are **open**, **in progress**, **done** and **cancelled**. **Due**
 | open | Working on it | in progress |
 | open, in progress | Done | done |
 | open, in progress | Cancel | cancelled |
-| done, cancelled | anything | no change; the press is answered with the task's state |
+| done, cancelled | Reopen | open (any time; its reminders are planned again) |
+| done, cancelled | anything else | no change; the press is answered with the task's state |
 
 Only done and cancelled stop reminders. A new deadline, a new work time, a snooze or a title edit keeps the state.
 
@@ -221,7 +224,7 @@ docket/
   src/docket/
     config.py, clock.py, ids.py, keychain.py
     deadlines.py        time rules (critical)
-    store/              the database, one module per area (critical parts listed in testing.md)
+    schema.py, store.py the database: migrations, reads, writes in transactions (critical)
     core.py             create, change, end tasks; audit (critical)
     intake/             the API routes: tasks, links, proposals, presses
     reminders.py        planning and the send loop (critical)

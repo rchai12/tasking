@@ -19,6 +19,8 @@ The tasks app exists as a design: the Python package `docket` in the `tasking` p
 | Follow-up links | Stored on the task and shown with it. They never create a task |
 | No email text | The tasks app stores only what the payload carries. It already has no quote, summary or body, as the email service decided on Nov 13 |
 | Titles are untrusted | The tasks app treats titles as plain text of at most 100 characters and shows them in code blocks on Discord, the same rule the email service follows |
+| Titles are refused, never rewritten (Nov 14) | A title with leading or trailing whitespace, or any Cc, Cf, Zl or Zp character, gets **422**. The extractor already refuses those categories, and Edit title strips the ends, but Edit title doesn't check for a pasted tab or zero-width character. Such a title would get 422 and be retried every round. Phase 3c should apply the extractor's character check to an edited title too |
+| Task ids look like `t12` (Nov 14) | Short numbers, never reused. They fit `is_task_id` as it is |
 
 ## Work this means for the email service
 

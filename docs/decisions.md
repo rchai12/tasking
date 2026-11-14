@@ -39,6 +39,10 @@ Decisions from the original doc are dated Nov 9, 2026; later ones carry their ow
 | Agent access | Typed MCP tools over stdio only | No shell, AppleScript runner or screen control | The agent driving the Apple apps directly |
 | Intake sign-in (*proposed*, Nov 14) | Each client has its own token in the Keychain, sent as a bearer token; the token fixes the source it may claim | Any local process can reach 127.0.0.1; a token stops one posing as another | No sign-in on loopback |
 | Retry safety (*proposed*, Nov 14) | Every create is keyed; the same key with the same body returns the first answer, with a different body it is refused | Retries never duplicate, and a key reused by mistake is visible | Matching on title and date |
+| Task ids (Nov 14) | `t1`, `t2`, ...: the row's number, never reused | Easy to type in `/done t12` and read on a phone | 32-character hex; short random letters |
+| Reopen (Nov 14) | A done or cancelled task can be reopened any time, with its own audit row | A mistaken tap can be undone | Final states; reopening within 24 hours only |
+| Titles (Nov 14) | Refused, never rewritten: 1 to 100 characters, no leading or trailing whitespace, no Cc, Cf, Zl or Zp characters | The app never changes what a source sent; matches the email service's own title check | Trimming and cleaning up |
+| Concurrent access (Nov 14) | WAL mode, a 5-second busy timeout, every write in `BEGIN IMMEDIATE` | The service, the CLI and the MCP server each open the file | One process owning the file |
 | Storage (*proposed*, Nov 14) | One SQLite file, standard library `sqlite3`, plain SQL, numbered migrations | Same as the email service; every query visible | SQLAlchemy and Alembic |
 | HTTP (*proposed*, Nov 14) | FastAPI on 127.0.0.1 for the API; httpx for outgoing calls | Same as Conductor's page and the email service's client | The standard library server |
 | Package (*proposed*, Nov 14) | `docket`, command `docket`, settings prefixed `DOCKET_`, port 8767 | Short and unused here; `finances` has 8765 and Conductor 8766 | |

@@ -5,3 +5,5 @@ reports.py
 config.py
 keychain.py
 deadlines.py
+schema.py
+store.py

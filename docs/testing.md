@@ -28,8 +28,8 @@ A bug here loses a reminder, sends one twice, creates a task without approval, o
 
 - `config.py` and `keychain.py` (Phase 0)
 - `deadlines.py` (instants, exact zone names, the 17:00 default, work-time rules; Phase 1a)
-- `core.py` (the state rules and the audit log; Phase 1b)
-- `store/` (every write whole or not at all; Phase 1b)
+- `schema.py` and `store.py` (every write whole or not at all, in a transaction; nothing removed or rewritten; Phase 1b)
+- `core.py` (the state rules, the title rule and one audit row per change; Phase 1c)
 - `intake/` (who may create what, and retry safety; Phase 2)
 - `reminders.py` (nothing lost, nothing twice; Phase 3)
 - the press handler (who may press, and idempotency; Phase 4)
