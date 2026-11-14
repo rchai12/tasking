@@ -54,6 +54,8 @@ Decisions from the original doc are dated Nov 9, 2026; later ones carry their ow
 | Task list (Nov 14) | Open and in-progress tasks by default, soonest deadline first (overdue on top), then undated by id; `--all` adds the rest in the same order | What needs doing next comes first | By id; everything by default |
 | Command refusals (Nov 14) | A plain sentence on stderr and exit code 1; usage mistakes exit 2 | Readable at the terminal; the codes stay for the MCP tools | The code; both |
 | Adding a deadline (Nov 14) | `--due YYYY-MM-DD [--at HH:MM]`, checked against the exact shape before parsing; `--at` alone is refused | Python's ISO parser also takes `20261120` and `1700` | One combined `--due` option |
+| Command repeats (Nov 14) | `t3 is already done.` with exit code 0; nothing written | A repeat is harmless, so a script or a double press sees no error | The change sentence again; exit 1 |
+| Plan and edit forms (Nov 14) | `plan t3 2026-11-20 14:00 [--minutes N]` with `--clear`; in `edit`, `--at` needs `--due` as in `add`, and `--no-due` clears | Positional date and time read naturally; one deadline rule everywhere | Options only; `--at` alone keeping the date |
 | Concurrent access (Nov 14) | WAL mode, a 5-second busy timeout, every write in `BEGIN IMMEDIATE` | The service, the CLI and the MCP server each open the file | One process owning the file |
 | Storage (*proposed*, Nov 14) | One SQLite file, standard library `sqlite3`, plain SQL, numbered migrations | Same as the email service; every query visible | SQLAlchemy and Alembic |
 | HTTP (*proposed*, Nov 14) | FastAPI on 127.0.0.1 for the API; httpx for outgoing calls | Same as Conductor's page and the email service's client | The standard library server |

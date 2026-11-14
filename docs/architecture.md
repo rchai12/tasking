@@ -43,7 +43,7 @@ flowchart LR
 | Reminder engine | Plans reminders for each task, and every 30 seconds sends what is due through the Discord service |
 | Press handler | Receives button presses forwarded by the Discord service and calls the core |
 | Calendar sync | Writes due-date events to the Tasks calendar through a queue; reads every connected calendar live |
-| CLI | `docket` commands: run the service, sign in to calendars, list and change tasks, decide proposals. From Phase 1e: `docket tasks add`, `list` and `show`; each needs `DOCKET_TIME_ZONE`, writes only through `docket.core`, and refuses with a plain sentence on stderr and exit code 1 |
+| CLI | `docket` commands: run the service, sign in to calendars, list and change tasks, decide proposals. From Phase 1e: `docket tasks add`, `list` and `show`; from Phase 1f: `start`, `done`, `cancel` and `reopen` (a repeat says so and exits 0); each needs `DOCKET_TIME_ZONE`, writes only through `docket.core`, and refuses with a plain sentence on stderr and exit code 1 |
 
 ## Stack
 
