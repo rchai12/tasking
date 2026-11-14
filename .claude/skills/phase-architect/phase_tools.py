@@ -19,6 +19,13 @@
     .venv/bin/python .claude/skills/phase-architect/phase_tools.py failcheck CLONE TEST...
         Run only these tests in the clone and print the summary and each distinct failure reason.
 
+    .venv/bin/python .claude/skills/phase-architect/phase_tools.py stubcheck CLONE \
+            --stub src/docket/views.py=NAMES.py ... -- TEST...
+        In a throwaway copy of the clone (fail<NN>-names), append each names-only stub file to
+        its path, then print each test file's function and test counts, the distinct failure
+        reasons, and every test that passes on the stub (a guard, or a weak test). The copy is
+        deleted afterwards.
+
     .venv/bin/python .claude/skills/phase-architect/phase_tools.py promote CLONE FILE... \
             [--ignore TEST...]
         Copy given files from the clone into the repository, compare each byte for byte, then run
@@ -181,6 +188,46 @@ def fail_check(clone: Path, tests: list[str]) -> int:
     for reason, count in reasons.most_common():
         print(f"{count:4}  {reason}")
     print(lines[-1] if lines else "no output")
+    return 0
+
+
+def stub_check(clone: Path, stubs: list[str], tests: list[str]) -> int:
+    copy = clone.resolve().with_name(clone.resolve().name + "-names")
+    if copy.exists():
+        shutil.rmtree(copy)
+    shutil.copytree(clone, copy, symlinks=True)
+    try:
+        for pair in stubs:
+            path, _, stub = pair.partition("=")
+            with (copy / path).open("a", encoding="utf-8") as handle:
+                handle.write("\n" + Path(stub).read_text(encoding="utf-8"))
+        for test in tests:
+            done = subprocess.run(
+                [".venv/bin/python", "-m", "pytest", "--collect-only", "-q"]
+                + ["-p", "no:cacheprovider", test],
+                cwd=copy,
+                env=clone_env(),
+                capture_output=True,
+                text=True,
+            )
+            source = (copy / test).read_text(encoding="utf-8")
+            functions = len(re.findall(r"^def test_", source, re.MULTILINE))
+            last = done.stdout.splitlines()[-1] if done.stdout else "no output"
+            print(f"{test}: {functions} functions, {last}")
+        fail_check(copy, tests)
+        passed = subprocess.run(
+            [".venv/bin/python", "-m", "pytest", "--no-cov", "-q", "-p", "no:cacheprovider", "-rA"]
+            + tests,
+            cwd=copy,
+            env=clone_env(),
+            capture_output=True,
+            text=True,
+        ).stdout.splitlines()
+        for line in passed:
+            if line.startswith("PASSED "):
+                print(f"  passes on the stub: {line.removeprefix('PASSED ')}")
+    finally:
+        shutil.rmtree(copy)
     return 0
 
 
@@ -487,6 +534,10 @@ def main() -> int:
     failcheck = commands.add_parser("failcheck")
     failcheck.add_argument("clone", type=Path)
     failcheck.add_argument("tests", nargs="+")
+    stubcheck = commands.add_parser("stubcheck")
+    stubcheck.add_argument("clone", type=Path)
+    stubcheck.add_argument("--stub", nargs="+", default=[], metavar="PATH=STUBFILE")
+    stubcheck.add_argument("tests", nargs="+")
     given = commands.add_parser("promote")
     given.add_argument("clone", type=Path)
     given.add_argument("files", nargs="+")
@@ -516,6 +567,8 @@ def main() -> int:
         return make_clone(args.id, args.scratch)
     if args.command == "failcheck":
         return fail_check(args.clone, args.tests)
+    if args.command == "stubcheck":
+        return stub_check(args.clone, args.stub, args.tests)
     if args.command == "promote":
         return promote(args.clone, args.files, args.ignore)
     if args.command == "new":
