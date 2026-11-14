@@ -94,6 +94,8 @@ Stored states are **open**, **in progress**, **done** and **cancelled**. **Due**
 
 Only done and cancelled stop reminders. A new deadline, a new work time, a snooze or a title edit keeps the state.
 
+`docket.core` (Phase 1c) is the only code that creates or changes a task: `create_task`, `change_state` (start, done, cancel, reopen) and `edit_task` (title, deadline, work time). Each runs in one store transaction with its audit rows; a repeat (Done on a done task, the same title again) reports no change and writes nothing. An ended task must be reopened before an edit, a change that leaves a work time ending after the deadline is refused, and past dates are allowed. Refusals are constant codes: `unknown_task`, `invalid_title`, `invalid_source`, `invalid_reference`, `invalid_actor`, `invalid_action`, `task_ended`, `work_after_deadline`.
+
 ## Time rules (`docket.deadlines`, critical)
 
 - A deadline is a UTC instant plus the IANA zone it was given in, named exactly as `zoneinfo.available_timezones()` lists it. It is a fixed instant: travelling does not move it.

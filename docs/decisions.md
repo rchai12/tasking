@@ -42,6 +42,11 @@ Decisions from the original doc are dated Nov 9, 2026; later ones carry their ow
 | Task ids (Nov 14) | `t1`, `t2`, ...: the row's number, never reused | Easy to type in `/done t12` and read on a phone | 32-character hex; short random letters |
 | Reopen (Nov 14) | A done or cancelled task can be reopened any time, with its own audit row | A mistaken tap can be undone | Final states; reopening within 24 hours only |
 | Titles (Nov 14) | Refused, never rewritten: 1 to 100 characters, no leading or trailing whitespace, no Cc, Cf, Zl or Zp characters | The app never changes what a source sent; matches the email service's own title check | Trimming and cleaning up |
+| Ended tasks (Nov 14) | Only Reopen works on a done or cancelled task; an edit is refused (`task_ended`) | Done keeps meaning done | Title-only edits; any edit |
+| Deadline vs work time (Nov 14) | A change that leaves a work time ending after the deadline is refused (`work_after_deadline`) | Nothing changes behind your back | Clearing the work time |
+| Past dates (Nov 14) | Allowed at creation and in edits; the task is overdue at once | The approval already happened, for example an email approved late | Refusing past deadlines; future-only work times |
+| Repeats (Nov 14) | A change to the state or values a task already has reports no change and writes nothing | Double taps and retried calls are harmless | Writing an audit row for every press |
+| Core errors (Nov 14) | One constant code per refusal (`unknown_task`, `invalid_title`, `task_ended`, ...), also the error's text | An MCP tool or API route passes it on unchanged; no input is echoed | Messages with values |
 | Concurrent access (Nov 14) | WAL mode, a 5-second busy timeout, every write in `BEGIN IMMEDIATE` | The service, the CLI and the MCP server each open the file | One process owning the file |
 | Storage (*proposed*, Nov 14) | One SQLite file, standard library `sqlite3`, plain SQL, numbered migrations | Same as the email service; every query visible | SQLAlchemy and Alembic |
 | HTTP (*proposed*, Nov 14) | FastAPI on 127.0.0.1 for the API; httpx for outgoing calls | Same as Conductor's page and the email service's client | The standard library server |

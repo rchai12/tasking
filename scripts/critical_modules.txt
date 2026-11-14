@@ -7,3 +7,4 @@ keychain.py
 deadlines.py
 schema.py
 store.py
+core.py

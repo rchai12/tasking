@@ -206,8 +206,10 @@ def walk() -> bool:
     with Store(path) as fresh:
         if not compare(fresh):
             return False
-    print(f"  reached {reached}")
-    return all(count >= 20 for count in reached.values())
+    if not all(count >= 20 for count in reached.values()):
+        print(f"  reached {reached}")
+        return False
+    return True
 
 
 def a_task_reads_back() -> bool:
