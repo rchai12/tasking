@@ -1,6 +1,6 @@
 # Architecture
 
-Status (2026-11-14): designed; nothing built yet. Phase 0 is specified.
+Status (2026-11-14): Phase 0 (the skeleton) is built and verified; Phase 1 is next to specify.
 
 ## Goal
 

@@ -103,6 +103,7 @@ Phases follow the build order in `docs/roadmap.md`: stage N is phase N, split in
 
 24. Start the spec with `phase_tools.py new` and fill its `TODO`s, in order: Goal, Facts, Owner's decisions, Architect's decisions, Requirements (numbered), Given files, Tests to write, Scope, Out of scope, Rules that bite, Acceptance. It fixes every public name and message, separates the owner's decisions from the architect's, names in "Out of scope" what a capable coder would over-deliver (a later stage's backend, a retry nobody asked for, quiet hours, a nicer card), and restates the rules that bite. No banned wording ("as appropriate", "or similar", "if needed", "etc.").
 25. Acceptance: the Start command and its count; `check.py --first <sections>`; at least N plus the given tests; the given files' exact count; the coverage command at 100% for the phase's modules; the probe at `FAILURES 0`; `grep -c "^## Phase <id>: " docs/progress.md` printing `1`; `check_reports.py --phase <id>`; the searches; `git diff HEAD --stat -- <given files>` printing nothing; `git status --short` showing only the Scope.
+    The coder's documents (the spec, `docs/phase-conventions.md` "For the coder") name the probe only by its path in Acceptance, never the guide, its spot checks or its variations; a coder that has read the guide can write to its spot checks (Phase 0).
 26. Searches use `git grep --untracked -n -E`, with **no `\b`** (use `([^A-Za-z_]|$)`). Name the risky call, never a common attribute. Run each on the clone with legitimate-looking code (silence), then with `--plant` (a match each). Every phase carries the searches for the project rules it could break: a model client import anywhere, a network call outside the named client modules, `datetime.now` outside `clock.py`, a task created outside `docket.core`, a calendar write with a field other than title and time, an MCP tool calling a proposal's approve function.
 27. Generate the guide with `phase_tools.py guide`, then write its `TODO`s, in order: Coder ran, Gates, Spot checks, Probe, Searches, Reasonable variations, Verdict.
 
@@ -112,9 +113,11 @@ Phases follow the build order in `docs/roadmap.md`: stage N is phase N, split in
 29. Look back over this phase's work: a step repeated by hand or one that went wrong becomes a tool now, or a note in `history.md` until it happens twice.
 30. Report to the owner: an audience line ("Written for: the coder (the spec) and the verifier (the guide)."), both paths, what the phase builds following their choices, anything decided on their behalf, the checks run (given tests failing today, spikes, the probe on today's code), any "Verify before building" items, any work another project needs, the coder and verifier prompts, and that they commit the spec, guide, given files and doc changes first. Offer to make that commit, and wait for a yes.
 
-> Coder: Read AGENTS.md, docs/architecture.md, docs/testing.md, docs/phase-conventions.md, docs/progress.md, and docs/phases/phase-NNx-<slug>.md. Implement only that phase. Run every command under "Acceptance" before you report, and write the progress entry.
+> Coder: Read AGENTS.md, docs/architecture.md, docs/testing.md, docs/phase-conventions.md, docs/progress.md, and docs/phases/phase-NNx-<slug>.md. Implement only that phase. Do not read docs/verification/ except to run the probe named in Acceptance, do not verify your own work, and do not write a review. Run every command under "Acceptance" before you report, and write the progress entry.
 
 > Verifier: Read AGENTS.md, docs/phase-conventions.md, docs/phases/phase-NNx-<slug>.md, and docs/verification/phase-NNx-<slug>.md. Follow the verification guide against the current diff. Do not modify files except your report. Report the verdict.
+
+Both prompts run in fresh sessions, one agent each. The `phase-implementer-verifier` skill is only for the owner's explicit request that one agent do both (it has `disable-model-invocation: true`, so a coder prompt never loads it).
 
 ## Project rules (every spec)
 

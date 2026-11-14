@@ -30,6 +30,8 @@ The tests are grouped into the sections of `tests/sections.toml`. Each spec name
 
 ### Rules that hold in every phase
 
+- **You are not the verifier.** A second agent verifies in its own session. Do not open the verification guide or `docs/reviews/`, and do not run spot checks or write a review; from `docs/verification/` you only run the probe, by the path Acceptance gives. Your work ends with the progress entry and your final message. "For the verifier" below is not for you.
+
 - **Commands** start with `.venv/bin/python` (or `.venv/bin/docket`). Never type `python`, `python3`, `ruff`, or `pytest` on their own. Do not activate the virtual environment, and do not create one after Phase 0. Install packages only when the spec has a step for it.
 - **Git.** Do not commit. Never run `git restore`, `git checkout`, `git reset`, `git stash`, or `git clean`.
 - **Real systems.** Do not connect to Google, Microsoft Graph, the shared Discord service, Discord, the email service or Conductor, do not run the EventKit helper against real calendars, and do not read the Keychain or the data folder. Tests replace them. The owner runs the real thing after verification.

@@ -37,7 +37,7 @@ The original single document is kept in [archive/](archive/Tasks,%20Scheduling%2
 1. Commit the spec, its verification guide and its given files, so `git status` is clean. Then give the coding agent one phase at a time:
 
    > Read AGENTS.md, docs/architecture.md, docs/testing.md, docs/phase-conventions.md, docs/progress.md, and docs/phases/phase-NN-*.md.
-   > Implement only that phase. Run every command under "Acceptance" before you report, and write the progress entry.
+   > Implement only that phase. Do not read docs/verification/ except to run the probe named in Acceptance, do not verify your own work, and do not write a review. Run every command under "Acceptance" before you report, and write the progress entry.
 
 2. Give a second agent the matching guide in `verification/`:
 

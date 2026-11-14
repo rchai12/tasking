@@ -1,6 +1,6 @@
 # Roadmap
 
-Status (2026-11-14): designed; nothing built. Phase 0 is specified ([phase-00](phases/phase-00-skeleton.md)).
+Status (2026-11-14): Phase 0 ([phase-00](phases/phase-00-skeleton.md)) is built and verified (96 tests). Phase 1 is next to specify.
 
 Build one stage at a time and move on only when its test passes. Stage N is Phase N, split into lettered sub-phases (`1a`, `1b`) when it is too big; numbers are never reused.
 
