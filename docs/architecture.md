@@ -111,10 +111,10 @@ Only done and cancelled stop reminders. A new deadline, a new work time, a snooz
 | deadline | `null`, or `date` (YYYY-MM-DD), `time` (HH:MM or `null`) and `time_zone` |
 | provider, message_id, link | The email's reference, stored with the task |
 
-- **201** `{"id": ...}` for a new task; **200** with the same id when the key is sent again with the same body; **409** when the key is sent again with a different body; **401** for a missing or wrong token; **422** for an invalid body.
+- **201** `{"id": ...}` for a new task; **200** with the same id when the key is sent again with the same body; **409** when the key is sent again with a different body; **400** for a missing `Idempotency-Key` (1 to 200 characters); **401** for a missing or wrong token; **422** for an invalid body (exactly the fields above; a title of one line). These match the email service's `FakeTasksApp`, plus 401.
 - The task is created **open**, its reminders are planned and its calendar write is queued, all in one transaction.
 
-`POST /tasks/<id>/links` adds a follow-up email to a task, keyed the same way: 201, then 200 on repeats, 404 for an unknown task.
+`POST /tasks/<id>/links` adds a follow-up email to a task, keyed the same way, with exactly `source`, `provider`, `message_id` and `link`: 201 `{"id": ...}` (the link's id), 200 with the same id on repeats, 409 for the same key with another task or body, 404 for an unknown task.
 
 A token is always required. The email service's stub sends none today; its Phase 3c adds it, so 3c must land before the two are connected.
 
