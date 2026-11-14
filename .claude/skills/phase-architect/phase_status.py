@@ -57,6 +57,10 @@ def main() -> int:
     print("== latest progress entry")
     entry = last_entry(ROOT / "docs" / "progress.md")
     print("\n".join(entry))
+    stops = [line.strip() for line in entry if line.strip().startswith("- Stopped:")]
+    if stops:
+        print("== the coder stopped")
+        print("\n".join(stops))
     print("== newest review head")
     if reviewed:
         newest = max(reviews.glob("*.md"), key=lambda path: path.stat().st_mtime)

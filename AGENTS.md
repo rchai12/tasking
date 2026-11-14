@@ -6,9 +6,9 @@ This file applies to every phase. Read it, then `docs/architecture.md`, then `do
 
 - Implement **only** the phase you were assigned. Do not build features from later phases, even if it seems convenient.
 - If the spec is ambiguous, pick the simplest option that satisfies the acceptance criteria and record the decision in `docs/progress.md`.
-- If the spec seems wrong or impossible, stop and explain instead of improvising a large workaround.
+- If the spec seems wrong or impossible, stop instead of improvising a large workaround, and report the stop in your progress entry (`docs/phase-conventions.md`, "When you stop"), not only in your final message.
 - Do not add dependencies that the phase spec does not list. If you believe one is needed, stop and ask.
-- When finished, append an entry to `docs/progress.md` in the form `docs/phase-conventions.md` gives.
+- When finished, or when you stop before finishing, append an entry to `docs/progress.md` in the form `docs/phase-conventions.md` gives. A phase always ends with an entry.
 
 ## Running commands
 

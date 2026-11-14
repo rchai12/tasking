@@ -438,6 +438,11 @@ Stop with FAIL ("the coder did not run") if any of these is missing:
 {present}
 - `grep -c "^## Phase {phase}: " docs/progress.md` prints `1`
 
+Stop with FAIL ("the coder stopped") if that entry's first `Follow-ups` line starts with \
+`Stopped:`, as "A stopped coder" in `docs/phase-conventions.md` says. With no entry, \
+`git status --short` tells "the coder did not run" (no Scope path changed) from "the coder \
+broke off without reporting" (Scope paths changed; name them under `For the architect`).
+
 Stop with FAIL ("the baseline is not committed") if `git ls-files --error-unmatch {tracked}` \
 fails: the diff gates can only be judged against a committed spec and given files.
 

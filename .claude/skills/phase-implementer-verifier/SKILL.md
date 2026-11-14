@@ -47,7 +47,7 @@ Stop and ask when a requirement, file, signature, message, command, or acceptanc
 - The project's interpreter is `.venv/bin/python`. Never run bare `python`, `python3`, `ruff`, or `pytest`, and do not activate the virtual environment.
 - Follow `AGENTS.md` on approval (no task without an approved source), retry safety, time (UTC instants plus a zone, through `docket.clock`), privacy (no real accounts, no Keychain, synthetic data only), and layering (every change through `docket.core`).
 - Never change a given file. When the spec leaves a body for you to write, satisfy the numbered requirements and the tests.
-- Append the progress entry the spec requires. Do not rewrite earlier entries.
+- Append the progress entry the spec requires, also when you stop: the first `Follow-ups` line then says `Stopped: <where> | <what you saw> | <what would let you finish>` (`docs/phase-conventions.md`, "When you stop"). Do not rewrite earlier entries.
 
 ## Verify
 

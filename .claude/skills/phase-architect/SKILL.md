@@ -62,7 +62,7 @@ Phases follow the build order in `docs/roadmap.md`: stage N is phase N, split in
 ### 1. Start (every turn that mentions a phase)
 
 1. Run `phase_status.py` before saying anything about a phase's state; never state it from memory or a summary. Take N from the progress entry, never by rerunning the suite.
-2. A review that lists every file as absent means the coder never ran: tell the owner to run the coder, and do not change the spec.
+2. A progress entry whose first `Follow-ups` line is `Stopped: ...` is the coder's report of a stop (`phase_status.py` prints it): check its claim against the spec and the given files first, running the test it names, and handle it as step 4 handles a FAIL. A review that lists every file as absent means the coder never ran: tell the owner to run the coder, and do not change the spec. No entry but changed Scope paths means the coder broke off without reporting: run the acceptance commands yourself to find where (Phase 1e's first run).
 3. A PASS: record it in `history.md` (replace "result pending" with the result, the test count, and any deviation). Read each approved deviation for what it lets through, not only whether tests pass; a deviation in an approval, idempotency or owner check fails closed. Turn every miss into a checklist line here, or sharpen one; never only log it.
 4. A FAIL: read it. If the spec caused it, add a "Corrections" section to the spec, keep the coder's code, re-run each corrected spot-check row against the committed code, and tell the owner exactly what to tell the coder; the correction is committed before the coder reruns, and the verifier's rerun prompt judges with `git diff <spec commit> HEAD`. If the code caused it, it goes back to the coder. Never bend the spec to fit wrong code.
 5. Start from a clean tree: ask the owner to commit the last phase first, and wait for the commit. Run `git status` before every write into the repository, so nothing lands in another phase's commit.
@@ -99,7 +99,7 @@ Phases follow the build order in `docs/roadmap.md`: stage N is phase N, split in
 
 ### 6. Spot checks (on paper)
 
-23. Each row names one function, the exact one-line mutation, one deciding given test by its full id, and the correct and broken outputs as short values from the data; they must differ. A layered defence loses every layer (the schema's CHECKs and a second guard are layers), or the row picks a test that reaches the inner one. Trace past the changed line to the answer. Drop a row with no deciding input, or strengthen a given test so it has one.
+23. Each row names one function, the exact one-line mutation, one deciding given test by its full id, and the correct and broken outputs as short values from the data; they must differ. A layered defence loses every layer (the schema's CHECKs and a second guard are layers), or the row picks a test that reaches the inner one. Trace past the changed line to the answer, and check that the deciding input reaches the changed line at all: a mutation inside a branch needs an input that takes the branch (Phase 1e's S11 changed the due line of `add` and was decided by an add with no deadline). Drop a row with no deciding input, or strengthen a given test so it has one.
 
 ### 7. Write the spec and the guide
 

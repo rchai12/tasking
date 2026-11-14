@@ -54,7 +54,7 @@ Unless the spec adds more, run before you report:
 
 ### Report
 
-Add an entry at the end of `docs/progress.md` in exactly this form. Every field is one line, or `None`; the architect reads these fields instead of your final message, so keep them short and literal. `scripts/check_reports.py` checks this form: the fields in this order, each list with at least one `  - ` line, and nothing else in the entry.
+Add an entry at the end of `docs/progress.md` in exactly this form, whether you finished or stopped (see "When you stop"). Every field is one line, or `None`; the architect reads these fields instead of your final message, so keep them short and literal. `scripts/check_reports.py` checks this form: the fields in this order, each list with at least one `  - ` line, and nothing else in the entry.
 
 ```markdown
 ## Phase <id>: <the spec's title> (YYYY-MM-DD)
@@ -69,12 +69,23 @@ Add an entry at the end of `docs/progress.md` in exactly this form. Every field 
 
 In your final message give the `Sections:` table and the last ten lines of `scripts/check.py`'s output, the output line of each other acceptance command, and for each requirement the name of a test (or the probe line) that covers it.
 
+### When you stop
+
+Stop, rather than work around it, when a given test fails on code you believe the spec requires, when the spec is ambiguous or contradicts itself or another file, or when an acceptance command can't pass without changing a given file or a path outside the Scope. Stopping is a result, not a silence: the architect and the verifier read `docs/progress.md`, not your final message. Before you end, append your entry in the form above, with:
+
+- `Tests:`, `New public names` and `Changed files` as they stand now;
+- as the **first** `Follow-ups` line: `Stopped: <the acceptance command, requirement or given test> | <what you observed, in one line> | <what would let you finish>`, one such line per stop.
+
+Then run `.venv/bin/python scripts/check_reports.py --phase <the spec's phase id>` (it must print `Reports OK.`) and end. Never change a given file to get past a stop, and don't write a review. In your final message, say that you stopped and repeat the `Stopped:` lines.
+
 ## For the verifier
 
 - Do not modify any file in the repository, except to write your report (below). Report findings only. The work under review is uncommitted: "the diff" is `git status --short` plus `git diff HEAD` plus the untracked files, read before you write the report.
 - Run the guide's gates exactly as written, from the repository root. The first gate is `scripts/check.py --first <the spec's sections>`; if a section fails, report it with the table's rerun command.
 - **Scope audit**: `git status --short` shows only the spec's Scope paths; `git diff HEAD --stat -- <the given files>` prints nothing; no existing test or unlisted module changed.
 - **The probe.** It is the given file `docs/verification/probe-<NNx>.py`, committed with the spec: run it from the repository root with `.venv/bin/python docs/verification/probe-<NNx>.py`, without editing it. Every line must end in `ok`; the last line must be `FAILURES 0`.
+- **A stopped coder.** When the phase's progress entry exists and its first `Follow-ups` line starts with `Stopped:`, the coder stopped on purpose. Write a FAIL report with one finding per `Stopped:` line, `<the place it names> | docs/progress.md:<line> | expected the phase finished | found the coder stopped: <its observation>`, copy the first `Stopped:` line into `For the architect`, run the given test files once (`.venv/bin/python -m pytest <the given test files> --no-cov -q`) for `Passed`, and stop there.
+- **No entry.** With no progress entry for the phase, look at `git status --short`: no Scope path changed means the coder did not run; changed Scope paths mean it broke off without reporting, so name those paths in `For the architect`.
 - Judge code by what it does, never by resemblance to another way of writing it.
 - **Coverage reached the wrong way is a finding**: a test that runs a line but asserts nothing about what it does, a `# pragma: no cover` the spec did not allow, or code the spec requires removed to close a gap.
 - **Spot checks**: for each row of the guide's spot-check table, copy the module outside the repository first, make the named one-line change, run the deciding test, and confirm it fails; then restore the file from your copy (never with `git checkout` or `git restore`), clear `__pycache__`, and confirm `git diff` is as before.
