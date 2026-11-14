@@ -99,7 +99,7 @@ Phases follow the build order in `docs/roadmap.md`: stage N is phase N, split in
 
 ### 6. Spot checks (on paper)
 
-23. Each row names one function, the exact one-line mutation, one deciding given test by its full id, and the correct and broken outputs as short values from the data; they must differ. A layered defence loses every layer (the schema's CHECKs and a second guard are layers), or the row picks a test that reaches the inner one. Trace past the changed line to the answer, and check that the deciding input reaches the changed line at all: a mutation inside a branch needs an input that takes the branch (Phase 1e's S11 changed the due line of `add` and was decided by an add with no deadline). Drop a row with no deciding input, or strengthen a given test so it has one.
+23. Each row names one function, the exact one-line mutation, one deciding given test by its full id, and the correct and broken outputs as short values from the data; they must differ. A layered defence loses every layer (the schema's CHECKs and a second guard are layers), or the row picks a test that reaches the inner one. Trace past the changed line to the answer, and check that the deciding input reaches the changed line at all: a mutation inside a branch needs an input that takes the branch (Phase 1e's S11 changed the due line of `add` and was decided by an add with no deadline). The test's `fixed_times` list is a layer too: a broken path that reads the clock past the moments given stops at `StopIteration` (Phase 1f's S6 expected a later message, but its test gave no moments). Drop a row with no deciding input, or strengthen a given test so it has one.
 
 ### 7. Write the spec and the guide
 
