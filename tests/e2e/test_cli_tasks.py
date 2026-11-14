@@ -1,4 +1,5 @@
 from datetime import UTC, date, datetime, time
+from pathlib import Path
 
 import pytest
 
@@ -239,7 +240,11 @@ def test_showing_an_unknown_task_is_refused(monkeypatch: pytest.MonkeyPatch, tas
     ids=["unset", "empty", "wrong-case"],
 )
 def test_every_task_command_needs_your_time_zone(
-    monkeypatch: pytest.MonkeyPatch, args: list[str], zone: str | None, message: str
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    args: list[str],
+    zone: str | None,
+    message: str,
 ) -> None:
     if zone is None:
         monkeypatch.delenv("DOCKET_TIME_ZONE")
@@ -248,7 +253,7 @@ def test_every_task_command_needs_your_time_zone(
     fixed_times(monkeypatch)
     result = run("tasks", *args)
     assert (result.exit_code, result.stdout, result.stderr) == (1, "", message + "\n")
-    assert not (get_settings().data_dir / "docket.sqlite3").exists()
+    assert not (tmp_path / "data" / "docket.sqlite3").exists()
 
 
 @pytest.mark.parametrize(

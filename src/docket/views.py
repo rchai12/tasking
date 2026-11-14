@@ -46,6 +46,46 @@ def work_text(work: WorkTime, home: str, now: datetime) -> str:
     return text
 
 
+def task_line(task: Task, home: str, now: datetime) -> str:
+    line = f"{task.id.ljust(5)} {status_text(task, now).ljust(21)} {task.title}"
+    if task.deadline is not None:
+        line += f"  due {deadline_text(task.deadline, home, now)}"
+    return line
+
+
+def task_detail(task: Task, home: str, now: datetime) -> list[str]:
+    due = "none" if task.deadline is None else deadline_text(task.deadline, home, now)
+    work = "none" if task.work is None else work_text(task.work, home, now)
+    if task.source == "email":
+        source = f"Source: email, {task.provider} {task.message_id}"
+    else:
+        source = f"Source: {task.source}"
+    lines = [
+        f"{task.id}  {task.title}",
+        f"State: {status_text(task, now)}",
+        f"Due: {due}",
+        f"Work: {work}",
+        source,
+    ]
+    if task.link is not None:
+        lines.append(f"Link: {task.link}")
+    lines.append(f"Created: {when(task.created_at, home, now)}")
+    lines.append(f"Updated: {when(task.updated_at, home, now)}")
+    return lines
+
+
+def refusal_text(code: str, task_id: str | None = None) -> str:
+    if code == "unknown_task":
+        if task_id is None:
+            return "There is no such task."
+        return f"There is no task {task_id}."
+    if code == "task_ended":
+        if task_id is None:
+            return "That task has ended; reopen it first."
+        return f"Task {task_id} has ended; reopen it first."
+    return _REFUSALS[code]
+
+
 def status_text(task: Task, now: datetime) -> str:
     label = _LABELS[task.state]
     if task.state in {"open", "in_progress"} and task.deadline is not None:
@@ -54,6 +94,15 @@ def status_text(task: Task, now: datetime) -> str:
             return f"{label}, {word}"
     return label
 
+
+_REFUSALS = {
+    "invalid_title": "A title is 1 to 100 characters on one line, with no space at either end.",
+    "invalid_source": "That source is not allowed.",
+    "invalid_reference": "That email reference is not complete.",
+    "invalid_actor": "That actor is not allowed.",
+    "invalid_action": "That is not a state change.",
+    "work_after_deadline": "The work time must end by the deadline.",
+}
 
 _LABELS = {
     "open": "open",

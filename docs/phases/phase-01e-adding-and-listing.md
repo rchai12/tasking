@@ -139,3 +139,11 @@ git grep --untracked -n -E 'os\.environ|getenv\(|strftime\(|import locale' -- sr
 git grep --untracked -n -E 'ollama|anthropic|openai|langchain' -- src
 git grep --untracked -n -E 'pragma: no cover|noqa' -- src/docket/cli.py src/docket/views.py
 ```
+
+## Corrections
+
+Added 2026-11-14, after the first coder run stopped and the first review found no progress entry.
+
+1. **`tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone`, rows `wrong-case-add`, `wrong-case-list`, `wrong-case-show`.** The test set `DOCKET_TIME_ZONE=america/new_york` and then, to find the data folder, called `get_settings()` itself, which raises `ConfigError` for that zone. The command was right; the test's own last line could not run. The test now takes the data folder from `tmp_path / "data"` (where `tests/conftest.py` puts `DOCKET_DATA_DIR`), and imports `Path`. Nothing else in the spec changes: no requirement, message or count. The 66 given tests pass against the code the coder already wrote, with no change to it.
+
+The coder keeps the code it wrote and finishes the phase: run every command under Acceptance, then write the progress entry.
