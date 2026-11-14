@@ -13,3 +13,13 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - version prints with print; the Typer callback is _callback and has a docstring.
 - Follow-ups:
   - None
+
+## Phase 1a: Time rules (2026-11-14)
+- Tests: 96 -> 152 (given 56)
+- New public names: `docket.deadlines`: `DEFAULT_TIME`, `DUE_WINDOW`, `WORK_MINUTES_MIN`, `WORK_MINUTES_MAX`, `ZONE_MESSAGE`, `TIME_MESSAGE`, `INSTANT_MESSAGE`, `WORK_LENGTH_MESSAGE`, `WORK_DAY_MESSAGE`, `WORK_DEADLINE_MESSAGE`, `DeadlineError`, `Deadline`, `WorkTime`, `make_deadline`, `make_work_time`, `status`
+- Changed files: 2
+- Deviations:
+  - Zone names are cached with functools.cache.
+  - make_work_time uses WorkTime's length check, so a stored value and a new work time share that rule.
+- Follow-ups:
+  - None
