@@ -66,8 +66,8 @@ The data folder is `DOCKET_DATA_DIR`, by default `~/Library/Application Support/
 | Table | Holds |
 | --- | --- |
 | `tasks` | id, title (plain text, at most 100 characters), state, deadline (UTC instant and IANA zone, or none), whether a time was given, planned work time (start as a UTC instant and zone, and length in minutes, or none), source (`email`, `agent`, `proposal`, `owner`), the source's reference (for email: provider, message id, link), created and updated times |
-| `intake_keys` | Each create's client, idempotency key, a hash of its body and the task it made |
-| `task_links` | Follow-up links on a task (the email service's `/links`), keyed the same way |
+| `request_keys` | Each keyed request's client and key (unique per client), its request as canonical JSON, and the task (and link) it made (migration 2) |
+| `links` | Follow-up emails on a task (the email service's `/links`): provider, message id, link, ids `l1`, `l2` (migration 2). Links and keys of tasks ended more than a year ago are pruned by the service |
 | `proposals` | source, title, optional deadline, evidence quote, confidence, state (pending, approved, declined), the task it became |
 | `reminders` | task, kind, fire time, claimed time, sent time, voided time, and held (waiting on a calendar question) |
 | `calendar_links` | task, kind (`deadline` or `work`), calendar, event id, the title and time last written, last checked |

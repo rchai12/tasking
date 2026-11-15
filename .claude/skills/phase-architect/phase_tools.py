@@ -43,7 +43,9 @@
         Check the spec and guide against each other and against what pytest collects in DIR (a
         throwaway copy with names-only stubs): per-file and total test counts, the Start and
         at-least counts, named paths existing, spot-check test ids, the searches, TODOs and
-        banned wording. Prints `Lint OK.` or each problem.
+        banned wording. Prints `Lint OK.` or each problem. A test file git already tracks is an
+        earlier one the phase edits and is not counted; `--promoted` counts every listed test file,
+        for a phase already in the repository that edited no earlier test file.
 
     .venv/bin/python .claude/skills/phase-architect/phase_tools.py guide SPEC [--out FILE]
         Write the verification guide's fixed parts from a finished spec: Coder ran, Gates (the
@@ -333,7 +335,7 @@ def collected_ids(clone: Path, tests: list[str]) -> dict[str, list[str]]:
     return ids
 
 
-def lint(spec_path: Path, guide_path: Path, clone: Path) -> int:
+def lint(spec_path: Path, guide_path: Path, clone: Path, promoted: bool = False) -> int:
     """Check a spec and its guide against each other and against what pytest collects."""
     spec = spec_path.read_text(encoding="utf-8")
     guide = guide_path.read_text(encoding="utf-8")
@@ -355,8 +357,18 @@ def lint(spec_path: Path, guide_path: Path, clone: Path) -> int:
     for path in given:
         if not (clone / path).exists():
             problems.append(f"spec: {path} is named but does not exist in the clone")
+    diff_rows = [
+        row[0] for row in table_rows(section(spec, "## Acceptance")) if "git diff" in row[0]
+    ]
+    for path in [path for row in given_rows for path in paths_in(row[0])]:
+        if not any(path in row for row in diff_rows):
+            problems.append(
+                f"spec: given file {path} is missing from the `git diff HEAD --stat` row"
+            )
     tests = [path for path in given if Path(path).name.startswith("test_") and path.endswith(".py")]
     tests = [path for path in tests if any(path in row[0] for row in given_rows)]
+    if not promoted:
+        tests = [path for path in tests if path not in tracked(clone, tests)]
     ids = collected_ids(clone, tests)
     total = sum(len(found) for found in ids.values())
     for row in given_rows:
@@ -442,8 +454,9 @@ SEARCHES: dict[str, tuple[str, str, str]] = {
         "x = datetime.now()",
     ),
     "writes": (
-        "only the core writes tasks and audit rows",
-        "git grep --untracked -n -E '\\.(insert_task|update_task|append_audit)\\(' -- src"
+        "only the core writes tasks, audit rows, links and keys",
+        "git grep --untracked -n -E "
+        "'\\.(insert_task|update_task|append_audit|insert_link|insert_request_key)\\(' -- src"
         " ':!src/docket/core.py' ':!src/docket/store.py'",
         'store.insert_task(title="x")',
     ),
@@ -505,6 +518,14 @@ def plant_path(command: str) -> str:
     return "src/docket/_planted.py"
 
 
+def tracked(root: Path, paths: list[str]) -> set[str]:
+    """The paths git already tracks in root: an earlier file the phase edits, not a new one."""
+    done = subprocess.run(
+        ["git", "ls-files", "--", *paths], cwd=root, capture_output=True, text=True, check=False
+    )
+    return set(done.stdout.split())
+
+
 def file_id(phase: str) -> str:
     found = re.fullmatch(r"(0|[1-9][0-9]*)([a-z]?)", phase)
     if found is None:
@@ -516,7 +537,9 @@ def spec_skeleton(args: argparse.Namespace) -> str:
     padded = file_id(args.id)
     probe = f"docs/verification/probe-{padded}.py"
     args.given = [path for path in args.given if path != probe]  # the template adds it
-    given_tests = [path for path in args.given if Path(path).name.startswith("test_")]
+    tests = [path for path in args.given if Path(path).name.startswith("test_")]
+    earlier = tracked(ROOT, tests)
+    given_tests = [path for path in tests if path not in earlier]
     modules = [path for path in [*args.create, *args.edit] if path.startswith("src/")]
     ignores = " ".join(f"--ignore={path}" for path in given_tests)
     start = f".venv/bin/python -m pytest --no-cov -q {ignores}"
@@ -806,6 +829,7 @@ def main() -> int:
     linter.add_argument("spec", type=Path)
     linter.add_argument("guide", type=Path)
     linter.add_argument("--clone", type=Path, default=ROOT)
+    linter.add_argument("--promoted", action="store_true")
     given = commands.add_parser("promote")
     given.add_argument("clone", type=Path)
     given.add_argument("files", nargs="+")
@@ -838,7 +862,7 @@ def main() -> int:
     if args.command == "failcheck":
         return fail_check(args.clone, args.tests)
     if args.command == "lint":
-        return lint(args.spec, args.guide, args.clone)
+        return lint(args.spec, args.guide, args.clone, args.promoted)
     if args.command == "stubcheck":
         return stub_check(args.clone, args.stub, args.tests)
     if args.command == "promote":

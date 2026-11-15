@@ -64,5 +64,29 @@ BEGIN
 END;
 """
 
-MIGRATIONS: tuple[str, ...] = (MIGRATION_1,)
+MIGRATION_2 = """
+CREATE TABLE links (
+    number INTEGER PRIMARY KEY AUTOINCREMENT,
+    task INTEGER NOT NULL REFERENCES tasks (number),
+    provider TEXT NOT NULL CHECK (provider IN ('gmail', 'outlook', 'yahoo')),
+    message_id TEXT NOT NULL CHECK (length(message_id) >= 1),
+    link TEXT NOT NULL CHECK (length(link) >= 1),
+    created_at TEXT NOT NULL
+) STRICT;
+
+CREATE INDEX links_by_task ON links (task, number);
+
+CREATE TABLE request_keys (
+    client TEXT NOT NULL CHECK (client IN ('email', 'agent')),
+    key TEXT NOT NULL CHECK (length(key) BETWEEN 1 AND 200),
+    request TEXT NOT NULL,
+    task INTEGER NOT NULL REFERENCES tasks (number),
+    link INTEGER REFERENCES links (number),
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (client, key),
+    CHECK ((client = 'agent') <= (link IS NULL))
+) STRICT;
+"""
+
+MIGRATIONS: tuple[str, ...] = (MIGRATION_1, MIGRATION_2)
 SCHEMA_VERSION = len(MIGRATIONS)
