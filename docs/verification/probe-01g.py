@@ -105,10 +105,18 @@ def walk() -> bool:
     titles = ["Pay rent", "Pay rent today", " Pay rent", "", "x" * 100, "x" * 101, "Pay\trent"]
     minutes = [None, None, "30", "60", "90", "4", "721", "720"]
     reached = {"updated": 0, "planned": 0, "cleared": 0, "same": 0, "cli": 0, "core": 0}
-    for _ in range(900):
+    for step in range(900):
         task_id = rng.choice(list(model) + ["t9"])
         task = model.get(task_id)
-        if rng.random() < 0.5:
+        planned = [
+            key for key, value in model.items() if value["work"] and value["state"] == "open"
+        ]
+        if step % 15 == 0 and planned:
+            # Forced: a plain clear on a task with a work time, so "cleared" is always reached.
+            task_id = rng.choice(planned)
+            task = model[task_id]
+            args, outcome = ["plan", "--clear"], core_outcome(task, None, "keep", None)
+        elif rng.random() < 0.5:
             args, outcome = edit_case(rng, dates, times, titles, task)
         else:
             args, outcome = plan_case(rng, dates, times, minutes, task)

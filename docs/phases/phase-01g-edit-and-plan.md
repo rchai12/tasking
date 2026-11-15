@@ -129,3 +129,11 @@ git grep --untracked -n -E 'os\.environ|getenv\(|strftime\(|import locale' -- sr
 git grep --untracked -n -E 'ollama|anthropic|openai|langchain' -- src
 git grep --untracked -n -E 'pragma: no cover|noqa' -- src/docket/cli.py src/docket/views.py
 ```
+
+## Corrections
+
+Added 2026-11-14, after the first coder run stopped on the probe (its `Stopped:` follow-up) and the first review reported the stop.
+
+1. **`docs/verification/probe-01g.py`.** Every one of the walk's 900 answers agreed with the probe's oracle; the check failed only on its own reach count: a plain `--clear` on an open task with a work time came up 5 times, short of 15, because the random walk seldom lined those up. That was the probe's fault, not the code's. The walk now forces one such clear every 15 steps. Against the code the coder already wrote, the corrected probe prints `FAILURES 0`, with every kind of answer reached at least 20 times; `check.py --first core`, the coverage command and every search also pass on that code.
+
+Nothing else changes: no requirement, message, given test or count. The coder keeps its code, runs every command under Acceptance again, and updates its existing Phase 1g entry in `docs/progress.md` (replacing the `Stopped:` follow-up), adding no second entry.

@@ -95,7 +95,7 @@ Phases follow the build order in `docs/roadmap.md`: stage N is phase N, split in
 ### 5. Probe
 
 21. Write the probe as the given file `docs/verification/probe-NNx.py`, committed with the spec. Keep it lean: properties (never raises, nothing sent twice, nothing lost across a restart, no task without an approved source, the store matches a model of its state), not a re-implementation of the spec. Its oracle is built from its own tables, checked first with `assert` lines. Each check is wrapped so an exception prints `FAIL`; anything importing a name the phase creates is imported inside a check, so today's code prints `FAIL` instead of stopping. Each check gets its own data folder. A case the probe must reach is forced, never left to a random walk.
-22. Run the oracle part alone, then the probe on today's code: its new checks print `FAIL`, nothing stops. On correct code every line it prints ends in `ok` and the last is `FAILURES 0`: detail lines (reach counts, the failing case) print only when a check fails (Phase 1b's probe printed its reach counts always).
+22. Before promoting, run the walk with its oracle alone (a stand-in runner that answers as the oracle says) and read every reach count against its threshold; force each case that falls short, as step 21 says (Phase 1g's `cleared` came up 5 times against 15 and stopped the coder on correct code). Then run the oracle part alone, and the probe on today's code: its new checks print `FAIL`, nothing stops. On correct code every line it prints ends in `ok` and the last is `FAILURES 0`: detail lines (reach counts, the failing case) print only when a check fails (Phase 1b's probe printed its reach counts always).
 
 ### 6. Spot checks (on paper)
 

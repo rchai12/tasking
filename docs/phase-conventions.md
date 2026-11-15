@@ -78,6 +78,8 @@ Stop, rather than work around it, when a given test fails on code you believe th
 
 Then run `.venv/bin/python scripts/check_reports.py --phase <the spec's phase id>` (it must print `Reports OK.`) and end. Never change a given file to get past a stop, and don't write a review. In your final message, say that you stopped and repeat the `Stopped:` lines.
 
+When you are run again after a stop (the spec then has a Corrections section), update your entry for this phase in place: the counts, the files, and the `Follow-ups` without the `Stopped:` line once the stop is resolved. Never add a second entry for the same phase; earlier phases' entries stay untouched.
+
 ## For the verifier
 
 - Do not modify any file in the repository, except to write your report (below). Report findings only. The work under review is uncommitted: "the diff" is `git status --short` plus `git diff HEAD` plus the untracked files, read before you write the report.
