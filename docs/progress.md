@@ -121,3 +121,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - serve reports ConfigError, KeychainUnavailable, ServeError and StoreError through one handler.
 - Follow-ups:
   - None
+
+## Phase 2e: Phase tooling (2026-11-15)
+- Tests: 732 -> 795 (given 55)
+- New public names: `docket.reports`: `ENTRY_MESSAGE`, `format_entry`, `put_entry`; `docket.acceptance`: `HEADING_MESSAGE`, `MAX_DETAIL`, `Row`, `read_rows`, `digest`, `accept`; `docket.spotcheck`: `MATCH_MESSAGE`, `SpotError`, `mutate`, `spot_check`, `verdict`
+- Changed files: 11
+- Deviations:
+  - An empty progress file is written as the entry alone, with no leading blank line.
+- Follow-ups:
+  - None
