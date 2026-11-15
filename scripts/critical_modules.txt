@@ -12,3 +12,5 @@ intake.py
 clients.py
 web.py
 server.py
+acceptance.py
+spotcheck.py

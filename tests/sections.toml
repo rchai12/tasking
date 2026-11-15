@@ -4,7 +4,13 @@
 
 [[section]]
 name = "tooling"
-patterns = ["unit/test_reports*.py"]
+patterns = [
+    "unit/test_reports*.py",
+    "unit/test_check*.py",
+    "unit/test_acceptance*.py",
+    "unit/test_spotcheck*.py",
+    "unit/test_progress*.py",
+]
 
 [[section]]
 name = "core"

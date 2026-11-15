@@ -649,7 +649,11 @@ Each prints nothing.
 
 
 def section(text: str, heading: str) -> str:
-    start = text.index(heading) + len(heading)
+    """The text under a heading line (matched at a line's start), up to the next heading."""
+    found = re.search(rf"^{re.escape(heading)}[ \t]*$", text, flags=re.MULTILINE)
+    if found is None:
+        raise ValueError(f"no heading line: {heading}")
+    start = found.end()
     following = re.search(r"^#{2,3} ", text[start:], flags=re.MULTILINE)
     return text[start : start + following.start()] if following else text[start:]
 
