@@ -48,10 +48,10 @@ Built beyond the spec: none
 
 ## Keep output small
 
-- `scripts/check.py`: `.venv/bin/python scripts/check.py --first <sections> > "$TMPDIR/docket-check.log" 2>&1; tail -40 "$TMPDIR/docket-check.log"`. Coverage (the next gate) reads the data that run left.
-- **Spot checks**: run the deciding test with `PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest '<test>' --no-cov -q --tb=line 2>&1 | tail -5`. The assertion line is enough when it shows the guide's "Broken" value. Rerun with `-vv` only for a row whose result differs from "Broken", or that passes.
-- Make each spot check's change with an exact old and new text (one match), from a copy of the module kept outside the repository, and restore it from that copy, never with git. Check that `git diff --stat` is as before after each row.
-- Searches print nothing when they pass; run them as written, with real `|` for the guide's `\|`.
+- **Gates and searches in one command**: `.venv/bin/python scripts/accept.py --phase <id> --guide`. It runs the guide's gates in order and then its searches, and prints one line per row (`G2: All checks passed.` with the Sections table, `Q3: empty`, or the matching lines). Each row's full output is in the log folder it names. Compare each line with the guide's "Must show"; the script doesn't judge it.
+- **Spot checks on a module under `src/`**: write the row's change as an exact old and new text (one match in the module the coder wrote), then `.venv/bin/python scripts/spot_check.py <module> --old '<old>' --new '<new>' --test '<deciding test>' --row S<n>`. It changes the module, runs the test, always restores the module, and prints one line (`S7 fails: ...`, `S8 passes`, `S9 no test ran`). Rerun the test by hand with `-vv` only for a row whose line isn't the guide's "Broken" value.
+- **Spot checks on a file outside `src/`** (a script): copy it outside the repository, make the change, run the test with `PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest '<test>' --no-cov -q --tb=line 2>&1 | tail -5`, and restore it from the copy, never with git.
+- After the spot checks, `git diff --stat` must be as it was before them.
 
 ## Judgment stays yours
 

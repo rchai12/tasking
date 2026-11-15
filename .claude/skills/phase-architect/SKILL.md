@@ -32,6 +32,7 @@ Run each with `.venv/bin/python` (before Phase 0 is built, `/opt/homebrew/bin/py
 - `phase_tools.py promote CLONE FILE... --ignore TEST...`: given files into the repository, compared, then the Start count.
 - `phase_tools.py new ...` and `guide SPEC --out FILE`: the spec skeleton and the guide's fixed parts; fill each `TODO`.
 - `phase_tools.py searches SPEC [--cwd DIR] [--plant FILE|auto]`: each search's match count; `--plant` adds `path<TAB>line` lines (or, with `auto`, each catalog search's own line), runs, restores. The catalog (`SEARCHES` in `phase_tools.py`) holds the standing searches with their rules and plant lines; `new --searches` writes them into a spec and `guide` fills their rules.
+- `scripts/accept.py --phase ID [--guide]`, `scripts/spot_check.py`, `scripts/progress.py`, `scripts/check.py --quiet` (Phase 2e): the coder's and verifier's tools; I use `spot_check.py` to confirm a given test catches a mutation.
 - `.claude/hooks/no_reference_build.py`: asks the owner before any write into `src/docket/` under the scratchpad, except in clones named `fail*`, so the clone is always `fail<NN>`.
 
 A step done by hand in two phases, or one that went wrong by hand, becomes a tool: one job, quiet output, linted. Keep this list to one line per tool.
@@ -58,6 +59,7 @@ Phases follow the build order in `docs/roadmap.md`: stage N is phase N, split in
 - **Quiet output.** A test run prints counts grouped by reason (`--tb=line -q 2>&1 | grep '^E ' | sort | uniq -c`) or its last lines, never the full list. Long files are read by range, not whole.
 - **Facts before files.** Every spike runs before the first test is written. Error rules are settled before any expected value depends on them.
 - **Decide once.** Test ids, literal expected values and the final formatting go into a test the first time it is written.
+- **Test time.** The full `check.py` took about 10 s at 795 tests (2e). When it passes about 30 s, propose `pytest-xdist` as its own phase (timing tests such as the second-writer wait must stay reliable under load); until then a parallel run costs more in flaky stops than it saves.
 - **One session per phase.** `phase_status.py`, `history.md` and the docs carry everything across.
 
 ### 1. Start (every turn that mentions a phase)
@@ -71,7 +73,7 @@ Phases follow the build order in `docs/roadmap.md`: stage N is phase N, split in
 
 ### 2. Decide
 
-7. Size: at most about 10 requirements, 3 to 5 public units, at most one migration, and 30 given test functions (parameter rows of one pure function's contract count once per function). **This is a limit, not a guide**: over it, split into lettered sub-phases before writing any test; never renumber a shipped phase.
+7. Size: at most about 10 requirements, 3 to 5 public units, at most one migration, and 30 given test functions (parameter rows of one pure function's contract count once per function). Count the code too: a phase whose throwaway draft runs past about 300 lines is two phases, whatever the other counts say (2e was 710 changed lines against about 230 for 2c and 2d, within every other limit, and each agent's session ran long). **This is a limit, not a guide**: over it, split into lettered sub-phases before writing any test; never renumber a shipped phase.
 8. Ask the owner only what the design docs leave open (`AskUserQuestion`, two to four options, the recommended one first and marked). Check any claim about another project, a provider API or a library in its code, its documentation, or on the machine first. Record each answer in the spec's Owner's decisions with its date, and in `docs/decisions.md`.
 9. **Decide what is given and what the coder writes, before writing any file.** Given: contracts that must not drift: the database schema (migrations), the time rules' worked cases, the reminder plan for a deadline, the intake API's requests and answers, the MCP tools' names and schemas, card layouts and button ids, exact user-facing messages, fakes checked against the real service's documented shapes, and a complete test for each critical module the phase touches. Everything else goes to "Tests to write", each with its deciding input. The coder must have real work, and the given tests must fail before it.
 10. Before changing earlier behaviour or adding to a list earlier tests enumerate: `git grep` the tests for its names, messages and values, and give an edit for each test that pins it. A migration moves every schema-version pin: `git grep -n -E 'user_version|SCHEMA_VERSION|schema version' tests`, coder's `_more` files included, and a version standing for "newer" becomes 99 (Phase 2a found 1e's `_more` test using 2).

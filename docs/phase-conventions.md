@@ -42,7 +42,7 @@ The tests are grouped into the sections of `tests/sections.toml`. Each spec name
 
 ### Acceptance
 
-Unless the spec adds more, run before you report:
+`.venv/bin/python scripts/accept.py --phase <id>` runs the whole table below and the spec's searches, and prints one line per row; compare each with "Must show". Unless the spec adds more, the table is:
 
 | Command | Must show |
 |---|---|
@@ -56,7 +56,7 @@ Unless the spec adds more, run before you report:
 
 ### Report
 
-Append an entry at the end of `docs/progress.md` (one write at the end; never a replace of text other entries share) in exactly this form, whether you finished or stopped (see "When you stop"). Every field is one line, or `None`; the architect reads these fields instead of your final message, so keep them short and literal. `scripts/check_reports.py` checks this form: the fields in this order, each list with at least one `  - ` line, and nothing else in the entry.
+Write an entry at the end of `docs/progress.md` with `scripts/progress.py` (it appends, or replaces your own phase's entry on a rerun, and refuses one out of form) in exactly this form, whether you finished or stopped (see "When you stop"). Every field is one line, or `None`; the architect reads these fields instead of your final message, so keep them short and literal. `scripts/check_reports.py` checks this form: the fields in this order, each list with at least one `  - ` line, and nothing else in the entry.
 
 ```markdown
 ## Phase <id>: <the spec's title> (YYYY-MM-DD)
@@ -85,14 +85,14 @@ When you are run again after a stop or a FAIL (the spec then has a Corrections s
 ## For the verifier
 
 - Do not modify any file in the repository, except to write your report (below). Report findings only. The work under review is uncommitted: "the diff" is `git status --short` plus `git diff HEAD` plus the untracked files, read before you write the report.
-- Run the guide's gates exactly as written, from the repository root. The first gate is `scripts/check.py --first <the spec's sections>`; if a section fails, report it with the table's rerun command.
+- Run the guide's gates exactly as written, from the repository root: `.venv/bin/python scripts/accept.py --phase <id> --guide` runs them all and the searches, one line each. The first gate is `scripts/check.py --first <the spec's sections>`; if a section fails, report it with the table's rerun command.
 - **Scope audit**: `git status --short` shows only the spec's Scope paths; `git diff HEAD --stat -- <the given files>` prints nothing; no existing test or unlisted module changed.
 - **The probe.** It is the given file `docs/verification/probe-<NNx>.py`, committed with the spec: run it from the repository root with `.venv/bin/python docs/verification/probe-<NNx>.py`, without editing it. Every line must end in `ok`; the last line must be `FAILURES 0`.
 - **A stopped coder.** When the phase's progress entry exists and its first `Follow-ups` line starts with `Stopped:`, the coder stopped on purpose. Write a FAIL report with one finding per `Stopped:` line, `<the place it names> | docs/progress.md:<line> | expected the phase finished | found the coder stopped: <its observation>`, copy the first `Stopped:` line into `For the architect`, run the given test files once (`.venv/bin/python -m pytest <the given test files> --no-cov -q`) for `Passed`, and stop there.
 - **No entry.** With no progress entry for the phase, look at `git status --short`: no Scope path changed means the coder did not run; changed Scope paths mean it broke off without reporting, so name those paths in `For the architect`.
 - Judge code by what it does, never by resemblance to another way of writing it.
 - **Coverage reached the wrong way is a finding**: a test that runs a line but asserts nothing about what it does, a `# pragma: no cover` the spec did not allow, or code the spec requires removed to close a gap.
-- **Spot checks**: for each row of the guide's spot-check table, copy the module outside the repository first, make the named one-line change, run the deciding test (`-q --tb=line`; `-vv` only for a row whose result isn't the "Broken" value), and confirm it fails; then restore the file from your copy (never with `git checkout` or `git restore`), clear `__pycache__`, and confirm `git diff` is as before.
+- **Spot checks**: for each row of the guide's spot-check table, copy the module outside the repository first, make the named one-line change, run the deciding test (`-q --tb=line`; `-vv` only for a row whose result isn't the "Broken" value), and confirm it fails (`scripts/spot_check.py` does all of this for a module under `src/`); then restore the file from your copy (never with `git checkout` or `git restore`), clear `__pycache__`, and confirm `git diff` is as before.
 - **Real systems**: like the coder, never connect to Google, Microsoft Graph, the shared Discord service, Discord, the email service or Conductor, never run the EventKit helper against real calendars, and never read the Keychain.
 
 ### Report and verdict

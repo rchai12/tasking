@@ -726,18 +726,21 @@ fails: the diff gates can only be judged against a committed spec and given file
 
 ## 2. Gates
 
-Run each from the repository root, in this order. Given test count: \
+Run each from the repository root, in this order: `.venv/bin/python scripts/accept.py --phase \
+{phase} --guide` runs them and the searches, one line each. Given test count: \
 {count.group(1) if count else "TODO"}.
 
 | # | Command | Must show |
 |---|---|---|
 {gates}
-| G{last} | `.venv/bin/python -m pip list --format=freeze` | the same packages as before this \
-phase: no new dependency |
+| G{last} | `.venv/bin/python -m pip list --format=freeze \\| wc -l` | `TODO` (the count before \
+this phase, plus each package the spec adds) |
 
 ## 3. Spot checks
 
-For each row:
+For a module under `src/`, write the change as an exact old and new text in the module the coder \
+wrote and run `.venv/bin/python scripts/spot_check.py <module> --old '<old>' --new '<new>' --test \
+'<deciding test>' --row S<n>`; it restores the module and prints one line. For any other file:
 1. Copy the module outside the repository.
 2. Make the change described in the module the coder wrote.
 3. Run the deciding test with \

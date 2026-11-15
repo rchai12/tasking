@@ -26,19 +26,17 @@ Never open `docs/verification/` except to run the probe by the path Acceptance g
 ## Keep output small
 
 - A single test file or section: `.venv/bin/python -m pytest <files> --no-cov -q --tb=line 2>&1 | tail -15`. Read a full traceback only for a failure the line doesn't explain.
-- `scripts/check.py`: send its output to a file outside the repository and read the end:
-  `.venv/bin/python scripts/check.py --first <sections> > "$TMPDIR/docket-check.log" 2>&1; tail -40 "$TMPDIR/docket-check.log"`.
-  Open the log by range only when a step failed.
+- While you work: `.venv/bin/python scripts/check.py --first <sections> --quiet`. It prints the tables, the summary, a failed step's last 20 lines, and where its logs are; open a log by range only when those lines don't explain the failure.
+- **Before you report**, write your entry (below; the counts come from `check.py --quiet`'s table), then run the whole Acceptance table and its searches in one command: `.venv/bin/python scripts/accept.py --phase <id>`. It prints one line per row (`A2: All checks passed.` with the Sections table, `Q1: empty`), and each row's full output is in the log folder it names. Compare each line with the table's "Must show"; the script doesn't judge it.
 - An install step: `.venv/bin/python -m pip install -q -e '.[dev]'`, then `.venv/bin/python -m pip list 2>/dev/null | grep -i -E '^(<the packages the spec names>) '`.
 - Searches print nothing when they pass; run them as written.
 
 ## Report
 
-- **Append** your entry to the end of `docs/progress.md` in the form the conventions give: one write at the end of the file, never a replace of text that other entries share (every entry ends with the same `Follow-ups` block). On a rerun after a stop, change only your own phase's entry, locating it by its `## Phase <id>: ` heading.
+- **Write your entry with `scripts/progress.py`**, never by editing `docs/progress.md`: `.venv/bin/python scripts/progress.py --phase <id> --title "<the spec's title>" --date <today> --tests-before <N> --tests-after <passed> --given <count> --names "<names or None>" --changed <count>`, plus one `--deviation "..."` and one `--follow-up "..."` per item (a stop's `Stopped: ...` line first). It appends the entry, or replaces your own phase's entry on a rerun, and refuses an entry out of form.
 - Then `.venv/bin/python scripts/check_reports.py --phase <id>` must print `Reports OK.`
 - **On a rerun with a Corrections section**, run the commands the correction names as live again, plus `check_reports.py`. When it names none, run the whole Acceptance table.
 - Your final message, short and literal:
-  - the `Sections:` table and the last lines of `check.py` (`All checks passed.`);
-  - one line per other acceptance command (`given: 24 passed`, `coverage: TOTAL 100%`, `probe: FAILURES 0`, `searches: silent`, `diff: empty`, the `git status --short` lines);
+  - `accept.py`'s output as it printed it;
   - for each requirement, the test or probe line that covers it;
   - if you stopped, the `Stopped:` lines.

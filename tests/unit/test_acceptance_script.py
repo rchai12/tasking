@@ -35,13 +35,13 @@ GUIDE = """\
 
 @pytest.fixture
 def root(tmp_path: Path) -> Path:
-    (tmp_path / "docs" / "phases").mkdir(parents=True)
-    (tmp_path / "docs" / "verification").mkdir()
-    (tmp_path / "docs" / "phases" / "phase-09z-example.md").write_text(SPEC, encoding="utf-8")
-    (tmp_path / "docs" / "verification" / "phase-09z-example.md").write_text(
-        GUIDE, encoding="utf-8"
-    )
-    return tmp_path
+    """A project folder apart from `tmp_path`, which the settings fixture makes the working one."""
+    project = tmp_path / "project"
+    (project / "docs" / "phases").mkdir(parents=True)
+    (project / "docs" / "verification").mkdir()
+    (project / "docs" / "phases" / "phase-09z-example.md").write_text(SPEC, encoding="utf-8")
+    (project / "docs" / "verification" / "phase-09z-example.md").write_text(GUIDE, encoding="utf-8")
+    return project
 
 
 class Shell:
