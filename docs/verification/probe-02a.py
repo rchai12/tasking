@@ -20,6 +20,9 @@ ORACLE_ONLY = "--oracle-only" in sys.argv
 CLIENTS = ["email", "agent"]
 KEYS = ["k1", "k2", "k3", "gmail:personal/1", "gmail:personal/2", "r1:s1"]
 TITLES = ["Pay rent", "Book flights", "Café ☕"]
+STEPS = 700
+UNKNOWN = "t99999"  # never created: the walk makes at most STEPS tasks
+assert int(UNKNOWN[1:]) > STEPS
 
 
 def canonical(request: dict[str, object]) -> str:
@@ -83,7 +86,7 @@ def walk() -> bool:
         clock.now = clock_at(datetime(2026, 11, 14, 14, 0, tzinfo=UTC))
         path = Path(tempfile.mkdtemp()) / "docket.sqlite3"
         stores = [Store(path), Store(path)]
-    for step in range(700):
+    for step in range(STEPS):
         client = rng.choice(CLIENTS)
         used = [k for (c, k) in model if c == client]
         key = f"fresh-{step}" if rng.random() < 0.5 or not used else rng.choice([*used, *KEYS])
@@ -94,14 +97,14 @@ def walk() -> bool:
             client, key = "email", f"fresh-{step}"
         as_link = forced or (client == "email" and tasks and rng.random() < 0.4)
         if as_link:
-            task_id = "t99" if forced else rng.choice([*tasks, "t99"])
+            task_id = UNKNOWN if forced else rng.choice([*tasks, UNKNOWN])
             request = {
                 "provider": "gmail",
                 "message_id": f"personal/{title}",
                 "link": "https://m/x",
             }
             outcome = expect(model, client, key, "link", request, task_id)
-            if outcome == "new" and task_id == "t99":
+            if outcome == "new" and task_id == UNKNOWN:
                 outcome = "unknown-task"
         else:
             task_id = None

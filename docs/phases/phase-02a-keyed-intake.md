@@ -130,3 +130,11 @@ git grep --untracked -n -E '\.(insert_task|update_task|append_audit|insert_link|
 git grep --untracked -n -E 'ollama|anthropic|openai|langchain' -- src
 git grep --untracked -n -E 'pragma: no cover|noqa' -- src/docket/store.py src/docket/core.py
 ```
+
+## Corrections
+
+Added 2026-11-14, after the first coder run stopped on the probe (its `Stopped:` follow-up).
+
+1. **`docs/verification/probe-02a.py`.** The walk used `t99` as a task that doesn't exist, but it creates up to about 265 tasks, so by step 270 `t99` was real and the code rightly added a link to it while the probe expected `unknown_task`. The probe's fault, not the code's. The unknown id is now `t99999`, beyond any id the walk can create (it asserts that). Against the code the coder already wrote, the corrected probe prints `FAILURES 0`; `check.py --first core`, the coverage command and every search also pass on that code.
+
+Nothing else changes: no requirement, message, given test or count. The coder keeps its code, runs every command under Acceptance again, and updates its existing Phase 2a entry in place, replacing the `Stopped:` follow-up.
