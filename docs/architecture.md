@@ -119,6 +119,7 @@ Only done and cancelled stop reminders. A new deadline, a new work time, a snooz
 | deadline | `null`, or `date` (YYYY-MM-DD), `time` (HH:MM or `null`) and `time_zone` |
 | provider, message_id, link | The email's reference, stored with the task |
 
+- Built in `docket.intake` (Phase 2b, no HTTP): `accept_task` and `accept_link` return the status and body below; every refusal body is `{"error": <code>}`, and every text field must be a JSON string.
 - **201** `{"id": ...}` for a new task; **200** with the same id when the key is sent again with the same body; **409** when the key is sent again with a different body; **400** for a missing `Idempotency-Key` (1 to 200 characters); **401** for a missing or wrong token; **422** for an invalid body (exactly the fields above; a title of one line). These match the email service's `FakeTasksApp`, plus 401.
 - The task is created **open**, its reminders are planned and its calendar write is queued, all in one transaction.
 

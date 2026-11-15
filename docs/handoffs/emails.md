@@ -39,6 +39,8 @@ The tasks app exists as a design: the Python package `docket` in the `tasking` p
 
    Nothing changes until that service exists, and its contract will be specified there first.
 
+4. **Time zone setting.** `MAILROOM_TIME_ZONE` is checked by loading `ZoneInfo`, which on macOS also accepts a wrong-case name such as `america/new_york`. The tasks app accepts only exact names from `zoneinfo.available_timezones()` and answers 422 `invalid_deadline` otherwise, so a wrong-case setting would make every dated task retry forever. Check the setting against `available_timezones()` exactly (decided Nov 14).
+
 ## Facts checked that also apply here
 
 - **Google sign-in lifetime.** Google's OAuth documentation says an External app in Testing gets refresh tokens that expire in 7 days. Setting the consent screen to In production avoids that; sign in again after the switch. Refresh tokens also stop working after six months unused, and each account keeps at most 100 per OAuth client. Gmail's login is affected the same way.

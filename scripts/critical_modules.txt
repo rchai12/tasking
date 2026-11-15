@@ -8,3 +8,4 @@ deadlines.py
 schema.py
 store.py
 core.py
+intake.py

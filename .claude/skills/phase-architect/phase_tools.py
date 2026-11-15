@@ -394,6 +394,10 @@ def lint(spec_path: Path, guide_path: Path, clone: Path, promoted: bool = False)
             problems.append(f"spec: acceptance should say at least {n + total} passed")
     if f"`{total} passed`" not in section(spec, "## Acceptance"):
         problems.append(f"spec: acceptance should name `{total} passed` for the given tests")
+    wanted = [gate_row(row) for row in table_rows(section(spec, "## Acceptance"))]
+    gates = [" | ".join(row[1:3]) for row in table_rows(section(guide, "## 2. Gates"))]
+    if gates[: len(wanted)] != wanted:
+        problems.append("guide: its gates differ from the spec's acceptance (regenerate the guide)")
     known = {line for found in ids.values() for line in found}
     for test_id in re.findall(r"`(tests/[^`]+::[^`]+)`", guide):
         if test_id not in known:
