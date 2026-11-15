@@ -1,6 +1,6 @@
 # Roadmap
 
-Status (2026-11-14): Phases 0 and 1a to 1f are built and verified (466 tests). Phase 1g ([phase-01g](phases/phase-01g-edit-and-plan.md), edit and plan) is specified; it finishes stage 1.
+Status (2026-11-14): Stage 1 is built and verified: Phases 0 and 1a to 1g (522 tests). Stage 2 (the intake API) is next to specify.
 
 Build one stage at a time and move on only when its test passes. Stage N is Phase N, split into lettered sub-phases (`1a`, `1b`) when it is too big; numbers are never reused.
 

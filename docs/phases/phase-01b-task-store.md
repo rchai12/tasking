@@ -74,7 +74,7 @@ Already committed with this spec; never change them.
 | File | What it is |
 |---|---|
 | `src/docket/schema.py` | Migration 1 (requirement 1) |
-| `tests/integration/test_store.py` | 50 tests from 24 functions (requirements 2 to 10) |
+| `tests/integration/test_store.py` | 50 tests from 26 functions (requirements 2 to 10) |
 | `scripts/critical_modules.txt` | Adds `schema.py` and `store.py` |
 | `docs/verification/probe-01b.py` | The verifier's probe |
 
