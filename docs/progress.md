@@ -101,3 +101,14 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - accept_task and accept_link share the key check and the map from a core code to a status.
 - Follow-ups:
   - None
+
+## Phase 2c: HTTP routes and client tokens (2026-11-14)
+- Tests: 634 -> 703 (given 69)
+- New public names: `docket.keychain`: `VALUE_MESSAGE`, `set_secret`; `docket.clients`: `CLIENTS`, `ALREADY_MESSAGE`, `UNKNOWN_CLIENT_MESSAGE`, `ClientError`, `token_name`, `issue_token`, `client_tokens`; `docket.cli`: `clients_app`, `add_client`; `docket.web`: `WRONG_HOST`, `NOT_FOUND`, `UNAUTHORIZED`, `TOO_LARGE`, `INVALID_JSON`, `MAX_BODY`, `create_app`
+- Changed files: 5
+- Deviations:
+  - The clients add command is the function add_client, so it does not clash with tasks add.
+  - The OpenAPI, ReDoc and schema routes are turned off.
+  - A secret value is refused when it contains a newline or a carriage return.
+- Follow-ups:
+  - None

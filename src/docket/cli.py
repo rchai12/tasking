@@ -7,6 +7,7 @@ from typing import NoReturn
 import typer
 
 from docket import __version__, clock
+from docket.clients import ClientError, issue_token
 from docket.config import ConfigError, Settings, get_settings, home_zone
 from docket.core import CoreError, Outcome, change_state, create_task, edit_task
 from docket.deadlines import (
@@ -17,6 +18,7 @@ from docket.deadlines import (
     make_deadline,
     make_work_time,
 )
+from docket.keychain import KeychainUnavailable
 from docket.store import UNCHANGED, Store, StoreError, Task, open_store
 from docket.views import (
     change_text,
@@ -46,7 +48,9 @@ _TIME = re.compile(r"[0-9]{2}:[0-9]{2}")
 
 app = typer.Typer()
 tasks_app = typer.Typer()
+clients_app = typer.Typer()
 app.add_typer(tasks_app, name="tasks")
+app.add_typer(clients_app, name="clients")
 
 
 @app.callback()
@@ -57,6 +61,15 @@ def _callback() -> None:
 @app.command()
 def version() -> None:
     print(f"docket {__version__}")
+
+
+@clients_app.command("add")
+def add_client(client: str, replace: bool = typer.Option(False, "--replace")) -> None:
+    try:
+        token = issue_token(client, replace=replace)
+    except (ClientError, KeychainUnavailable) as error:
+        _fail(str(error))
+    print(token)
 
 
 @tasks_app.command()

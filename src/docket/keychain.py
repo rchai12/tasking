@@ -5,8 +5,10 @@ from keyring.errors import KeyringError
 
 SERVICE = "docket"
 NAME_MESSAGE = "invalid secret name"
+VALUE_MESSAGE = "invalid secret value"
 
 _NAME = re.compile(r"[a-z][a-z0-9._-]{0,63}")
+_BREAK = re.compile(r"[\r\n]")
 
 
 class KeychainError(Exception):
@@ -31,3 +33,14 @@ def get_secret(name: str) -> str:
     if not value:
         raise SecretMissing(f"secret not found: {name}")
     return value
+
+
+def set_secret(name: str, value: str) -> None:
+    if _NAME.fullmatch(name) is None:
+        raise ValueError(NAME_MESSAGE)
+    if not isinstance(value, str) or value == "" or _BREAK.search(value) is not None:
+        raise ValueError(VALUE_MESSAGE)
+    try:
+        keyring.set_password(SERVICE, name, value)
+    except KeyringError:
+        raise KeychainUnavailable(f"keychain unavailable: {name}") from None
