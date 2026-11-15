@@ -32,26 +32,31 @@ LINK = {"source": "email", "provider": "gmail", "message_id": "personal/2", "lin
 
 
 class Opened:
-    """Counts the stores the app opens and checks each one is closed."""
+    """Counts the stores the app opens and records each one's close.
+
+    The app serves from another thread, so a store can't be probed from the test's thread (an
+    open SQLite connection refuses that too); each close is recorded as it happens instead.
+    """
 
     def __init__(self, path: Path) -> None:
         self.path = path
         self.stores: list[Store] = []
+        self.closed: list[Store] = []
 
     def __call__(self) -> Store:
         store = Store(self.path)
+        close = store.close
+
+        def recorded() -> None:
+            self.closed.append(store)
+            close()
+
+        store.close = recorded  # type: ignore[method-assign]
         self.stores.append(store)
         return store
 
     def all_closed(self) -> bool:
-        closed = []
-        for store in self.stores:
-            try:
-                store.tasks()
-                closed.append(False)
-            except Exception:  # noqa: BLE001
-                closed.append(True)
-        return all(closed)
+        return all(any(store is shut for shut in self.closed) for store in self.stores)
 
 
 @pytest.fixture

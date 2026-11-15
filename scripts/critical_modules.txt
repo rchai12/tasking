@@ -11,3 +11,4 @@ core.py
 intake.py
 clients.py
 web.py
+server.py
