@@ -92,3 +92,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - A link id is l followed by a non-zero number, the same shape as a task id.
 - Follow-ups:
   - None
+
+## Phase 2b: Intake rules (2026-11-14)
+- Tests: 579 -> 634 (given 55)
+- New public names: `docket.intake`: `MISSING_KEY`, `INVALID_BODY`, `INVALID_DEADLINE`, `Answer`, `accept_task`, `accept_link`
+- Changed files: 2
+- Deviations:
+  - accept_task and accept_link share the key check and the map from a core code to a status.
+- Follow-ups:
+  - None
