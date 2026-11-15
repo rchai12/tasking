@@ -25,7 +25,7 @@ The tasks app exists as a design: the Python package `docket` in the `tasking` p
 ## Work this means for the email service
 
 1. **Phase 3c** (deferred until the tasks app exists) is now well defined:
-   - Read the client token from the Keychain and send it as a bearer token.
+   - Read the client token from the Keychain and send it as a bearer token (`Authorization: Bearer <token>`). The token comes from the tasks app's `docket clients add email`, which prints it once on stdout (Phase 2c, Nov 14); the email service needs a setup command that stores it in its own Keychain item.
    - Point `MAILROOM_TASKS_URL` at port 8767.
    - Add 401 to `FakeTasksApp`.
    - The tasks app's stage 2 builds the real endpoint, and its acceptance test runs the email service's own `tasks_app` tests against it.

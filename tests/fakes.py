@@ -14,6 +14,7 @@ class FakeKeychain(KeyringBackend):
         super().__init__()
         self.secrets: dict[tuple[str, str], str] = {}
         self.calls: list[tuple[str, str]] = []
+        self.writes: list[tuple[str, str]] = []
         self.error: Exception | None = None
 
     @properties.classproperty
@@ -27,7 +28,10 @@ class FakeKeychain(KeyringBackend):
         return self.secrets.get((service, username))
 
     def set_password(self, service: str, username: str, password: str) -> None:
-        raise AssertionError("docket never writes to the keychain in this phase")
+        self.writes.append((service, username))
+        if self.error is not None:
+            raise self.error
+        self.secrets[(service, username)] = password
 
     def delete_password(self, service: str, username: str) -> None:
         raise AssertionError("docket never deletes from the keychain in this phase")

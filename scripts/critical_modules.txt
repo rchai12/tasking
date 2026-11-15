@@ -9,3 +9,5 @@ schema.py
 store.py
 core.py
 intake.py
+clients.py
+web.py

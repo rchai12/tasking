@@ -51,7 +51,7 @@ flowchart LR
 | --- | --- | --- |
 | Language | Python 3.12 (`/opt/homebrew/bin/python3.12`) | |
 | Storage | Standard library `sqlite3`, plain SQL, numbered migrations tracked in `PRAGMA user_version` | As in the email service |
-| API | FastAPI on 127.0.0.1, port `DOCKET_WEB_PORT` (default 8767) | Host check (`127.0.0.1:<port>` and `localhost:<port>` only), as in `finances` and Conductor |
+| API | FastAPI 0.162 on 127.0.0.1, port `DOCKET_WEB_PORT` (default 8767), its own telemetry switched off in code (Phase 2c) | Host check (`127.0.0.1:<port>` and `localhost:<port>` only), as in `finances` and Conductor |
 | Outgoing HTTP | httpx | Google, Microsoft Graph, the Discord service |
 | Agent tools | `mcp` Python SDK 2.x, stdio | The same SDK as `finances` and Conductor |
 | Settings | `pydantic-settings`, prefix `DOCKET_` | |
