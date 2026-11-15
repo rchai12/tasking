@@ -8,15 +8,38 @@ import typer
 
 from docket import __version__, clock
 from docket.config import ConfigError, Settings, get_settings, home_zone
-from docket.core import CoreError, change_state, create_task
-from docket.deadlines import Deadline, make_deadline
-from docket.store import Store, StoreError, Task, open_store
-from docket.views import change_text, deadline_text, refusal_text, task_detail, task_line
+from docket.core import CoreError, Outcome, change_state, create_task, edit_task
+from docket.deadlines import (
+    WORK_DAY_MESSAGE,
+    Deadline,
+    DeadlineError,
+    WorkTime,
+    make_deadline,
+    make_work_time,
+)
+from docket.store import UNCHANGED, Store, StoreError, Task, open_store
+from docket.views import (
+    change_text,
+    deadline_text,
+    edited_text,
+    planned_text,
+    refusal_text,
+    task_detail,
+    task_line,
+)
 
 DUE_MESSAGE = "--due must be a date like 2026-11-20."
 AT_MESSAGE = "--at must be a time like 17:00."
 AT_WITHOUT_DUE_MESSAGE = "--at needs --due."
 NO_TASKS_MESSAGE = "No tasks."
+NOTHING_TO_EDIT_MESSAGE = "Give --title, --due or --no-due."
+BOTH_DUES_MESSAGE = "--due and --no-due can't be used together."
+PLAN_NEEDS_MESSAGE = "Give a date and a start time, or --clear."
+CLEAR_ALONE_MESSAGE = "--clear takes no date, start time or --minutes."
+PLAN_DATE_MESSAGE = "The date must look like 2026-11-20."
+PLAN_TIME_MESSAGE = "The start time must look like 14:00."
+MINUTES_MESSAGE = "--minutes must be 5 to 720."
+MIDNIGHT_MESSAGE = "A work time must end by midnight."
 
 _DATE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 _TIME = re.compile(r"[0-9]{2}:[0-9]{2}")
@@ -101,6 +124,76 @@ def cancel(task_id: str) -> None:
 @tasks_app.command()
 def reopen(task_id: str) -> None:
     _change(task_id, "reopen")
+
+
+@tasks_app.command()
+def edit(
+    task_id: str,
+    title: str | None = typer.Option(None, "--title"),
+    due: str | None = typer.Option(None, "--due"),
+    at: str | None = typer.Option(None, "--at"),
+    no_due: bool = typer.Option(False, "--no-due"),
+) -> None:
+    settings, home = _home()
+    if title is None and due is None and not no_due and at is None:
+        _fail(NOTHING_TO_EDIT_MESSAGE)
+    if due is not None and no_due:
+        _fail(BOTH_DUES_MESSAGE)
+    if at is not None and due is None:
+        _fail(AT_WITHOUT_DUE_MESSAGE)
+    deadline: object = UNCHANGED
+    if no_due:
+        deadline = None
+    elif due is not None:
+        deadline = _deadline(due, at, home)
+    outcome = _apply(
+        settings,
+        task_id,
+        title=UNCHANGED if title is None else title,
+        deadline=deadline,
+    )
+    print(edited_text(outcome, home))
+
+
+@tasks_app.command()
+def plan(
+    task_id: str,
+    day: str | None = typer.Argument(None),
+    start: str | None = typer.Argument(None),
+    minutes: int | None = typer.Option(None, "--minutes"),
+    clear: bool = typer.Option(False, "--clear"),
+) -> None:
+    settings, home = _home()
+    if clear:
+        if day is not None or start is not None or minutes is not None:
+            _fail(CLEAR_ALONE_MESSAGE)
+        work = None
+    elif day is None or start is None:
+        _fail(PLAN_NEEDS_MESSAGE)
+    else:
+        length = settings.work_minutes if minutes is None else minutes
+        work = _planned(day, start, length, home)
+    outcome = _apply(settings, task_id, work=work)
+    print(planned_text(outcome, home))
+
+
+def _apply(settings: Settings, task_id: str, **fields: object) -> Outcome:
+    with _store(settings) as store:
+        try:
+            return edit_task(store, task_id, actor="owner", **fields)
+        except CoreError as error:
+            _fail(refusal_text(error.code, task_id))
+
+
+def _planned(day: str, start: str, minutes: int, home: str) -> WorkTime:
+    parsed_day = _parse(_DATE, day, date.fromisoformat, PLAN_DATE_MESSAGE)
+    parsed_start = _parse(_TIME, start, time.fromisoformat, PLAN_TIME_MESSAGE)
+    try:
+        return make_work_time(parsed_day, parsed_start, minutes, home, None)
+    except DeadlineError as error:
+        if str(error) == WORK_DAY_MESSAGE:
+            _fail(MIDNIGHT_MESSAGE)
+        _fail(MINUTES_MESSAGE)
 
 
 def _change(task_id: str, action: str) -> None:

@@ -72,3 +72,13 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - start, done, cancel and reopen share one helper that checks the zone, opens the store, and calls change_state with actor owner.
 - Follow-ups:
   - None
+
+## Phase 1g: Edit and plan (2026-11-14)
+- Tests: 466 -> 522 (given 56)
+- New public names: `docket.views`: `edited_text`, `planned_text`; `docket.cli`: `NOTHING_TO_EDIT_MESSAGE`, `BOTH_DUES_MESSAGE`, `PLAN_NEEDS_MESSAGE`, `CLEAR_ALONE_MESSAGE`, `PLAN_DATE_MESSAGE`, `PLAN_TIME_MESSAGE`, `MINUTES_MESSAGE`, `MIDNIGHT_MESSAGE`, `edit`, `plan`
+- Changed files: 3
+- Deviations:
+  - edit and plan share one helper that opens the store and calls edit_task with actor owner.
+  - A length refusal and a midnight refusal are told apart by DeadlineError's text.
+- Follow-ups:
+  - None

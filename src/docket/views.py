@@ -75,6 +75,25 @@ def task_detail(task: Task, home: str, now: datetime) -> list[str]:
     return lines
 
 
+def edited_text(outcome: Outcome, home: str) -> str:
+    task = outcome.task
+    if not outcome.changed:
+        return f"Nothing changed for {task.id}."
+    if task.deadline is None:
+        return f"Updated {task.id}: {task.title}, no deadline"
+    due = deadline_text(task.deadline, home, task.updated_at)
+    return f"Updated {task.id}: {task.title}, due {due}"
+
+
+def planned_text(outcome: Outcome, home: str) -> str:
+    task = outcome.task
+    if not outcome.changed:
+        return f"Nothing changed for {task.id}."
+    if task.work is None:
+        return f"Cleared the work time of {task.id}."
+    return f"Planned {task.id}: {work_text(task.work, home, task.updated_at)}"
+
+
 def change_text(action: str, outcome: Outcome) -> str:
     task = outcome.task
     if outcome.changed:
