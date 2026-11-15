@@ -17,8 +17,10 @@ SCHEMA_MESSAGE = "unsupported schema version"
 TRANSACTION_MESSAGE = "a write needs a transaction"
 NESTED_MESSAGE = "a transaction is already open"
 UNKNOWN_TASK_MESSAGE = "unknown task"
+UNKNOWN_LINK_MESSAGE = "unknown link"
 
 _TASK_ID = re.compile(r"t[1-9][0-9]*")
+_LINK_ID = re.compile(r"l[1-9][0-9]*")
 _COLUMNS = (
     "number, title, state, deadline_at, deadline_zone, deadline_time_given, "
     "work_start, work_minutes, work_zone, source, provider, message_id, link, "
@@ -62,6 +64,26 @@ class AuditEntry:
     after: dict[str, object]
 
 
+@dataclass(frozen=True)
+class Link:
+    id: str
+    task_id: str
+    provider: str
+    message_id: str
+    link: str
+    created_at: datetime
+
+
+@dataclass(frozen=True)
+class RequestKey:
+    client: str
+    key: str
+    request: dict[str, object]
+    task_id: str
+    link_id: str | None
+    created_at: datetime
+
+
 def _statements(script: str) -> list[str]:
     statements: list[str] = []
     pending = ""
@@ -97,6 +119,12 @@ def _number(task_id: str) -> int | None:
     if _TASK_ID.fullmatch(task_id) is None:
         return None
     return int(task_id[1:])
+
+
+def _link_number(link_id: str) -> int | None:
+    if _LINK_ID.fullmatch(link_id) is None:
+        return None
+    return int(link_id[1:])
 
 
 class Store:
@@ -290,6 +318,79 @@ class Store:
             for row in rows
         ]
 
+    def insert_link(
+        self,
+        task_id: str,
+        *,
+        provider: str,
+        message_id: str,
+        link: str,
+        at: datetime,
+    ) -> Link:
+        self._require_write(at)
+        number = self._require_task(task_id)
+        cursor = self._connection.execute(
+            "INSERT INTO links (task, provider, message_id, link, created_at) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (number, provider, message_id, link, _instant(at)),
+        )
+        return self._read_link(int(cursor.lastrowid))
+
+    def links(self, task_id: str) -> list[Link]:
+        number = _number(task_id)
+        if number is None:
+            return []
+        rows = self._connection.execute(
+            "SELECT number, task, provider, message_id, link, created_at "
+            "FROM links WHERE task = ? ORDER BY number",
+            (number,),
+        ).fetchall()
+        return [self._link_from(row) for row in rows]
+
+    def insert_request_key(
+        self,
+        *,
+        client: str,
+        key: str,
+        request: dict[str, object],
+        task_id: str,
+        link_id: str | None,
+        at: datetime,
+    ) -> RequestKey:
+        self._require_write(at)
+        task_number = self._require_task(task_id)
+        link_number = None if link_id is None else self._require_link(link_id)
+        self._connection.execute(
+            "INSERT INTO request_keys (client, key, request, task, link, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (client, key, _json(request), task_number, link_number, _instant(at)),
+        )
+        return RequestKey(
+            client=client,
+            key=key,
+            request=request,
+            task_id=task_id,
+            link_id=link_id,
+            created_at=at,
+        )
+
+    def request_key(self, client: str, key: str) -> RequestKey | None:
+        row = self._connection.execute(
+            "SELECT client, key, request, task, link, created_at FROM request_keys "
+            "WHERE client = ? AND key = ?",
+            (client, key),
+        ).fetchone()
+        if row is None:
+            return None
+        return RequestKey(
+            client=row["client"],
+            key=row["key"],
+            request=json.loads(row["request"]),
+            task_id=f"t{row['task']}",
+            link_id=None if row["link"] is None else f"l{row['link']}",
+            created_at=datetime.fromisoformat(row["created_at"]),
+        )
+
     def _migrate(self, version: int) -> None:
         while version < SCHEMA_VERSION:
             with self.transaction():
@@ -316,6 +417,37 @@ class Store:
             (number,),
         ).fetchone()
         return row is not None
+
+    def _require_link(self, link_id: str) -> int:
+        number = _link_number(link_id)
+        if number is None or not self._link_exists(number):
+            raise StoreError(UNKNOWN_LINK_MESSAGE)
+        return number
+
+    def _link_exists(self, number: int) -> bool:
+        row = self._connection.execute(
+            "SELECT 1 FROM links WHERE number = ?",
+            (number,),
+        ).fetchone()
+        return row is not None
+
+    def _read_link(self, number: int) -> Link:
+        row = self._connection.execute(
+            "SELECT number, task, provider, message_id, link, created_at FROM links "
+            "WHERE number = ?",
+            (number,),
+        ).fetchone()
+        return self._link_from(cast(sqlite3.Row, row))
+
+    def _link_from(self, row: sqlite3.Row) -> Link:
+        return Link(
+            id=f"l{row['number']}",
+            task_id=f"t{row['task']}",
+            provider=row["provider"],
+            message_id=row["message_id"],
+            link=row["link"],
+            created_at=datetime.fromisoformat(row["created_at"]),
+        )
 
     def _read_task(self, number: int) -> Task:
         rows = self._connection.execute(

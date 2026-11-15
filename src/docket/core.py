@@ -1,9 +1,11 @@
+import json
 import unicodedata
 from dataclasses import dataclass
+from typing import cast
 
 from docket import clock
 from docket.deadlines import Deadline, WorkTime
-from docket.store import UNCHANGED, Store, Task
+from docket.store import UNCHANGED, Link, Store, Task
 
 UNKNOWN_TASK = "unknown_task"
 INVALID_TITLE = "invalid_title"
@@ -13,8 +15,12 @@ INVALID_ACTOR = "invalid_actor"
 INVALID_ACTION = "invalid_action"
 TASK_ENDED = "task_ended"
 WORK_AFTER_DEADLINE = "work_after_deadline"
+INVALID_CLIENT = "invalid_client"
+INVALID_KEY = "invalid_key"
+KEY_REUSED = "key_reused"
 
 _SOURCES = {"email", "agent", "proposal", "owner"}
+_CLIENTS = {"email", "agent"}
 _ACTORS = {"owner", "agent", "email"}
 _ACTIONS = {"start", "done", "cancel", "reopen"}
 _PROVIDERS = {"gmail", "outlook", "yahoo"}
@@ -32,6 +38,12 @@ class CoreError(Exception):
 @dataclass(frozen=True)
 class Outcome:
     task: Task
+    changed: bool
+
+
+@dataclass(frozen=True)
+class LinkOutcome:
+    link: Link
     changed: bool
 
 
@@ -175,6 +187,136 @@ def edit_task(
                 task_id, at=at, action=action, actor=actor, before=before, after=after
             )
         return Outcome(updated, True)
+
+
+def create_task_once(
+    store: Store,
+    *,
+    client: object,
+    key: object,
+    request: dict[str, object],
+    title: object,
+    source: str,
+    deadline: Deadline | None = None,
+    work: WorkTime | None = None,
+    provider: str | None = None,
+    message_id: str | None = None,
+    link: str | None = None,
+) -> Outcome:
+    if client not in _CLIENTS:
+        raise CoreError(INVALID_CLIENT)
+    _check_key(key)
+    check_title(title)
+    if source != client:
+        raise CoreError(INVALID_SOURCE)
+    _check_reference(source, provider, message_id, link)
+    if _work_after_deadline(deadline, work):
+        raise CoreError(WORK_AFTER_DEADLINE)
+    at = clock.now()
+    with store.transaction():
+        found = store.request_key(cast(str, client), cast(str, key))
+        if found is not None:
+            if found.link_id is None and _same_request(found.request, request):
+                return Outcome(cast(Task, store.task(found.task_id)), False)
+            raise CoreError(KEY_REUSED)
+        task = store.insert_task(
+            title=str(title),
+            state="open",
+            deadline=deadline,
+            work=work,
+            source=source,
+            provider=provider,
+            message_id=message_id,
+            link=link,
+            at=at,
+        )
+        store.append_audit(
+            task.id,
+            at=at,
+            action="create",
+            actor=_ACTOR_FOR_SOURCE[source],
+            before={},
+            after={
+                "title": title,
+                "state": "open",
+                "deadline": _deadline_snapshot(deadline),
+                "work": _work_snapshot(work),
+                "source": source,
+                "provider": provider,
+                "message_id": message_id,
+                "link": link,
+            },
+        )
+        store.insert_request_key(
+            client=cast(str, client),
+            key=cast(str, key),
+            request=request,
+            task_id=task.id,
+            link_id=None,
+            at=at,
+        )
+        return Outcome(task, True)
+
+
+def add_link(
+    store: Store,
+    task_id: str,
+    *,
+    client: object,
+    key: object,
+    request: dict[str, object],
+    provider: object,
+    message_id: object,
+    link: object,
+) -> LinkOutcome:
+    if client != "email":
+        raise CoreError(INVALID_CLIENT)
+    _check_key(key)
+    if provider not in _PROVIDERS or any(not _nonempty(part) for part in (message_id, link)):
+        raise CoreError(INVALID_REFERENCE)
+    at = clock.now()
+    with store.transaction():
+        found = store.request_key("email", cast(str, key))
+        if found is not None:
+            if (
+                found.link_id is not None
+                and found.task_id == task_id
+                and _same_request(found.request, request)
+            ):
+                made = {item.id: item for item in store.links(task_id)}
+                return LinkOutcome(made[found.link_id], False)
+            raise CoreError(KEY_REUSED)
+        if store.task(task_id) is None:
+            raise CoreError(UNKNOWN_TASK)
+        created = store.insert_link(
+            task_id,
+            provider=cast(str, provider),
+            message_id=cast(str, message_id),
+            link=cast(str, link),
+            at=at,
+        )
+        store.insert_request_key(
+            client="email",
+            key=cast(str, key),
+            request=request,
+            task_id=task_id,
+            link_id=created.id,
+            at=at,
+        )
+        return LinkOutcome(created, True)
+
+
+def _check_key(key: object) -> None:
+    if not isinstance(key, str) or not 1 <= len(key) <= 200:
+        raise CoreError(INVALID_KEY)
+
+
+def _canonical(request: dict[str, object]) -> str:
+    return json.dumps(request, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+
+
+def _same_request(stored: dict[str, object], request: dict[str, object]) -> bool:
+    return _canonical(stored) == _canonical(request)
 
 
 def _nonempty(value: object) -> bool:

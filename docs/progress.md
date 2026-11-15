@@ -82,3 +82,13 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - A length refusal and a midnight refusal are told apart by DeadlineError's text.
 - Follow-ups:
   - None
+
+## Phase 2a: Keyed intake (2026-11-14)
+- Tests: 522 -> 579 (given 57)
+- New public names: `docket.store`: `UNKNOWN_LINK_MESSAGE`, `Link`, `RequestKey`, `insert_link`, `links`, `insert_request_key`, `request_key`; `docket.core`: `INVALID_CLIENT`, `INVALID_KEY`, `KEY_REUSED`, `LinkOutcome`, `create_task_once`, `add_link`
+- Changed files: 3
+- Deviations:
+  - create_task_once writes the task and its create audit row itself, so the key is recorded in that same transaction.
+  - A link id is l followed by a non-zero number, the same shape as a task id.
+- Follow-ups:
+  - None
