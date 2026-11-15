@@ -737,8 +737,8 @@ For each row:
 1. Copy the module outside the repository.
 2. Make the change described in the module the coder wrote.
 3. Run the deciding test with \
-`PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest '<test>' --no-cov -vv`, and confirm it fails \
-with the "Broken" value.
+`PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest '<test>' --no-cov -q --tb=line`, and confirm \
+it fails with the "Broken" value; rerun with `-vv` only when it doesn't.
 4. Restore the module from your copy, delete `src/docket/__pycache__`, and confirm `git diff` is \
 as before.
 

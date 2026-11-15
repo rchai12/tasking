@@ -2,6 +2,8 @@
 
 Every phase spec and verification guide follows this document. A spec states only what is particular to its phase and points here for the rest. Where a spec says something different, the spec wins.
 
+The coder works through the `phase-coder` skill (`/phase-coder <id>`) and the verifier through `phase-verifier` (`/phase-verifier <id>`); they say what to read and how to keep output small. This document holds the rules.
+
 ## Phase ids and files
 
 A phase id is a number with an optional letter: `0`, `1`, `1a`, `12b`. Files use the id zero-padded to two digits: `docs/phases/phase-01a-tasks-store.md`, with its guide at `docs/verification/` and its review at `docs/reviews/` under the same file name. Headings use the id as written: `## Phase 1a: ...`, `# Review: Phase 1a`.
@@ -32,7 +34,7 @@ The tests are grouped into the sections of `tests/sections.toml`. Each spec name
 
 - **You are not the verifier.** A second agent verifies in its own session. Do not open the verification guide or `docs/reviews/`, and do not run spot checks or write a review; from `docs/verification/` you only run the probe, by the path Acceptance gives. Your work ends with the progress entry and your final message. "For the verifier" below is not for you.
 
-- **Commands** start with `.venv/bin/python` (or `.venv/bin/docket`). Never type `python`, `python3`, `ruff`, or `pytest` on their own. Do not activate the virtual environment, and do not create one after Phase 0. Install packages only when the spec has a step for it.
+- **Commands** start with `.venv/bin/python` (or `.venv/bin/docket`). Never type `python`, `python3`, `ruff`, or `pytest` on their own. Do not activate the virtual environment, and do not create one after Phase 0. Install packages only when the spec has a step for it, with `pip install -q`.
 - **Git.** Do not commit. Never run `git restore`, `git checkout`, `git reset`, `git stash`, or `git clean`.
 - **Real systems.** Do not connect to Google, Microsoft Graph, the shared Discord service, Discord, the email service or Conductor, do not run the EventKit helper against real calendars, and do not read the Keychain or the data folder. Tests replace them. The owner runs the real thing after verification.
 - **Tests** use synthetic data only, touch no network, and read time and ids only through replaced `docket.clock.now` and `docket.ids.new_id`.
@@ -54,7 +56,7 @@ Unless the spec adds more, run before you report:
 
 ### Report
 
-Add an entry at the end of `docs/progress.md` in exactly this form, whether you finished or stopped (see "When you stop"). Every field is one line, or `None`; the architect reads these fields instead of your final message, so keep them short and literal. `scripts/check_reports.py` checks this form: the fields in this order, each list with at least one `  - ` line, and nothing else in the entry.
+Append an entry at the end of `docs/progress.md` (one write at the end; never a replace of text other entries share) in exactly this form, whether you finished or stopped (see "When you stop"). Every field is one line, or `None`; the architect reads these fields instead of your final message, so keep them short and literal. `scripts/check_reports.py` checks this form: the fields in this order, each list with at least one `  - ` line, and nothing else in the entry.
 
 ```markdown
 ## Phase <id>: <the spec's title> (YYYY-MM-DD)
@@ -67,7 +69,7 @@ Add an entry at the end of `docs/progress.md` in exactly this form, whether you 
   - <one line each: something the next phase or the architect should know> (or None)
 ```
 
-In your final message give the `Sections:` table and the last ten lines of `scripts/check.py`'s output, the output line of each other acceptance command, and for each requirement the name of a test (or the probe line) that covers it.
+In your final message give the `Sections:` table and the last lines of `scripts/check.py`'s output, one line for each other acceptance command, and for each requirement the name of a test (or the probe line) that covers it.
 
 ### When you stop
 
@@ -78,7 +80,7 @@ Stop, rather than work around it, when a given test fails on code you believe th
 
 Then run `.venv/bin/python scripts/check_reports.py --phase <the spec's phase id>` (it must print `Reports OK.`) and end. Never change a given file to get past a stop, and don't write a review. In your final message, say that you stopped and repeat the `Stopped:` lines.
 
-When you are run again after a stop (the spec then has a Corrections section), update your entry for this phase in place: the counts, the files, and the `Follow-ups` without the `Stopped:` line once the stop is resolved. Never add a second entry for the same phase; earlier phases' entries stay untouched.
+When you are run again after a stop or a FAIL (the spec then has a Corrections section), run the commands the correction names as live again, plus `check_reports.py`, or the whole Acceptance table when it names none. Update your entry for this phase in place: the counts, the files, and the `Follow-ups` without the `Stopped:` line once the stop is resolved. Never add a second entry for the same phase; earlier phases' entries stay untouched.
 
 ## For the verifier
 
@@ -90,7 +92,7 @@ When you are run again after a stop (the spec then has a Corrections section), u
 - **No entry.** With no progress entry for the phase, look at `git status --short`: no Scope path changed means the coder did not run; changed Scope paths mean it broke off without reporting, so name those paths in `For the architect`.
 - Judge code by what it does, never by resemblance to another way of writing it.
 - **Coverage reached the wrong way is a finding**: a test that runs a line but asserts nothing about what it does, a `# pragma: no cover` the spec did not allow, or code the spec requires removed to close a gap.
-- **Spot checks**: for each row of the guide's spot-check table, copy the module outside the repository first, make the named one-line change, run the deciding test, and confirm it fails; then restore the file from your copy (never with `git checkout` or `git restore`), clear `__pycache__`, and confirm `git diff` is as before.
+- **Spot checks**: for each row of the guide's spot-check table, copy the module outside the repository first, make the named one-line change, run the deciding test (`-q --tb=line`; `-vv` only for a row whose result isn't the "Broken" value), and confirm it fails; then restore the file from your copy (never with `git checkout` or `git restore`), clear `__pycache__`, and confirm `git diff` is as before.
 - **Real systems**: like the coder, never connect to Google, Microsoft Graph, the shared Discord service, Discord, the email service or Conductor, never run the EventKit helper against real calendars, and never read the Keychain.
 
 ### Report and verdict
@@ -111,6 +113,6 @@ Then, under `## Findings`, one line per finding in this form, or `None`:
 
 `<requirement id or section> | <file>:<line> | expected <...> | found <...>`
 
-Then, after the findings and an empty line, `Parts that needed a repair: <none, or the parts>`, an empty line, and `Built beyond the spec: <none, or what>`, and after that any detail you think useful (gate output, probe output, spot-check results). The head keeps its exact lines: the heading on line 1, the five fields on lines 3 to 7, `## Findings` on line 9. When the report is written, run `.venv/bin/python scripts/check_reports.py --phase <the phase id>`; it must print `Reports OK.`. If it names your report, correct the report's form (only its form) and run it again.
+Then, after the findings and an empty line, `Parts that needed a repair: <none, or the parts>`, an empty line, and `Built beyond the spec: <none, or what>`, and after that a digest: one line per gate, one per spot check, and the searches' result, not prose restating each row. The head keeps its exact lines: the heading on line 1, the five fields on lines 3 to 7, `## Findings` on line 9. When the report is written, run `.venv/bin/python scripts/check_reports.py --phase <the phase id>`; it must print `Reports OK.`. If it names your report, correct the report's form (only its form) and run it again.
 
 If the verdict is FAIL, send the coder each finding as: the requirement, what was observed, and what is required. Do not prescribe the code.

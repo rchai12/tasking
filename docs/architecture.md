@@ -1,6 +1,6 @@
 # Architecture
 
-Status (2026-11-14): Phase 0 (the skeleton) is built and verified; Phase 1 is next to specify.
+Status: see `docs/roadmap.md`.
 
 ## Goal
 

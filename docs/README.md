@@ -19,7 +19,9 @@ The tasks app (the Python package `docket`) is the single source of truth for ta
 | [phases/](phases/) | Detailed specs, one per phase |
 | `verification/` | One guide per phase (and its probe), for the second agent that checks the implementation |
 | [progress.md](progress.md) | The coder's log, one entry per phase |
+| [Coder token use](coder-token-use.md) | Where the coding agent's context went on Phases 1c through 2d, and what to shorten |
 | `reviews/` | The verifier's report for each phase, with its verdict |
+| [Verification process](verification-process.md) | Where phase verification spends its tokens, and what to script |
 
 The original single document is kept in [archive/](archive/Tasks,%20Scheduling%20and%20Calendar%20Feature%20Decisions.md) for reference. These docs replace it.
 
@@ -36,13 +38,15 @@ The original single document is kept in [archive/](archive/Tasks,%20Scheduling%2
 
 1. Commit the spec, its verification guide and its given files, so `git status` is clean. Then give the coding agent one phase at a time:
 
-   > Read AGENTS.md, docs/architecture.md, docs/testing.md, docs/phase-conventions.md, docs/progress.md, and docs/phases/phase-NN-*.md.
-   > Implement only that phase. Do not read docs/verification/ except to run the probe named in Acceptance, do not verify your own work, and do not write a review. Run every command under "Acceptance" before you report, and write the progress entry.
+   > /phase-coder NN
+
+   The `phase-coder` skill (`.claude/skills/phase-coder/`) says what to read, how to keep output small, and how to report.
 
 2. Give a second agent the matching guide in `verification/`:
 
-   > Read AGENTS.md, docs/phase-conventions.md, docs/phases/phase-NN-*.md, and docs/verification/phase-NN-*.md.
-   > Follow the verification guide against the current diff. Do not modify files except your report. Report the verdict.
+   > /phase-verifier NN
+
+   The `phase-verifier` skill (`.claude/skills/phase-verifier/`) does the same for the verifier.
 
    The verifier writes its report to `reviews/`, named as the spec is. A FAIL goes back to the coding agent with the verifier's findings.
 3. Commit.
