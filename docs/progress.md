@@ -112,3 +112,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - A secret value is refused when it contains a newline or a carriage return.
 - Follow-ups:
   - None
+
+## Phase 2d: Serve (2026-11-14)
+- Tests: 703 -> 732 (given 24)
+- New public names: `docket.config`: `WEB_PORT_MESSAGE`, `web_port`; `docket.server`: `NO_CLIENTS_MESSAGE`, `ServeError`, `build_app`, `run_app`; `docket.cli`: `serve`
+- Changed files: 7
+- Deviations:
+  - serve reports ConfigError, KeychainUnavailable, ServeError and StoreError through one handler.
+- Follow-ups:
+  - None

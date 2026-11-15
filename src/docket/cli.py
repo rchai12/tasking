@@ -19,6 +19,7 @@ from docket.deadlines import (
     make_work_time,
 )
 from docket.keychain import KeychainUnavailable
+from docket.server import ServeError, build_app, run_app
 from docket.store import UNCHANGED, Store, StoreError, Task, open_store
 from docket.views import (
     change_text,
@@ -61,6 +62,17 @@ def _callback() -> None:
 @app.command()
 def version() -> None:
     print(f"docket {__version__}")
+
+
+@app.command()
+def serve() -> None:
+    try:
+        settings = get_settings()
+        built = build_app(settings)
+    except (ConfigError, KeychainUnavailable, ServeError, StoreError) as error:
+        _fail(str(error))
+    print(f"Serving on http://127.0.0.1:{settings.web_port}")
+    run_app(built, settings.web_port)
 
 
 @clients_app.command("add")
