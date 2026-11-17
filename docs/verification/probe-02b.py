@@ -238,9 +238,9 @@ def walk() -> bool:
         if ORACLE_ONLY:
             continue
         if as_link:
-            answer = accept_link(store, task_id, key=key, body=body)
+            answer = accept_link(store, task_id, client="email", key=key, body=body)
         else:
-            answer = accept_task(store, key=key, body=body)
+            answer = accept_task(store, client="email", key=key, body=body)
         if (answer.status, answer.body) != wanted:
             kind = "link" if as_link else "task"
             print(f"  step {step}: {kind} {key!r} {body!r}: {answer} != {wanted}")
@@ -278,7 +278,9 @@ def deadlines_match_make_deadline() -> bool:
         at = None if rng.random() < 0.4 else time(rng.randrange(24), rng.choice((0, 30)))
         zone = rng.choice(zones)
         deadline = {"date": day.isoformat(), "time": at and at.strftime("%H:%M"), "time_zone": zone}
-        answer = accept_task(store, key=f"d{number}", body={**BASE, "deadline": deadline})
+        answer = accept_task(
+            store, client="email", key=f"d{number}", body={**BASE, "deadline": deadline}
+        )
         stored = store.task(answer.body.get("id", ""))
         if answer.status != 201 or stored is None:
             return False
