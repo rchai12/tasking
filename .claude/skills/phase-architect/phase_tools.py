@@ -337,6 +337,8 @@ def collected_ids(clone: Path, tests: list[str]) -> dict[str, list[str]]:
 
 def lint(spec_path: Path, guide_path: Path, clone: Path, promoted: bool = False) -> int:
     """Check a spec and its guide against each other and against what pytest collects."""
+    from docket.acceptance import read_rows
+
     spec = spec_path.read_text(encoding="utf-8")
     guide = guide_path.read_text(encoding="utf-8")
     problems: list[str] = []
@@ -408,6 +410,9 @@ def lint(spec_path: Path, guide_path: Path, clone: Path, promoted: bool = False)
         for cell in row[2:3]
     ]:
         problems.append("guide: its searches differ from the spec's")
+    extracted = [row.command for row in read_rows(guide, "5. Searches")]
+    if extracted != search_commands(spec):
+        problems.append("guide: acceptance runner extracts different search commands")
     for problem in problems:
         print(problem)
     print("Lint OK." if not problems else f"{len(problems)} problems.")

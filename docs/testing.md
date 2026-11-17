@@ -7,7 +7,7 @@ Applies to every phase. Phase specs list the specific tests; this file sets the 
 | Layer | Location | What it covers | Runs |
 |---|---|---|---|
 | Unit | `tests/unit/` | Pure functions: settings, deadlines, state rules, reminder planning, backoff | Every run; fast |
-| Integration | `tests/integration/` | The store in a temporary folder, the API through FastAPI's test client, the reminder loop with a fake notifier, calendar clients against fakes on 127.0.0.1 | Every run |
+| Integration | `tests/integration/` | The store in a temporary folder, the API through FastAPI's test client or synthetic ASGI exchanges, the reminder loop with a fake notifier, calendar clients against fakes on 127.0.0.1 | Every run |
 | End-to-end | `tests/e2e/` | Commands through Typer's `CliRunner`; a task from `POST /tasks` to its reminders, a press, and its calendar event, with every outside system faked | Every run |
 
 ## Rules
@@ -21,6 +21,7 @@ Applies to every phase. Phase specs list the specific tests; this file sets the 
 7. **Every bug fix adds a test** that fails before the fix.
 8. **Coverage:** branch coverage on every run, overall at least 90%; every line and branch of each critical module.
 9. **Expected values are literal**, never built by the code under test.
+10. **HTTP concurrency:** use events and temporary SQLite locks to prove loop progress and connection thread ownership. Timeouts are failure watchdogs; do not assert elapsed performance or coordinate with wall-clock sleeps. ASGI fakes match the installed server scope and never open a socket.
 
 ## Critical modules
 

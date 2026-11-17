@@ -82,3 +82,9 @@ Decisions from the original doc are dated Nov 9, 2026; later ones carry their ow
 - **Owner: upgrades.** Invalid existing references stop the upgrade without changing data; report only task/link ID and field. Grandfathering with escaped display was not chosen. A repair is separate and requires explicit authorization.
 - **Architect: character policy.** Reject Cc, Cf, Zl and Zp in both fields, using the same category rule as titles. Preserve valid spaces and text; no trimming, normalization or URL-scheme validation.
 - **Architect: storage.** Apply the given append-only rebuild with a preflight inside the write transaction. Disable foreign keys only around migration 3, check them before commit and restore enforcement on every exit; preserve IDs, retry JSON, audit history and sequences.
+
+## HTTP execution decisions (architect, Nov 17, Phase 2h)
+
+No new owner choice changes the wire contract. Keep the existing 64 KiB actual-body limit and refusal order. Read incrementally and check the incoming total before accumulating a chunk; never use Content-Length as the size decision. Decode only after the bounded body is complete, so UTF-8 may span chunks.
+
+Await one synchronous operation in the installed framework's worker pool for the whole store context and intake call. Open, use and close the connection on that same worker; preserve SQLite's thread check and five-second busy timeout. Do not add an executor, queue, request timeout, retry policy, dependency or error mapping.
