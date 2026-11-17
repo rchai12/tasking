@@ -88,3 +88,10 @@ Decisions from the original doc are dated Nov 9, 2026; later ones carry their ow
 No new owner choice changes the wire contract. Keep the existing 64 KiB actual-body limit and refusal order. Read incrementally and check the incoming total before accumulating a chunk; never use Content-Length as the size decision. Decode only after the bounded body is complete, so UTF-8 may span chunks.
 
 Await one synchronous operation in the installed framework's worker pool for the whole store context and intake call. Open, use and close the connection on that same worker; preserve SQLite's thread check and five-second busy timeout. Do not add an executor, queue, request timeout, retry policy, dependency or error mapping.
+
+## Store startup and read decisions (Nov 17, Phase 2i)
+
+- **Owner: startup coordination.** Use a private startup lock file with a standard-library exclusive file lock; wait until initialization finishes. Keep the existing SQLite five-second busy timeout. The SQLite-only bounded-retry alternative was not chosen.
+- **Architect: gate artifact.** Derive `<database filename>.startup.lock` beside the database, empty and mode 0600. Acquire before SQLite opens and release after initialization/cleanup. Keep its inode across opens; no PID, age check, stale-file deletion or new setting. Gate acquisition OSError becomes `store startup unavailable` with no library-error chain.
+- **Architect: migrations.** Recheck schema versions under immediate write transactions, keeping each migration atomic and foreign-key relaxation scoped to migration 3. Close every failed constructor's created connection once; preserve other original initialization failures.
+- **Architect: corrupt task times.** Refuse non-UTC/unparseable task instants and invalid zones with `invalid stored task time: <task id>`, no chained library text, no automatic repair and no partial list. Extend the private CLI context guard so these errors use its existing plain refusal style. No new owner time policy is introduced.

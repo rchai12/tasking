@@ -82,6 +82,12 @@ Phase 2g specifies email references as plain text: `message_id` is 1–512 Unico
 
 The store (`docket.store`, Phase 1b) is one SQLite file, `docket.sqlite3`, mode `0600`, in WAL mode with a 5-second busy timeout, so the service, the `docket` command and the MCP server can each open it. Every write runs inside `Store.transaction()` (`BEGIN IMMEDIATE`), so a change and its audit row commit together or not at all. Tasks are never deleted and audit rows never changed or removed; triggers enforce both.
 
+Phase 2i specifies a startup gate at `path.with_name(path.name + ".startup.lock")` (normally `docket.sqlite3.startup.lock`), empty and mode 0600. An exclusive standard-library flock is acquired before SQLite opens, held through WAL/setup/migrations and failed-constructor cleanup, then released. The gate waits until the initializer finishes; SQLite keeps its own five-second busy timeout. The file is retained, never unlinked as stale; the OS releases the lock when its process exits. Normal writes continue through SQLite, outside this startup gate. Gate acquisition failures report only `store startup unavailable`.
+
+Schema-version decisions and each migration's fresh eligibility check run under `BEGIN IMMEDIATE`, preserving individual migration transactions and migration-3-only foreign-key relaxation. Every failed initialization closes its created connection once, without double-closing the reference rebuild path. Phase 2i adds no migration or setting.
+
+When a task is loaded, Phase 2i requires UTC deadline/work instants and created/updated timestamps, plus exact deadline/work zones. Invalid data raises `invalid stored task time: <task id>` without a library-error chain; it is not normalized, repaired or omitted from a requested result. The CLI's private store context guard handles these read failures as plain stderr refusals, with no partial output. Audit/link/request-key timestamp decoding is outside this phase.
+
 ## Task states
 
 Stored states are **open**, **in progress**, **done** and **cancelled**. **Due** (at or after the deadline, within the first late reminder) and **overdue** (later) are worked out from the deadline and the clock when read; they are never stored. Time passing can make a task overdue but never done.

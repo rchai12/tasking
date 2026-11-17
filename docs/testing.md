@@ -22,6 +22,7 @@ Applies to every phase. Phase specs list the specific tests; this file sets the 
 8. **Coverage:** branch coverage on every run, overall at least 90%; every line and branch of each critical module.
 9. **Expected values are literal**, never built by the code under test.
 10. **HTTP concurrency:** use events and temporary SQLite locks to prove loop progress and connection thread ownership. Timeouts are failure watchdogs; do not assert elapsed performance or coordinate with wall-clock sleeps. ASGI fakes match the installed server scope and never open a socket.
+11. **Store startup:** use spawn-mode processes and standard-library IPC against synthetic temporary databases to test independent openers and lock release on process exit. Probe entry points have a main guard so spawned children do not recursively run them. Keep process/queue cleanup in finally blocks; no real database or account is used.
 
 ## Critical modules
 
