@@ -10,6 +10,7 @@ from typing import cast
 
 from docket.config import Settings, prepare_data_dir
 from docket.deadlines import INSTANT_MESSAGE, Deadline, WorkTime
+from docket.references import LINK_MAX, MESSAGE_ID_MAX, valid_reference
 from docket.schema import MIGRATIONS, SCHEMA_VERSION
 
 DB_FILENAME = "docket.sqlite3"
@@ -393,11 +394,48 @@ class Store:
 
     def _migrate(self, version: int) -> None:
         while version < SCHEMA_VERSION:
-            with self.transaction():
-                for statement in _statements(MIGRATIONS[version]):
-                    self._connection.execute(statement)
-                self._connection.execute(f"PRAGMA user_version = {version + 1}")
+            if version == 2:
+                self._migrate_references()
+            else:
+                with self.transaction():
+                    for statement in _statements(MIGRATIONS[version]):
+                        self._connection.execute(statement)
+                    self._connection.execute(f"PRAGMA user_version = {version + 1}")
             version += 1
+
+    def _migrate_references(self) -> None:
+        self._connection.execute("PRAGMA foreign_keys = OFF")
+        try:
+            with self.transaction():
+                self._refuse_invalid_references()
+                for statement in _statements(MIGRATIONS[2]):
+                    self._connection.execute(statement)
+                if self._connection.execute("PRAGMA foreign_key_check").fetchall():
+                    raise StoreError("invalid reference migration")
+                self._connection.execute("PRAGMA user_version = 3")
+        except BaseException:
+            self._connection.execute("PRAGMA foreign_keys = ON")
+            self.close()
+            raise
+        self._connection.execute("PRAGMA foreign_keys = ON")
+
+    def _refuse_invalid_references(self) -> None:
+        tasks = self._connection.execute(
+            "SELECT number, message_id, link FROM tasks WHERE source = 'email' ORDER BY number"
+        )
+        for row in tasks:
+            self._refuse_reference(f"t{row['number']}", row["message_id"], row["link"])
+        links = self._connection.execute(
+            "SELECT number, message_id, link FROM links ORDER BY number"
+        )
+        for row in links:
+            self._refuse_reference(f"l{row['number']}", row["message_id"], row["link"])
+
+    def _refuse_reference(self, identifier: str, message_id: object, link: object) -> None:
+        if not valid_reference(message_id, MESSAGE_ID_MAX):
+            raise StoreError(f"invalid stored reference: {identifier} message_id")
+        if not valid_reference(link, LINK_MAX):
+            raise StoreError(f"invalid stored reference: {identifier} link")
 
     def _require_write(self, at: datetime) -> None:
         if not self._in_transaction:

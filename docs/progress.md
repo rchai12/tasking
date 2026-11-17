@@ -139,3 +139,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 2g: Safe email references (2026-11-17)
+- Tests: 837 -> 927 (given 84)
+- New public names: `docket.references`: `MESSAGE_ID_MAX`, `LINK_MAX`, `valid_reference`
+- Changed files: 5
+- Deviations:
+  - None
+- Follow-ups:
+  - None

@@ -5,6 +5,7 @@ from typing import cast
 
 from docket import clock
 from docket.deadlines import Deadline, WorkTime
+from docket.references import LINK_MAX, MESSAGE_ID_MAX, valid_reference
 from docket.store import UNCHANGED, Link, Store, Task
 
 UNKNOWN_TASK = "unknown_task"
@@ -272,12 +273,7 @@ def add_link(
     if not isinstance(client, str) or client != "email":
         raise CoreError(INVALID_CLIENT)
     _check_key(key)
-    if (
-        not isinstance(provider, str)
-        or provider not in _PROVIDERS
-        or any(not _nonempty(part) for part in (message_id, link))
-    ):
-        raise CoreError(INVALID_REFERENCE)
+    _check_reference("email", provider, message_id, link)
     at = clock.now()
     with store.transaction():
         found = store.request_key("email", cast(str, key))
@@ -323,17 +319,13 @@ def _same_request(stored: dict[str, object], request: dict[str, object]) -> bool
     return _canonical(stored) == _canonical(request)
 
 
-def _nonempty(value: object) -> bool:
-    return isinstance(value, str) and value != ""
-
-
 def _check_reference(source: str, provider: object, message_id: object, link: object) -> None:
     if source == "email":
         if not (
             isinstance(provider, str)
             and provider in _PROVIDERS
-            and _nonempty(message_id)
-            and _nonempty(link)
+            and valid_reference(message_id, MESSAGE_ID_MAX)
+            and valid_reference(link, LINK_MAX)
         ):
             raise CoreError(INVALID_REFERENCE)
         return
