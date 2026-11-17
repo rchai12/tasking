@@ -4,8 +4,9 @@ from collections.abc import Awaitable, Callable, Mapping
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from starlette.concurrency import run_in_threadpool
 
-from docket.intake import MISSING_KEY, accept_link, accept_task
+from docket.intake import MISSING_KEY, Answer, accept_link, accept_task
 from docket.store import Store
 
 WRONG_HOST = "wrong_host"
@@ -72,8 +73,8 @@ async def _handle(
     client = _bearer(request.headers.get("authorization"), tokens)
     if client is None:
         return _error(UNAUTHORIZED, 401, authenticate=True)
-    raw = await request.body()
-    if len(raw) > MAX_BODY:
+    raw = await _bounded_body(request)
+    if raw is None:
         return _error(TOO_LARGE, 413)
     key = request.headers.get("idempotency-key")
     if key is None or len(key) not in range(1, 201):
@@ -82,14 +83,34 @@ async def _handle(
         body = json.loads(raw.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError):
         return _error(INVALID_JSON, 422)
-    with open_store() as store:
-        if task_id is None:
-            answer = accept_task(store, client=client, key=key, body=body)
-        else:
-            answer = accept_link(store, task_id, client=client, key=key, body=body)
+    answer = await run_in_threadpool(_intake, open_store, client, key, body, task_id)
     return JSONResponse(
         answer.body, status_code=answer.status, headers={"Cache-Control": "no-store"}
     )
+
+
+async def _bounded_body(request: Request) -> bytes | None:
+    parts: list[bytes] = []
+    total = 0
+    async for chunk in request.stream():
+        if total + len(chunk) > MAX_BODY:
+            return None
+        parts.append(chunk)
+        total += len(chunk)
+    return b"".join(parts)
+
+
+def _intake(
+    open_store: Callable[[], Store],
+    client: str,
+    key: str,
+    body: object,
+    task_id: str | None,
+) -> Answer:
+    with open_store() as store:
+        if task_id is None:
+            return accept_task(store, client=client, key=key, body=body)
+        return accept_link(store, task_id, client=client, key=key, body=body)
 
 
 def _bearer(header: str | None, tokens: Mapping[str, str]) -> str | None:

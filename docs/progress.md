@@ -148,3 +148,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 2h: Nonblocking HTTP and bounded reads (2026-11-17)
+- Tests: 927 -> 960 (given 30)
+- New public names: None
+- Changed files: 3
+- Deviations:
+  - None
+- Follow-ups:
+  - None
