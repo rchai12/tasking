@@ -75,3 +75,10 @@ Decisions from the original doc are dated Nov 9, 2026; later ones carry their ow
 | Storage (*proposed*, Nov 14) | One SQLite file, standard library `sqlite3`, plain SQL, numbered migrations | Same as the email service; every query visible | SQLAlchemy and Alembic |
 | HTTP (*proposed*, Nov 14) | FastAPI on 127.0.0.1 for the API; httpx for outgoing calls | Same as Conductor's page and the email service's client | The standard library server |
 | Package (*proposed*, Nov 14) | `docket`, command `docket`, settings prefixed `DOCKET_`, port 8767 | Short and unused here; `finances` has 8765 and Conductor 8766 | |
+
+## Reference safety decisions (Nov 17, Phase 2g)
+
+- **Owner: caps.** Message IDs have at most 512 Unicode code points and links at most 2,048, both nonempty. Larger limits of 1,024/8,192 were not chosen. The existing 200-character retry-key rule remains separate.
+- **Owner: upgrades.** Invalid existing references stop the upgrade without changing data; report only task/link ID and field. Grandfathering with escaped display was not chosen. A repair is separate and requires explicit authorization.
+- **Architect: character policy.** Reject Cc, Cf, Zl and Zp in both fields, using the same category rule as titles. Preserve valid spaces and text; no trimming, normalization or URL-scheme validation.
+- **Architect: storage.** Apply the given append-only rebuild with a preflight inside the write transaction. Disable foreign keys only around migration 3, check them before commit and restore enforcement on every exit; preserve IDs, retry JSON, audit history and sequences.

@@ -50,7 +50,7 @@ def test_building_the_app_opens_the_store_once_to_migrate_it(
     issue_token("email")
     build_app(get_settings())
     connection = sqlite3.connect(tmp_path / "data" / "docket.sqlite3")
-    assert connection.execute("PRAGMA user_version").fetchone() == (2,)
+    assert connection.execute("PRAGMA user_version").fetchone() == (3,)
 
 
 def test_a_newer_store_stops_the_build(fake_keychain: FakeKeychain, tmp_path: Path) -> None:

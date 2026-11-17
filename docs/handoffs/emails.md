@@ -1,17 +1,17 @@
 # Tasks app: what the email service needs to know
 
-Written Nov 14, 2026 from the tasks app's design (`tasking/docs/`). For the email service's architect and owner. Nothing here changes the email service until its own phases are specified.
+Written Nov 14, 2026; updated Nov 17, 2026 from the tasks app's design (`tasking/docs/`). For the email service's architect and owner. Nothing here changes the email service until its own phases are specified.
 
 ## Summary
 
-The tasks app exists as a design: the Python package `docket` in the `tasking` project, with Phase 0 specified and nothing built yet. It adopts the email service's stub contract (Phase 2f and 3b) unchanged, and adds one thing: a sign-in token. The Discord bot code is planned to move out of the email service into a shared Discord service.
+The Python package `docket` in `tasking` is built and verified through its Phase 2f (837 tests). It uses the email service's task/link wire fields and response shapes, with a required bearer token. Tasks Phase 2g is specified and adds the reference safety rules below; its runtime implementation is pending. The Discord bot code is planned to move out of the email service into a shared Discord service.
 
 ## Decisions that affect the email service
 
 | Decision | What it means here |
 | --- | --- |
 | The email service's approval is final (Nov 14) | Matches the email service's "Handoff" decision: the tasks app creates the task at once and never asks you again |
-| The stub contract is adopted unchanged | `POST /tasks` and `POST /tasks/<id>/links`, the same fields, the `Idempotency-Key` header, and the same answers as `FakeTasksApp`: 201, 200 on a repeat, 409 for a reused key with a different body, 400 for a missing key, 422 for an invalid body, 404 for a link to an unknown task. Task ids stay ASCII letters, digits, `-` and `_` |
+| Task/link wire shapes are preserved | `POST /tasks` and `POST /tasks/<id>/links`, the same fields, the `Idempotency-Key` header, and the same answers as `FakeTasksApp`: 201, 200 on a repeat, 409 for a reused key with a different body, 400 for a missing key, 422 for an invalid body, 404 for a link to an unknown task. Task ids stay ASCII letters, digits, `-` and `_` |
 | One addition: a bearer token | Every request needs `Authorization: Bearer <token>`, or the app answers **401**. The token is the email service's own, kept in the Keychain on both sides, and it only allows `source: "email"`. This is the "sign-in" Phase 3c was going to add |
 | Address | `http://127.0.0.1:8767` (`finances` uses 8765, Conductor 8766). `FakeTasksApp.URL` uses 8765; that's harmless in tests, but the real `MAILROOM_TASKS_URL` is 8767 |
 | Date-only deadlines | When `time` is `null`, the tasks app uses 17:00 in the given `time_zone`, and shows that no time was given. The email service keeps sending `time: null`; it shouldn't fill a time in itself |
@@ -44,3 +44,9 @@ The tasks app exists as a design: the Python package `docket` in the `tasking` p
 ## Facts checked that also apply here
 
 - **Google sign-in lifetime.** Google's OAuth documentation says an External app in Testing gets refresh tokens that expire in 7 days. Setting the consent screen to In production avoids that; sign in again after the switch. Refresh tokens also stop working after six months unused, and each account keeps at most 100 per OAuth client. Gmail's login is affected the same way.
+
+## Phase 2g reference contract (specified Nov 17)
+
+Both task and follow-up link requests must send a nonempty `message_id` of at most 512 Unicode code points and a nonempty `link` of at most 2,048. Reject Cc, Cf, Zl and Zp characters in either field. Do not truncate, trim or normalize a value to make it fit. Invalid string references receive 422 `invalid_reference`; wrong JSON types keep the existing body-shape refusal. Fields, status shapes, approval and retry semantics are unchanged.
+
+The email service's checked source currently forwards these values without these caps and its `FakeTasksApp` does not enforce them. Its architect should schedule matching payload validation and fake/contract tests before connecting to tasks after Phase 2g. Keep the existing 1–200-character retry-key constraint: `task_key` includes the provider and message ID, so not every individually valid message ID yields a valid retry key. Preserve queued work and surface refusals through the email service's own explicit failure policy; do not silently shorten IDs or links. This document authorizes no edits or real-service connection in the email project.

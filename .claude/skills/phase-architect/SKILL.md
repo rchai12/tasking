@@ -112,6 +112,8 @@ Phases follow the build order in `docs/roadmap.md`: stage N is phase N, split in
 26. Searches use `git grep --untracked -n -E`, with **no `\b`** (use `([^A-Za-z_]|$)`). Name the risky call, never a common attribute. Take standing searches from the catalog; write a phase's own search only for a rule the catalog lacks, and add it to the catalog when a second phase needs it. Run each on the clone with legitimate-looking code (silence), then with `--plant auto` (a match each), plus a plant file for the phase's own searches. Every phase carries the searches for the project rules it could break: a model client import anywhere, a network call outside the named client modules, `datetime.now` outside `clock.py`, a task created outside `docket.core`, a calendar write with a field other than title and time, an MCP tool calling a proposal's approve function.
 27. Generate the guide with `phase_tools.py guide`, then write its `TODO`s, in order: Coder ran, Gates, Spot checks, Probe, Searches, Reasonable variations, Verdict. Then run `phase_tools.py lint SPEC GUIDE --clone <fail clone>` until it prints `Lint OK.`, before `promote`.
 
+Before promoting a guide, parse its search table with `docket.acceptance.read_rows` and compare every extracted command with the spec's search commands. Rule-description cells contain no backticks: the acceptance reader takes the first backtick span on a row (Phase 2f's Q3 otherwise ran `clock.py` instead of the search). Check execution commands, not only table rendering.
+
 ### 8. Hand over
 
 28. Update the roadmap's status line and row, the design docs the phase changes, memory (the owner's standing decisions), and `history.md` ("specified; result pending").

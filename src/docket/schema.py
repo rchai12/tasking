@@ -88,5 +88,62 @@ CREATE TABLE request_keys (
 ) STRICT;
 """
 
-MIGRATIONS: tuple[str, ...] = (MIGRATION_1, MIGRATION_2)
+MIGRATION_3 = """
+CREATE TEMP TABLE reference_sequences (name TEXT PRIMARY KEY, seq INTEGER);
+INSERT INTO reference_sequences SELECT name, seq FROM sqlite_sequence
+    WHERE name IN ('tasks', 'links');
+
+CREATE TABLE tasks_bounded (
+    number INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL CHECK (length(title) BETWEEN 1 AND 100),
+    state TEXT NOT NULL CHECK (state IN ('open', 'in_progress', 'done', 'cancelled')),
+    deadline_at TEXT,
+    deadline_zone TEXT,
+    deadline_time_given INTEGER CHECK (deadline_time_given IN (0, 1)),
+    work_start TEXT,
+    work_minutes INTEGER CHECK (work_minutes BETWEEN 5 AND 720),
+    work_zone TEXT,
+    source TEXT NOT NULL CHECK (source IN ('email', 'agent', 'proposal', 'owner')),
+    provider TEXT CHECK (provider IN ('gmail', 'outlook', 'yahoo')),
+    message_id TEXT CHECK (length(message_id) BETWEEN 1 AND 512 AND instr(message_id, char(0)) = 0),
+    link TEXT CHECK (length(link) BETWEEN 1 AND 2048 AND instr(link, char(0)) = 0),
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    CHECK ((deadline_at IS NULL) = (deadline_zone IS NULL)),
+    CHECK ((deadline_at IS NULL) = (deadline_time_given IS NULL)),
+    CHECK ((work_start IS NULL) = (work_minutes IS NULL)),
+    CHECK ((work_start IS NULL) = (work_zone IS NULL)),
+    CHECK ((provider IS NULL) = (message_id IS NULL)),
+    CHECK ((provider IS NULL) = (link IS NULL)),
+    CHECK ((source = 'email') = (provider IS NOT NULL))
+) STRICT;
+
+CREATE TABLE links_bounded (
+    number INTEGER PRIMARY KEY AUTOINCREMENT,
+    task INTEGER NOT NULL REFERENCES tasks (number),
+    provider TEXT NOT NULL CHECK (provider IN ('gmail', 'outlook', 'yahoo')),
+    message_id TEXT NOT NULL CHECK (
+        length(message_id) BETWEEN 1 AND 512 AND instr(message_id, char(0)) = 0
+    ),
+    link TEXT NOT NULL CHECK (length(link) BETWEEN 1 AND 2048 AND instr(link, char(0)) = 0),
+    created_at TEXT NOT NULL
+) STRICT;
+
+INSERT INTO tasks_bounded SELECT * FROM tasks;
+INSERT INTO links_bounded SELECT * FROM links;
+DROP TABLE links;
+DROP TABLE tasks;
+ALTER TABLE tasks_bounded RENAME TO tasks;
+ALTER TABLE links_bounded RENAME TO links;
+CREATE INDEX links_by_task ON links (task, number);
+CREATE TRIGGER tasks_are_never_removed BEFORE DELETE ON tasks
+BEGIN
+    SELECT RAISE(ABORT, 'tasks are never removed');
+END;
+DELETE FROM sqlite_sequence WHERE name IN ('tasks', 'links');
+INSERT INTO sqlite_sequence SELECT name, seq FROM reference_sequences;
+DROP TABLE reference_sequences;
+"""
+
+MIGRATIONS: tuple[str, ...] = (MIGRATION_1, MIGRATION_2, MIGRATION_3)
 SCHEMA_VERSION = len(MIGRATIONS)

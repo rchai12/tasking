@@ -452,7 +452,7 @@ SEARCHES: dict[str, tuple[str, str, str]] = {
         "print(1)",
     ),
     "clock": (
-        "time read only in `clock.py`, through the module",
+        "time read only in clock.py, through the module",
         "git grep --untracked -n -E 'datetime\\.now|datetime\\.utcnow|date\\.today|time\\.time\\(|"
         "from docket\\.(clock|ids) import' -- src ':!src/docket/clock.py'",
         "x = datetime.now()",

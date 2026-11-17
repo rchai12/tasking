@@ -78,6 +78,8 @@ The data folder is `DOCKET_DATA_DIR`, by default `~/Library/Application Support/
 
 Task ids are `t` followed by the row's number (`t1`, `t2`), given out in order and never reused once committed; they fit the email service's rule (ASCII letters, digits, `-` and `_`). Titles are 1 to 100 characters with no leading or trailing whitespace and no control, format or line-separator characters (Unicode categories Cc, Cf, Zl, Zp); a title that breaks the rule is refused, never rewritten.
 
+Phase 2g specifies email references as plain text: `message_id` is 1–512 Unicode code points and `link` is 1–2,048, with no Cc, Cf, Zl or Zp characters. Neither field is trimmed, normalized or parsed as a URL. `docket.references` supplies the pure policy to core and the upgrade preflight. Migration 3 bounds stored lengths and prevents NUL length bypasses, rebuilding tasks and links without changing IDs, audit rows, retry JSON or sequences. Invalid legacy references stop the upgrade with `invalid stored reference: <task/link id> <field>`; no automatic repair is performed. Foreign keys are disabled only for that rebuild and restored on every exit.
+
 The store (`docket.store`, Phase 1b) is one SQLite file, `docket.sqlite3`, mode `0600`, in WAL mode with a 5-second busy timeout, so the service, the `docket` command and the MCP server can each open it. Every write runs inside `Store.transaction()` (`BEGIN IMMEDIATE`), so a change and its audit row commit together or not at all. Tasks are never deleted and audit rows never changed or removed; triggers enforce both.
 
 ## Task states
@@ -120,7 +122,7 @@ Only done and cancelled stop reminders. A new deadline, a new work time, a snooz
 | provider, message_id, link | The email's reference, stored with the task |
 
 - Built in `docket.intake` (Phase 2b, no HTTP): `accept_task` and `accept_link` return the status and body below; every refusal body is `{"error": <code>}`, and every text field must be a JSON string.
-- Phase 2f's specified contract requires an explicit keyword-only `client` on both intake functions, with no default. HTTP passes the identity matched to the bearer token; the body never supplies it. These routes remain email-only: after checking the retry key, intake refuses any non-string or non-email identity with 422 `invalid_client`, before looking up a task or parsing the body. Missing or unmatched tokens remain 401 `unauthorized`. Valid agent writes still go directly through the core, later through MCP; no agent HTTP client is enabled.
+- Phase 2f requires an explicit keyword-only `client` on both intake functions, with no default. HTTP passes the identity matched to the bearer token; the body never supplies it. These routes remain email-only: after checking the retry key, intake refuses any non-string or non-email identity with 422 `invalid_client`, before looking up a task or parsing the body. Missing or unmatched tokens remain 401 `unauthorized`. Valid agent writes still go directly through the core, later through MCP; no agent HTTP client is enabled.
 - **201** `{"id": ...}` for a new task; **200** with the same id when the key is sent again with the same body; **409** when the key is sent again with a different body; **400** for a missing `Idempotency-Key` (1 to 200 characters); **401** for a missing or wrong token; **422** for an invalid body (exactly the fields above; a title of one line). These match the email service's `FakeTasksApp`, plus 401.
 - The task is created **open**, its reminders are planned and its calendar write is queued, all in one transaction.
 
@@ -229,6 +231,7 @@ docket/
   src/docket/
     config.py, clock.py, ids.py, keychain.py
     deadlines.py        time rules (critical)
+    references.py       email reference text bounds and characters (critical, Phase 2g)
     schema.py, store.py the database: migrations, reads, writes in transactions (critical)
     core.py             create, change, end tasks; audit (critical)
     intake/             the API routes: tasks, links, proposals, presses
