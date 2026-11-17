@@ -81,7 +81,7 @@ def test_an_approved_email_task_is_created(
     store: Store, monkeypatch: pytest.MonkeyPatch, body: dict[str, object], deadline: object
 ) -> None:
     fixed_times(monkeypatch, NOW)
-    assert accept_task(store, key=KEY, body=body) == Answer(201, {"id": "t1"})
+    assert accept_task(store, client="email", key=KEY, body=body) == Answer(201, {"id": "t1"})
     task = store.task("t1")
     assert task is not None
     assert (task.title, task.state, task.source, task.deadline) == (
@@ -103,8 +103,8 @@ def test_a_repeat_answers_200_with_the_same_id(
     store: Store, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     fixed_times(monkeypatch, NOW, LATER)
-    assert accept_task(store, key=KEY, body=BODY) == Answer(201, {"id": "t1"})
-    assert accept_task(store, key=KEY, body=dict(reversed(BODY.items()))) == Answer(
+    assert accept_task(store, client="email", key=KEY, body=BODY) == Answer(201, {"id": "t1"})
+    assert accept_task(store, client="email", key=KEY, body=dict(reversed(BODY.items()))) == Answer(
         200, {"id": "t1"}
     )
     assert [task.id for task in store.tasks()] == ["t1"]
@@ -112,10 +112,10 @@ def test_a_repeat_answers_200_with_the_same_id(
 
 def test_a_reused_key_answers_409(store: Store, monkeypatch: pytest.MonkeyPatch) -> None:
     fixed_times(monkeypatch, NOW, LATER)
-    accept_task(store, key=KEY, body=BODY)
-    assert accept_task(store, key=KEY, body=changed(title="Pay rent today")) == Answer(
-        409, {"error": "key_reused"}
-    )
+    accept_task(store, client="email", key=KEY, body=BODY)
+    assert accept_task(
+        store, client="email", key=KEY, body=changed(title="Pay rent today")
+    ) == Answer(409, {"error": "key_reused"})
     assert [task.title for task in store.tasks()] == ["Pay rent"]
 
 
@@ -128,14 +128,18 @@ def test_a_missing_or_overlong_key_answers_400(
     store: Store, monkeypatch: pytest.MonkeyPatch, key: str | None
 ) -> None:
     fixed_times(monkeypatch)
-    assert accept_task(store, key=key, body=BODY) == Answer(400, {"error": "missing_key"})
-    assert accept_link(store, "t1", key=key, body=LINK) == Answer(400, {"error": "missing_key"})
+    assert accept_task(store, client="email", key=key, body=BODY) == Answer(
+        400, {"error": "missing_key"}
+    )
+    assert accept_link(store, "t1", client="email", key=key, body=LINK) == Answer(
+        400, {"error": "missing_key"}
+    )
     assert store.tasks() == []
 
 
 def test_the_longest_key_is_accepted(store: Store, monkeypatch: pytest.MonkeyPatch) -> None:
     fixed_times(monkeypatch, NOW)
-    assert accept_task(store, key="k" * 200, body=BODY).status == 201
+    assert accept_task(store, client="email", key="k" * 200, body=BODY).status == 201
 
 
 @pytest.mark.parametrize(
@@ -225,16 +229,20 @@ def test_an_invalid_task_answers_422_and_writes_nothing(
     store: Store, monkeypatch: pytest.MonkeyPatch, body: object, code: str
 ) -> None:
     fixed_times(monkeypatch)
-    assert accept_task(store, key=KEY, body=body) == Answer(422, {"error": code})
+    assert accept_task(store, client="email", key=KEY, body=body) == Answer(422, {"error": code})
     assert store.tasks() == []
     assert store.request_key("email", KEY) is None
 
 
 def test_a_follow_up_link_is_added_once(store: Store, monkeypatch: pytest.MonkeyPatch) -> None:
     fixed_times(monkeypatch, NOW, LATER, LATER)
-    accept_task(store, key=KEY, body=BODY)
-    assert accept_link(store, "t1", key=LINK_KEY, body=LINK) == Answer(201, {"id": "l1"})
-    assert accept_link(store, "t1", key=LINK_KEY, body=LINK) == Answer(200, {"id": "l1"})
+    accept_task(store, client="email", key=KEY, body=BODY)
+    assert accept_link(store, "t1", client="email", key=LINK_KEY, body=LINK) == Answer(
+        201, {"id": "l1"}
+    )
+    assert accept_link(store, "t1", client="email", key=LINK_KEY, body=LINK) == Answer(
+        200, {"id": "l1"}
+    )
     assert [(link.id, link.message_id) for link in store.links("t1")] == [
         ("l1", "personal/18c2f0b7")
     ]
@@ -242,19 +250,19 @@ def test_a_follow_up_link_is_added_once(store: Store, monkeypatch: pytest.Monkey
 
 def test_a_link_follows_the_fakes_order(store: Store, monkeypatch: pytest.MonkeyPatch) -> None:
     fixed_times(monkeypatch, NOW, LATER, LATER)
-    accept_task(store, key=KEY, body=BODY)
-    assert accept_link(store, "t9", key=LINK_KEY, body={"bad": 1}) == Answer(
+    accept_task(store, client="email", key=KEY, body=BODY)
+    assert accept_link(store, "t9", client="email", key=LINK_KEY, body={"bad": 1}) == Answer(
         404, {"error": "unknown_task"}
     )
-    assert accept_link(store, "t1", key=LINK_KEY, body={"bad": 1}) == Answer(
+    assert accept_link(store, "t1", client="email", key=LINK_KEY, body={"bad": 1}) == Answer(
         422, {"error": "invalid_body"}
     )
-    accept_link(store, "t1", key=LINK_KEY, body=LINK)
+    accept_link(store, "t1", client="email", key=LINK_KEY, body=LINK)
     reused = {**LINK, "link": "https://mail.example/other"}
-    assert accept_link(store, "t1", key=LINK_KEY, body=reused) == Answer(
+    assert accept_link(store, "t1", client="email", key=LINK_KEY, body=reused) == Answer(
         409, {"error": "key_reused"}
     )
-    assert accept_link(store, "t9", key=LINK_KEY, body=LINK) == Answer(
+    assert accept_link(store, "t9", client="email", key=LINK_KEY, body=LINK) == Answer(
         404, {"error": "unknown_task"}
     )
 
@@ -294,32 +302,34 @@ def test_an_invalid_link_writes_nothing(
     store: Store, monkeypatch: pytest.MonkeyPatch, task_id: str, body: object, answer: Answer
 ) -> None:
     fixed_times(monkeypatch, NOW)
-    accept_task(store, key=KEY, body=BODY)
-    assert accept_link(store, task_id, key=LINK_KEY, body=body) == answer
+    accept_task(store, client="email", key=KEY, body=BODY)
+    assert accept_link(store, task_id, client="email", key=LINK_KEY, body=body) == answer
     assert store.links("t1") == []
 
 
 def test_a_link_may_follow_a_done_task(store: Store, monkeypatch: pytest.MonkeyPatch) -> None:
     fixed_times(monkeypatch, NOW, NOW, LATER)
-    accept_task(store, key=KEY, body=BODY)
+    accept_task(store, client="email", key=KEY, body=BODY)
     core.change_state(store, "t1", "done", actor="owner")
-    assert accept_link(store, "t1", key=LINK_KEY, body=LINK) == Answer(201, {"id": "l1"})
+    assert accept_link(store, "t1", client="email", key=LINK_KEY, body=LINK) == Answer(
+        201, {"id": "l1"}
+    )
 
 
 def test_intake_reads_only_the_cores_clock(store: Store, monkeypatch: pytest.MonkeyPatch) -> None:
     fixed_times(monkeypatch, NOW, LATER)
-    assert accept_task(store, key=KEY, body=BODY).status == 201
-    assert accept_link(store, "t1", key=LINK_KEY, body=LINK).status == 201
+    assert accept_task(store, client="email", key=KEY, body=BODY).status == 201
+    assert accept_link(store, "t1", client="email", key=LINK_KEY, body=LINK).status == 201
 
 
 def test_answers_never_echo_the_request(store: Store, monkeypatch: pytest.MonkeyPatch) -> None:
     fixed_times(monkeypatch, NOW)
     secret = "Rent for flat 4B, account 0042"
     answers = [
-        accept_task(store, key=KEY, body=changed(title=secret + "\n")),
-        accept_task(store, key=KEY, body=changed(extra=secret)),
-        accept_task(store, key=secret, body=changed(provider=secret)),
-        accept_link(store, secret, key=LINK_KEY, body=LINK),
+        accept_task(store, client="email", key=KEY, body=changed(title=secret + "\n")),
+        accept_task(store, client="email", key=KEY, body=changed(extra=secret)),
+        accept_task(store, client="email", key=secret, body=changed(provider=secret)),
+        accept_link(store, secret, client="email", key=LINK_KEY, body=LINK),
     ]
     assert all(set(answer.body) == {"error"} for answer in answers)
     assert not any(secret in str(answer.body) for answer in answers)

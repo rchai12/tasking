@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from datetime import date, time
 
 from docket.core import (
+    INVALID_CLIENT,
     INVALID_SOURCE,
     KEY_REUSED,
     UNKNOWN_TASK,
@@ -37,9 +38,11 @@ class Answer:
     body: dict[str, object]
 
 
-def accept_task(store: Store, *, key: str | None, body: object) -> Answer:
+def accept_task(store: Store, *, client: object, key: str | None, body: object) -> Answer:
     if not _valid_key(key):
         return Answer(400, {"error": MISSING_KEY})
+    if not isinstance(client, str) or client != "email":
+        return Answer(422, {"error": INVALID_CLIENT})
     parsed = _object(body, _TASK_FIELDS, _TASK_TEXT)
     if parsed is None:
         return Answer(422, {"error": INVALID_BODY})
@@ -50,7 +53,7 @@ def accept_task(store: Store, *, key: str | None, body: object) -> Answer:
     try:
         outcome = create_task_once(
             store,
-            client="email",
+            client=client,
             key=key,
             request=parsed,
             title=parsed["title"],
@@ -66,9 +69,13 @@ def accept_task(store: Store, *, key: str | None, body: object) -> Answer:
     return Answer(status, {"id": outcome.task.id})
 
 
-def accept_link(store: Store, task_id: str, *, key: str | None, body: object) -> Answer:
+def accept_link(
+    store: Store, task_id: str, *, client: object, key: str | None, body: object
+) -> Answer:
     if not _valid_key(key):
         return Answer(400, {"error": MISSING_KEY})
+    if not isinstance(client, str) or client != "email":
+        return Answer(422, {"error": INVALID_CLIENT})
     if store.task(task_id) is None:
         return Answer(404, {"error": UNKNOWN_TASK})
     parsed = _object(body, _LINK_FIELDS, _LINK_FIELDS)
@@ -80,7 +87,7 @@ def accept_link(store: Store, task_id: str, *, key: str | None, body: object) ->
         outcome = add_link(
             store,
             task_id,
-            client="email",
+            client=client,
             key=key,
             request=parsed,
             provider=parsed["provider"],

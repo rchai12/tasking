@@ -69,7 +69,8 @@ async def _handle(
     tokens: Mapping[str, str],
     task_id: str | None,
 ) -> JSONResponse:
-    if not _bearer(request.headers.get("authorization"), tokens):
+    client = _bearer(request.headers.get("authorization"), tokens)
+    if client is None:
         return _error(UNAUTHORIZED, 401, authenticate=True)
     raw = await request.body()
     if len(raw) > MAX_BODY:
@@ -83,19 +84,22 @@ async def _handle(
         return _error(INVALID_JSON, 422)
     with open_store() as store:
         if task_id is None:
-            answer = accept_task(store, key=key, body=body)
+            answer = accept_task(store, client=client, key=key, body=body)
         else:
-            answer = accept_link(store, task_id, key=key, body=body)
+            answer = accept_link(store, task_id, client=client, key=key, body=body)
     return JSONResponse(
         answer.body, status_code=answer.status, headers={"Cache-Control": "no-store"}
     )
 
 
-def _bearer(header: str | None, tokens: Mapping[str, str]) -> bool:
+def _bearer(header: str | None, tokens: Mapping[str, str]) -> str | None:
     if header is None or not header.startswith(_BEARER):
-        return False
+        return None
     presented = header[len(_BEARER) :]
-    return any(hmac.compare_digest(presented, known) for known in tokens)
+    for known, identity in tokens.items():
+        if hmac.compare_digest(presented, known):
+            return identity
+    return None
 
 
 def _error(code: str, status: int, *, authenticate: bool = False) -> JSONResponse:

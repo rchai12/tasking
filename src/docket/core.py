@@ -203,11 +203,11 @@ def create_task_once(
     message_id: str | None = None,
     link: str | None = None,
 ) -> Outcome:
-    if client not in _CLIENTS:
+    if not isinstance(client, str) or client not in _CLIENTS:
         raise CoreError(INVALID_CLIENT)
     _check_key(key)
     check_title(title)
-    if source != client:
+    if not isinstance(source, str) or source != client:
         raise CoreError(INVALID_SOURCE)
     _check_reference(source, provider, message_id, link)
     if _work_after_deadline(deadline, work):
@@ -269,10 +269,14 @@ def add_link(
     message_id: object,
     link: object,
 ) -> LinkOutcome:
-    if client != "email":
+    if not isinstance(client, str) or client != "email":
         raise CoreError(INVALID_CLIENT)
     _check_key(key)
-    if provider not in _PROVIDERS or any(not _nonempty(part) for part in (message_id, link)):
+    if (
+        not isinstance(provider, str)
+        or provider not in _PROVIDERS
+        or any(not _nonempty(part) for part in (message_id, link))
+    ):
         raise CoreError(INVALID_REFERENCE)
     at = clock.now()
     with store.transaction():
@@ -325,7 +329,12 @@ def _nonempty(value: object) -> bool:
 
 def _check_reference(source: str, provider: object, message_id: object, link: object) -> None:
     if source == "email":
-        if not (_nonempty(message_id) and _nonempty(link) and provider in _PROVIDERS):
+        if not (
+            isinstance(provider, str)
+            and provider in _PROVIDERS
+            and _nonempty(message_id)
+            and _nonempty(link)
+        ):
             raise CoreError(INVALID_REFERENCE)
         return
     if (provider, message_id, link) != (None, None, None):

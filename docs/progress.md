@@ -130,3 +130,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - An empty progress file is written as the entry alone, with no leading blank line.
 - Follow-ups:
   - None
+
+## Phase 2f: Authenticated client identity (2026-11-17)
+- Tests: 795 -> 837 (given 41)
+- New public names: None
+- Changed files: 6
+- Deviations:
+  - None
+- Follow-ups:
+  - None
