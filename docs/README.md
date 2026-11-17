@@ -14,6 +14,7 @@ The tasks app (the Python package `docket`) is the single source of truth for ta
 | [Roadmap](roadmap.md) | Build order, acceptance tests, work in the other projects, deferred items |
 | [Open questions](open-questions.md) | Decisions still to make |
 | [Testing](testing.md) | Test layers, rules and critical modules |
+| [Audit](audit.md) | Maintainability and risk review of the code as of Phase 2e (Nov 15, 2026) |
 | [Handoffs](handoffs/) | What the [email service](handoffs/emails.md), [Conductor](handoffs/langgraph.md) and [finances](handoffs/finances.md) need to know from these decisions |
 | [Phase conventions](phase-conventions.md) | What every phase spec and verification guide assume: starting checks, rules, acceptance, the progress entry, the verdict |
 | [phases/](phases/) | Detailed specs, one per phase |
