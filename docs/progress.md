@@ -213,10 +213,10 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 
 ## Phase 2o: Shared product test support (2026-11-18)
-- Tests: 1261 -> 1267 (given 31)
+- Tests: 1261 -> 1295 (given 32)
 - New public names: tests.support: path, store, refused
-- Changed files: 11
+- Changed files: 4
 - Deviations:
-  - The seeded adapter references its imported base_store with a no-op decorator so Ruff keeps the alias; the seed statements are unchanged.
+  - None
 - Follow-ups:
-  - Stopped: tests/integration/test_core_references.py | the shared store fixture's path argument receives each pinned path parameter, so Store is constructed with a case label | give store a fixture argument whose name is not path, or rename those pinned parameters
+  - None

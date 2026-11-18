@@ -53,8 +53,8 @@ def path(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def store(path: Path) -> Iterator[Store]:
-    with Store(path) as opened:
+def store(tmp_path: Path) -> Iterator[Store]:
+    with Store(tmp_path / "docket.sqlite3") as opened:
         yield opened
 
 

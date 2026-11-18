@@ -60,6 +60,8 @@ CHILD = textwrap.dedent(
     from tests.support import store
     from tests.support import store as base_store
 
+    __all__ = ["base_store"]
+
     assert opens == [] and clocks == []
 
     held = []
@@ -85,7 +87,6 @@ CHILD = textwrap.dedent(
             first.tasks()
         assert clocks == []
 
-    @(lambda fixture: (lambda function: function))(base_store)
     @pytest.fixture
     def seeded(base_store):
         with base_store.transaction():

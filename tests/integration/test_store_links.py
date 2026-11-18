@@ -19,12 +19,13 @@ from docket.store import (
 from tests.support import path as path
 from tests.support import store as base_store
 
+__all__ = ["base_store"]
+
 T0 = datetime(2026, 11, 14, 9, 0, tzinfo=UTC)
 T1 = datetime(2026, 11, 14, 9, 30, 0, 250000, tzinfo=UTC)
 GMAIL = {"provider": "gmail", "message_id": "personal/18c2f0a2", "link": "https://mail.example/2"}
 
 
-@(lambda fixture: lambda function: function)(base_store)
 @pytest.fixture
 def store(base_store: Store):
     with base_store.transaction():
