@@ -4,6 +4,8 @@ Spec: `docs/phases/phase-02o-shared-product-test-support.md`. Follow `docs/phase
 
 ## 1. Coder ran
 
+**Correction context (Nov 18):** the first implementation f0c9972 stopped on a spec-caused fixture collision, not a changed test body. Review the resumed diff from the corrected-handoff commit and inspect the whole existing eight-consumer/support implementation, including f0c9972. The original fixture dependency is superseded by store(tmp_path). The explicit seeded __all__ export replaces the no-op decorator. Corrected givens have 32 cases; preservation also runs all 28 real reference cases. All gates and searches are live again. No report should treat the first probe’s old success as runtime compatibility evidence.
+
 Stop with FAIL ("the coder did not run") if any of these is missing:
 
 - `tests/unit/test_product_test_support_more.py`
@@ -15,13 +17,13 @@ Stop with FAIL ("the baseline is not committed") if `git ls-files --error-unmatc
 
 ## 2. Gates
 
-Run each from the repository root, in this order: `.venv/bin/python scripts/accept.py --phase 2o --guide` runs them and the searches, one line each. Given test count: 31.
+Run each from the repository root, in this order: `.venv/bin/python scripts/accept.py --phase 2o --guide` runs them and the searches, one line each. Given test count: 32.
 
 | # | Command | Must show |
 |---|---|---|
-| G1 | `.venv/bin/python -m pytest --no-cov -q --ignore=tests/unit/test_product_test_support.py` | at least 1261 passed, 0 failed (the coder's `*_more.py` tests add to the count) |
-| G2 | `.venv/bin/python scripts/check.py --first core` | last line `All checks passed.`; summary lists `tests (core): passed`; at least 1292 passed, 0 failed, 0 skipped |
-| G3 | `.venv/bin/python -m pytest tests/unit/test_product_test_support.py --no-cov -q` | `31 passed` |
+| G1 | `.venv/bin/python -m pytest --no-cov -q --ignore=tests/unit/test_product_test_support.py` | `1261` or more passed, 0 failed, 0 errors |
+| G2 | `.venv/bin/python scripts/check.py --first core` | last line `All checks passed.`; summary lists `tests (core): passed`; at least 1293 passed, 0 failed, 0 skipped |
+| G3 | `.venv/bin/python -m pytest tests/unit/test_product_test_support.py --no-cov -q` | `32 passed` |
 | G4 | `.venv/bin/python -m coverage report --include=src/docket/core.py,src/docket/store.py,docket_tools/reports.py,docket_tools/acceptance.py,docket_tools/spotcheck.py --fail-under=100`, right after `check.py` | exit 0, `TOTAL` at `100%` |
 | G5 | `.venv/bin/python docs/verification/probe-02o.py` | last line `FAILURES 0` |
 | G6 | `grep -c "^## Phase 2o: " docs/progress.md` | `1` |
@@ -32,7 +34,7 @@ Run each from the repository root, in this order: `.venv/bin/python scripts/acce
 
 ## 3. Spot checks
 
-Audit explicit shared bindings in all eight consumers first. Seven import the same empty store/path fixtures; the seeded module imports base_store and retains only its original seed adapter. No fixture plugin, global guard or settings/clock lookup is added. The strict helper checks CoreError type/code/text, and old support functions, all 304 scoped case IDs, other bodies and frozen source/config files remain pinned. No test files or IDs move and both coverage gates stay intact.
+Audit explicit shared bindings in all eight consumers first. Seven import the same empty store/path fixtures; the seeded module imports base_store and retains only its original seed adapter. No fixture plugin, global guard or settings/clock lookup is added. The store depends on tmp_path directly; path case labels must never be used as database paths. The seeded adapter declares only __all__ = ["base_store"] and its original fixture decorator, without a no-op decorator. The strict helper checks CoreError type/code/text, and old support functions, all 304 scoped case IDs, other bodies and frozen source/config files remain pinned. No test files or IDs move and both coverage gates stay intact.
 
 Run mutations only in a clean disposable implementation checkout with imports directed at that checkout. S1–S2 were checked using the existing strict core helper as a stand-in, S3 against the discarded fixture-only patch, and S4–S6 against baseline preservation guards. No complete shared-support migration was built. For non-src helper/test targets use the manual restoration procedure; the product mutation in S3 is an intentional disposable test of the lifetime assertion, not an authorized implementation edit.
 
@@ -57,7 +59,7 @@ A different failure from the "Broken" column is a note, not a finding; a pass is
 
 Run `.venv/bin/python docs/verification/probe-02o.py` from the repository root. It is a given file: do not edit it. Every line must end in `ok`; the last line must be `FAILURES 0`. A stop at the probe's own `assert` lines, before its self-check prints `ok`, is the probe's fault: report it under "For the architect", not as a finding. It touches no network, Keychain or real data folder.
 
-The probe self-checks its eight-file/304-case inventory, then verifies actual shared fixture/refusal identities, strict refusal behavior, real temporary Store lifetime and unchanged body/seed/collection fingerprints. Baseline reports three missing-helper/binding failures and passes the preservation guard. Every SQLite database and case is synthetic. `--oracle-only` must print FAILURES 0; no new helper import can crash the main run.
+The probe self-checks its eight-file/304-case inventory, then verifies actual shared fixture/refusal identities, strict refusal behavior, real temporary Store lifetime, unchanged body/seed/collection fingerprints and actual execution of all 28 reference cases. Runtime execution must pass, not just collection. Baseline reports three missing-helper/binding failures and passes the preservation guard. Every SQLite database and case is synthetic. `--oracle-only` must print FAILURES 0; no new helper import can crash the main run.
 
 ## 5. Searches
 

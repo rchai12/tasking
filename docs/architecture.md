@@ -102,7 +102,7 @@ Phase 2n specifies root `docket_tools/` for repository-only report, acceptance a
 
 ## Shared product test support
 
-Phase 2o specifies shared product-test support without changing runtime or tooling code. `tests.support` supplies explicit default function-scoped `path` and `store` fixtures and one `refused(code, call)` helper that requires CoreError with matching code and string. Eight consumer modules import those same objects locally; the seeded link-store fixture borrows `base_store` and retains its exact transaction/seed data. No conftest plugin or eager/global connection is added. Existing files, 304 scoped case IDs, assertions, support helpers and global guards remain pinned. Product and tooling file consolidation are separate later phases with explicit selector/manifest migration.
+Phase 2o specifies shared product-test support without changing runtime or tooling code. `tests.support` supplies explicit default function-scoped `path` and `store` fixtures and one `refused(code, call)` helper that requires CoreError with matching code and string. The store fixture depends directly on builtin `tmp_path`, independently of the optional shared `path` fixture, because consumers use `path` as a parametrized case label. Eight consumer modules import the same fixtures locally; the seeded link-store fixture declares `__all__ = ["base_store"]`, borrows that fixture and retains its exact transaction/seed data without a no-op decorator. No conftest plugin or eager/global connection is added. Existing files, 304 scoped case IDs, assertions, support helpers and global guards remain pinned. Product and tooling file consolidation are separate later phases with explicit selector/manifest migration.
 
 ## Shared domain rules and parsing
 

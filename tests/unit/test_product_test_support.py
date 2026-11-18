@@ -16,6 +16,7 @@ from tests.product_support_cases import (
     collect_consumers,
     consumer_digest,
     digest,
+    execute_reference_cases,
     seed_digest,
 )
 
@@ -40,6 +41,15 @@ def test_existing_cases_assertions_and_helpers_remain_unchanged(path: str) -> No
 
 def test_seeded_link_fixture_keeps_exact_setup_and_values() -> None:
     assert seed_digest(ROOT / "tests/integration/test_store_links.py") == MANIFEST["seed"]
+    module = importlib.import_module("tests.integration.test_store_links")
+    assert module.__all__ == ["base_store"]
+    node = next(
+        node
+        for node in ast.parse((ROOT / "tests/integration/test_store_links.py").read_text()).body
+        if isinstance(node, ast.FunctionDef) and node.name == "store"
+    )
+    assert len(node.decorator_list) == 1
+    assert ast.unparse(node.decorator_list[0]) == "pytest.fixture"
 
 
 @pytest.mark.parametrize("name", list(MANIFEST["support"]))
@@ -128,6 +138,7 @@ def test_shared_store_is_empty_and_closes_once_on_every_exit(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: bool
 ) -> None:
     fixture = support.store
+    assert list(inspect.signature(fixture.__wrapped__).parameters) == ["tmp_path"]
     marker = fixture._fixture_function_marker
     assert (marker.name, marker.scope, marker.autouse) == (None, "function", False)
     calls = []
@@ -138,7 +149,7 @@ def test_shared_store_is_empty_and_closes_once_on_every_exit(
         return original(self)
 
     monkeypatch.setattr(Store, "close", close)
-    generator = fixture.__wrapped__(tmp_path / "docket.sqlite3")
+    generator = fixture.__wrapped__(tmp_path)
     opened = next(generator)
     try:
         assert opened.tasks() == []
@@ -169,3 +180,12 @@ def test_all_304_existing_consumer_cases_keep_their_nodeids_and_sections() -> No
         check.section_of(path.removeprefix("tests/"), sections) == "core"
         for path in MANIFEST["files"]
     )
+
+
+def test_parametrized_path_cases_execute_with_the_shared_store() -> None:
+    done = execute_reference_cases()
+    summary = done.stdout.strip().splitlines()[-1] if done.stdout.strip() else "no output"
+    assert done.returncode == 0, (
+        f"expected 28 reference cases passed; actual {summary}; {done.stderr[-500:]}"
+    )
+    assert "28 passed" in done.stdout

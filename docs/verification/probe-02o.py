@@ -2,6 +2,7 @@
 
 import argparse
 import importlib
+import inspect
 import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -15,6 +16,7 @@ from tests.product_support_cases import (  # noqa: E402
     ROOT,
     collect_consumers,
     consumer_digest,
+    execute_reference_cases,
     seed_digest,
 )
 
@@ -31,6 +33,10 @@ def bindings() -> None:
         assert module.path is support.path, f"{path}: path fixture not shared"
         name = "base_store" if path.endswith("test_store_links.py") else "store"
         assert getattr(module, name) is support.store, f"{path}: store fixture not shared"
+        if path.endswith("test_store_links.py"):
+            assert getattr(module, "__all__", None) == ["base_store"], (
+                "missing explicit fixture re-export"
+            )
     for name in ("tests.integration.test_core", "tests.integration.test_core_keyed"):
         assert importlib.import_module(name).refused is support.refused, (
             f"{name}: refusal helper copied"
@@ -51,10 +57,13 @@ def refusal() -> None:
 
 
 def lifetime() -> None:
+    assert list(inspect.signature(support.store.__wrapped__).parameters) == ["tmp_path"], (
+        "store fixture must depend directly on tmp_path, not the parametrized path label"
+    )
     with TemporaryDirectory() as folder:
         path = support.path.__wrapped__(Path(folder))
         assert path == Path(folder) / "docket.sqlite3"
-        generator = support.store.__wrapped__(path)
+        generator = support.store.__wrapped__(Path(folder))
         store = next(generator)
         try:
             assert store.tasks() == [], "shared store was unexpectedly seeded"
@@ -75,6 +84,12 @@ def preservation() -> None:
         assert consumer_digest(ROOT / path) == expected, f"{path}: test body changed"
     assert seed_digest(ROOT / "tests/integration/test_store_links.py") == MANIFEST["seed"]
     assert collect_consumers() == MANIFEST["cases"], "existing test node IDs/counts changed"
+    done = execute_reference_cases()
+    summary = done.stdout.strip().splitlines()[-1] if done.stdout.strip() else "no output"
+    assert done.returncode == 0, (
+        "runtime fixture collision: expected 28 reference cases passed; " + summary
+    )
+    assert "28 passed" in done.stdout
 
 
 def main() -> int:

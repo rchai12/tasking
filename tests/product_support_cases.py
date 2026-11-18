@@ -24,6 +24,17 @@ def consumer_digest(path):
         for node in tree.body
         if not isinstance(node, (ast.Import, ast.ImportFrom))
         and not (isinstance(node, ast.FunctionDef) and node.name in {"store", "path", "refused"})
+        and not (
+            path.name == "test_store_links.py"
+            and isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)
+            and node.targets[0].id == "__all__"
+            and isinstance(node.value, ast.List)
+            and len(node.value.elts) == 1
+            and isinstance(node.value.elts[0], ast.Constant)
+            and node.value.elts[0].value == "base_store"
+        )
     ]
     return digest(tree)
 
@@ -50,23 +61,23 @@ def seed_digest(path):
     return digest(module)
 
 
-def collect_consumers():
+def _run_consumers(paths, *, collect):
     environment = {
         **os.environ,
         "PYTHONPATH": os.pathsep.join((str(ROOT / "src"), str(ROOT))),
         "PYTHONDONTWRITEBYTECODE": "1",
     }
-    done = subprocess.run(
+    return subprocess.run(
         [
             sys.executable,
             "-m",
             "pytest",
-            "--collect-only",
+            *(["--collect-only"] if collect else []),
             "--no-cov",
             "-q",
             "-p",
             "no:cacheprovider",
-            *MANIFEST["files"],
+            *paths,
         ],
         cwd=ROOT,
         env=environment,
@@ -74,6 +85,14 @@ def collect_consumers():
         text=True,
         timeout=30,
     )
+
+
+def execute_reference_cases():
+    return _run_consumers(["tests/integration/test_core_references.py"], collect=False)
+
+
+def collect_consumers():
+    done = _run_consumers(MANIFEST["files"], collect=True)
     assert done.returncode == 0, done.stdout[-1200:] + done.stderr[-500:]
     return sorted(
         line for line in done.stdout.splitlines() if line.startswith("tests/") and "::" in line
