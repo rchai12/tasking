@@ -19,7 +19,7 @@ def oracle() -> None:
         "5fc2bdd95fa706cf2c15b6befb304f10ada4467025d60bb2050815422aa78235",
         "dcbd5ff2ea213ef9258a2ad5f1ecc22fa47dc05489436840ea426c05fcd354d8",
     ]
-    assert schema.SCHEMA_VERSION == 4 and len(PLAN) == 9 and len(WITH_WORK) == 10
+    assert schema.SCHEMA_VERSION == 5 and len(PLAN) == 9 and len(WITH_WORK) == 10
     with sqlite3.connect(":memory:") as db:
         db.executescript("".join(schema.MIGRATIONS))
         assert [row[1] for row in db.execute("PRAGMA table_info(reminders)")] == [

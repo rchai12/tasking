@@ -41,7 +41,7 @@ def test_migration_preserves_rows_ids_sequences_and_invariants(
             assert made.id == "l3"
     db = sqlite3.connect(path, isolation_level=None)
     try:
-        assert db.execute("PRAGMA user_version").fetchone() == (4,)
+        assert db.execute("PRAGMA user_version").fetchone() == (5,)
         assert db.execute("PRAGMA foreign_key_check").fetchall() == []
         if start == 2:
             with pytest.raises(sqlite3.IntegrityError, match="tasks are never removed"):

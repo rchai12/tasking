@@ -170,5 +170,47 @@ BEGIN
 END;
 """
 
-MIGRATIONS: tuple[str, ...] = (MIGRATION_1, MIGRATION_2, MIGRATION_3, MIGRATION_4)
+MIGRATION_5 = """
+CREATE TABLE posts (
+    number INTEGER PRIMARY KEY AUTOINCREMENT CHECK (number > 0),
+    task INTEGER NOT NULL REFERENCES tasks (number),
+    key TEXT NOT NULL UNIQUE CHECK (length(key) BETWEEN 1 AND 200),
+    kind TEXT NOT NULL CHECK (kind IN ('start', 'before', 'due_soon', 'due', 'late')),
+    missed INTEGER NOT NULL CHECK (missed >= 0),
+    queued_at TEXT NOT NULL,
+    claimed_at TEXT,
+    sent_at TEXT
+) STRICT;
+CREATE TABLE post_reminders (
+    post INTEGER NOT NULL REFERENCES posts (number),
+    reminder INTEGER NOT NULL UNIQUE REFERENCES reminders (number),
+    PRIMARY KEY (post, reminder)
+) STRICT;
+CREATE INDEX posts_unsent ON posts (number) WHERE sent_at IS NULL;
+CREATE TRIGGER posts_are_never_removed BEFORE DELETE ON posts
+BEGIN
+    SELECT RAISE(ABORT, 'posts are never removed');
+END;
+CREATE TRIGGER post_contents_are_immutable
+BEFORE UPDATE OF number, task, key, kind, missed, queued_at ON posts
+BEGIN
+    SELECT RAISE(ABORT, 'post contents are immutable');
+END;
+CREATE TRIGGER post_reminders_are_never_removed BEFORE DELETE ON post_reminders
+BEGIN
+    SELECT RAISE(ABORT, 'post reminders are never removed');
+END;
+CREATE TRIGGER post_reminders_are_immutable BEFORE UPDATE ON post_reminders
+BEGIN
+    SELECT RAISE(ABORT, 'post reminders are immutable');
+END;
+"""
+
+MIGRATIONS: tuple[str, ...] = (
+    MIGRATION_1,
+    MIGRATION_2,
+    MIGRATION_3,
+    MIGRATION_4,
+    MIGRATION_5,
+)
 SCHEMA_VERSION = len(MIGRATIONS)

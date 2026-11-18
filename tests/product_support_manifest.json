@@ -6,8 +6,8 @@
     "tests/integration/test_core_references.py": "159a8c346ccdaddcb541986988372cc158f2b7a522f7fea43af2d92e54cf3151",
     "tests/integration/test_intake.py": "6f9c13efa571157d155e9f1eb2da623af26ba911c1aa2af14bc2a8617271da9f",
     "tests/integration/test_intake_identity.py": "eeaf7d046a9ccdf2086f0b20ea9fceb47f51d937f8e911c3726765718036d1d0",
-    "tests/integration/test_store.py": "e2792c3110c8a5dca38960928538cc26837732ecbf84d8e1adfa507785f18fd3",
-    "tests/integration/test_store_links.py": "819c65cbf04d3efe4300c85751e3461b5e020604db2a4b3947eedc2e0d5d5b44"
+    "tests/integration/test_store.py": "38d4766e515d83ecde24cc2438ccfc087d3eddce22d2bbcb591b31ebfbc94198",
+    "tests/integration/test_store_links.py": "7f778c475d5ae57f531bbeb810b12429220a09a78201f940efca22f7aec23c23"
   },
   "seed": "f147c5e1263bdee6432a52bcc4b10ce67b0c6cc5a1949b22ff97cae207538ca1",
   "support": {
@@ -326,9 +326,9 @@
     "tests/conftest.py": "a9be18f993269440758b50efaf78556b09e3110984fd46c711e35909b74a9c85",
     "pyproject.toml": "4d825190ea4d69d34c8da23635801485151a82f35ec5d741fa934bdd22426cbb",
     "tests/sections.toml": "e4a5455db255d4cf28f0374a2d3c8f708809252167986595d7c022bfa3c611c0",
-    "scripts/critical_modules.txt": "0d91020fed60d31c5ed3c14148f0afe4bd719140de2508dd615fba9bdc5b176e",
+    "scripts/critical_modules.txt": "2c8f03e8eff6b993c42c1b864babc25f741f2606464170214f51623d11b2b7e2",
     "scripts/tooling_modules.txt": "e275ba62b06fb92c7f05e5650a1915c23e481c89dc2bde3e6d719885bd775097",
-    "tests/tooling_boundary_manifest.json": "5698651d73f9f616323d67f225bc13971bbf39e1fd81256cdf426542d0612ebd",
+    "tests/tooling_boundary_manifest.json": "d10e8b1c91430bcf6afdda0185b86d2a1378da1ce441e7b6ba46f85379a20cb3",
     "src/docket/__init__.py": "91447944015cec709e8aa7655f7e9d64e1e4508e7023a57fe3746911c0fc6fed",
     "src/docket/_store_audit.py": "388b2fa63938d1d8557170a8889a2d6af2f2e3c890f61c1e944fbdb63202f658",
     "src/docket/_store_keys.py": "27b24eaf16e14bbfed686e5778073bf911192c91bb82f8bc80c4f103f40ea220",
@@ -489,7 +489,7 @@
     "src/docket/keychain.py": "319534a85eee773a10b33294fc98cb3695311326ad50dde3ebbbbc754a6bc44e",
     "src/docket/parsing.py": "960328fb81fa804cf2a11624123e72dd113a6e3430ad3880e151603158afa691",
     "src/docket/references.py": "d38b411efd3593d013df5d8ebba423ba4a684741669d71c9c9b62a31612cfdd9",
-    "src/docket/schema.py": "2bf3d6be5d393835cda69ed80cb1ce1425f16753cb346a9c0060d1e1b1e5233e",
+    "src/docket/schema.py": "aaa176390689a1a7b0b50dedc1c91c585baa5ae6e9cfa6392683bf260ad0028f",
     "src/docket/serialization.py": "324c49f404bc36c31acbf00df0005411ac4e2d01eb937fb9f6e249163ca05191",
     "src/docket/server.py": "851023ba44cb11e76e418a7c79f5382cc0e0a4dbe1cc53529d25d54e076ec523",
     "src/docket/store.py": {

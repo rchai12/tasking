@@ -32,6 +32,7 @@ Run each with `.venv/bin/python` (before Phase 0 is built, `/opt/homebrew/bin/py
 - `phase_tools.py promote CLONE FILE... --ignore TEST...`: given files into the repository, compared, then the Start count.
 - `phase_tools.py new ...` and `guide SPEC --out FILE`: the spec skeleton and the guide's fixed parts; fill each `TODO`.
 - `phase_tools.py searches SPEC [--cwd DIR] [--plant FILE|auto]`: each search's match count; `--plant` adds `path<TAB>line` lines (or, with `auto`, each catalog search's own line), runs, restores. The catalog (`SEARCHES` in `phase_tools.py`) holds the standing searches with their rules and plant lines; `new --searches` writes them into a spec and `guide` fills their rules.
+- `rehash.py --cwd CLONE [--value MODULE:FUNCTION] PATH...`: after given edits, moves each changed file's byte pins (and helper-computed AST values) in the `tests/*_manifest.json` files, cascading through manifest-of-manifest pins; run once, from manifests that differ from HEAD only by hand edits.
 - `move_inventory.py --help`: record byte-identical test moves, literal document replacements and frozen-key migration fingerprints before implementation; writes only the given inventory, never applies moves or patches.
 - `scripts/accept.py --phase ID [--guide]`, `scripts/spot_check.py`, `scripts/progress.py`, `scripts/check.py --quiet` (Phase 2e): the coder's and verifier's tools; I use `spot_check.py` to confirm a given test catches a mutation.
 - `.claude/hooks/no_reference_build.py`: asks the owner before any write into `src/docket/` under the scratchpad, except in clones named `fail*`, so the clone is always `fail<NN>`.
@@ -91,7 +92,7 @@ For byte-identical test moves, use move_inventory.py to record every case, desti
 
 ### 4. Given tests, in the `fail<NN>` clone
 
-15. Make the clone first (`phase_tools.py clone`) and work only inside it, with every module the phase creates present as an empty stub (or only its given part).
+15. Make the clone first (`phase_tools.py clone`) and work only inside it, running its tests with `PYTHONPATH=<clone>/src:<clone>` (the linked venv imports the repository's `docket` otherwise; Phase 3c's first clone run hid 16 failures that way), with every module the phase creates present as an empty stub (or only its given part).
 16. Write tests in their final formatted shape, and edit them with the Edit tool (exact text, one match), never `sed` regexes. Lint and format-check in the clone and again on the repository after `promote`.
 17. A test never calls the code under test, `get_settings()` included, to build its own assertion after setting the bad input the test is about: take paths from `tmp_path` and values from literals (Phase 1e's zone test called `get_settings()` with the bad zone it had just set, and failed on correct code).
     Structural tests target the role being constrained, not every matching literal: a retry-key bound of 200 must not reject an HTTP status of 200, and SQL ownership rules inspect executable SQL rather than docstrings. Include the legitimate unrelated use when validating the structural check; never force equivalent arithmetic to evade a broad match (Phase 2k).

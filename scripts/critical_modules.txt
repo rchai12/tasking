@@ -21,3 +21,4 @@ _store_keys.py
 _store_tasks.py
 reminders.py
 _store_reminders.py
+_store_posts.py

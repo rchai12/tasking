@@ -72,7 +72,7 @@ The data folder is `DOCKET_DATA_DIR`, by default `~/Library/Application Support/
 | `reminders` | task, kind, fire time, claimed time, sent time, voided time, and held (waiting on a calendar question) |
 | `calendar_links` | task, kind (`deadline` or `work`), calendar, event id, the title and time last written, last checked |
 | `calendar_queue` | Event writes waiting to be sent, retried each round |
-| `posts` | Each card sent to Discord: what it is for, its message id once posted, whether it was answered |
+| `posts` | Each message sent through the notifier: task, retry key, the newest reminder's kind, the missed count, queued, claimed and sent times (migration 5); Stage 4 adds its Discord message id and whether it was answered. `post_reminders` links each reminder to at most one post |
 | `alerts`, `problems` | As in the email service: each problem once when it starts and once when it is fixed |
 | `audit_log` | Every change: when (UTC), what, who or what caused it (press, command, agent, email), before and after |
 
@@ -172,6 +172,8 @@ Conductor calls `create_task` and the other write tools over MCP only after you 
 `POST /proposals` with a source, title, optional deadline, evidence quote and confidence. A proposal posts a card; only your press (or `docket proposals approve`) makes it a task. One follow-up after 30 minutes, then it waits in the daily digest. Nothing is created on a timeout. No source sends proposals in v1; cameras will.
 
 ## Reminder engine (`docket.reminders`, critical)
+
+Phase 3c specifies sending. One pass (`send_due`) reads the clock once; in one transaction it groups each task's due, unclaimed reminders into one post with a key from `ids.new_id()` and claims every unsent post that has no claim or one older than 5 minutes and still has a live reminder; then it sends each claimed post's notice through the `Notifier`, marking it sent on success and releasing its claim on a `NotifierError`. Owner decisions (2026-11-18): two or more due reminders in one pass become one message, "Missed while docket was offline: N reminders." plus the newest reminder's line; only reminders that came due after they were planned count as missed; a refused send is retried every pass with the same key. Delivering once per key is the notifier's contract (the shared Discord service's keyed request).
 
 Phase 3b specifies durable reminder plans in migration 4. Each row has a never-reused r<number>, task FK, shared-domain kind, original UTC fire time, approved planning instant and nullable claimed/sent/voided metadata. Plan identity and time are immutable; rows remain as history. Normal reminder SQL belongs to _store_reminders on the Store connection, with validation/conversion in Store. Reserved claimed/sent fields do not implement a sender in this phase.
 
