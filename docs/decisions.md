@@ -135,3 +135,7 @@ Shared fixtures use default function scope, no explicit pytest decorator name or
 ## Phase 2o fixture correction (architect, Nov 18)
 
 The original store(path) design collided with the existing plain/keyed/link path parameters. The coder followed the spec and correctly stopped; preserve those case parameters, test bodies and IDs. Store instead depends on builtin tmp_path and opens its fixed temporary filename directly. Use an explicit __all__ = ["base_store"] in the seeded consumer instead of a no-op decorator to preserve the imported fixture alias for Ruff. The given normalizer permits only that exact export declaration; seed/test bodies and the manifest remain pinned. Corrected givens/probe execute the real reference cases, not collection alone.
+
+## Cleanup sequencing (2026-11-18)
+
+The owner approved stopping further subdivision of audit test cleanup and preventing it from postponing the reminder engine. Complete independent verification of already implemented Phase 2q, then plan Stage 3 after settling its persistent-ID contract. Phase 2r tooling test organization is deferred maintenance, not a reminder prerequisite. Phase 2s type checking remains separate and requires the owner’s checker/dependency decision. No further prerequisite phases for file organization without explicit owner agreement. Existing phase IDs and historical evidence remain unchanged.
