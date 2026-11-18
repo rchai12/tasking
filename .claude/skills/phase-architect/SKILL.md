@@ -32,6 +32,7 @@ Run each with `.venv/bin/python` (before Phase 0 is built, `/opt/homebrew/bin/py
 - `phase_tools.py promote CLONE FILE... --ignore TEST...`: given files into the repository, compared, then the Start count.
 - `phase_tools.py new ...` and `guide SPEC --out FILE`: the spec skeleton and the guide's fixed parts; fill each `TODO`.
 - `phase_tools.py searches SPEC [--cwd DIR] [--plant FILE|auto]`: each search's match count; `--plant` adds `path<TAB>line` lines (or, with `auto`, each catalog search's own line), runs, restores. The catalog (`SEARCHES` in `phase_tools.py`) holds the standing searches with their rules and plant lines; `new --searches` writes them into a spec and `guide` fills their rules.
+- `move_inventory.py --help`: record byte-identical test moves, literal document replacements and frozen-key migration fingerprints before implementation; writes only the given inventory, never applies moves or patches.
 - `scripts/accept.py --phase ID [--guide]`, `scripts/spot_check.py`, `scripts/progress.py`, `scripts/check.py --quiet` (Phase 2e): the coder's and verifier's tools; I use `spot_check.py` to confirm a given test catches a mutation.
 - `.claude/hooks/no_reference_build.py`: asks the owner before any write into `src/docket/` under the scratchpad, except in clones named `fail*`, so the clone is always `fail<NN>`.
 
@@ -79,6 +80,7 @@ Phases follow the build order in `docs/roadmap.md`: stage N is phase N, split in
 Before sharing pytest fixtures, inspect every consumer’s parametrized names against all transitive fixture dependencies and execute representative colliding cases; successful collection or object-identity checks do not prove runtime fixture compatibility (Phase 2o). Give conventional fixture re-exports such as an explicit __all__ declaration room in preservation guards, rather than forcing no-op decorators to satisfy unused-import lint.
 
 10. Before changing earlier behaviour or adding to a list earlier tests enumerate: `git grep` the tests for its names, messages and values, and give an edit for each test that pins it. A migration moves every schema-version pin: `git grep -n -E 'user_version|SCHEMA_VERSION|schema version' tests`, coder's `_more` files included, and a version standing for "newer" becomes 99 (Phase 2a found 1e's `_more` test using 2).
+For byte-identical test moves, use move_inventory.py to record every case, destination byte hash, historical document replacement and affected frozen-key migration. Preserve old hash values; never refresh a manifest from changed candidate files. Validate actual consumers one move at a time in discarded slices. For merges, also translate historical whole-file positive and negative selectors separately (Phase 2p); renaming an existing frozen path is an explicit migration, not a reason to remove its guard (Phase 2q).
 11. Check the limits the new code meets: titles at most 100 characters and plain text; task ids ASCII letters, digits, `-` and `_`; every deadline a UTC instant plus a zone; Discord's message and button limits; the 3-second answer window for a press; one claim per reminder.
 
 ### 3. Spike
