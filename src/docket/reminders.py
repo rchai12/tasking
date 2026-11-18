@@ -1,11 +1,12 @@
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 from typing import Literal
+from zoneinfo import ZoneInfo
 
 from docket import clock, ids
-from docket.deadlines import INSTANT_MESSAGE, DeadlineError
+from docket.deadlines import INSTANT_MESSAGE, DeadlineError, make_deadline
 from docket.domain import OPEN_STATES
-from docket.notifier import Notice, Notifier, NotifierError
+from docket.notifier import Digest, DigestLine, Notice, Notifier, NotifierError
 from docket.store import Store, Task
 
 LATE_MINUTES = (30, 60, 120, 180, 240, 480, 720)
@@ -91,3 +92,68 @@ def send_due(store: Store, notifier: Notifier) -> int:
             store.mark_post_sent(post.id, at=now)
         sent += 1
     return sent
+
+
+def digest_slot(now: datetime, zone: str, at: time) -> tuple[date, datetime]:
+    home = now.astimezone(ZoneInfo(zone)).date()
+    return home, make_deadline(home, at, zone).at
+
+
+def digest_heading(count: int) -> str:
+    noun = "task" if count == 1 else "tasks"
+    return f"Still open past their deadlines: {count} {noun}."
+
+
+def _past_last_late(task: Task, slot: datetime) -> bool:
+    deadline = task.deadline
+    return (
+        task.state in OPEN_STATES
+        and deadline is not None
+        and deadline.at + timedelta(minutes=LATE_MINUTES[-1]) <= slot
+    )
+
+
+def send_digest(store: Store, notifier: Notifier, *, zone: str, at: time) -> bool:
+    from docket.views import deadline_text
+
+    now = clock.now()
+    day, slot = digest_slot(now, zone, at)
+    if now < slot:
+        return False
+    with store.transaction():
+        if store.digest(day) is None:
+            overdue = [task for task in store.tasks(OPEN_STATES) if _past_last_late(task, slot)]
+            if overdue:
+                store.queue_digest(
+                    day,
+                    tuple(task.id for task in overdue),
+                    key=ids.new_id(),
+                    at=now,
+                )
+        claimed = store.claim_digest(
+            day,
+            at=now,
+            stale_before=now - timedelta(minutes=CLAIM_MINUTES),
+            overdue_before=slot - timedelta(minutes=LATE_MINUTES[-1]),
+        )
+    if claimed is None:
+        return False
+    chosen = []
+    for task_id in claimed.task_ids:
+        task = store.task(task_id)
+        if _past_last_late(task, slot):
+            chosen.append(task)
+    chosen.sort(key=lambda task: (task.deadline.at, int(task.id[1:])))
+    lines = tuple(
+        DigestLine(task.id, task.title, "Was due " + deadline_text(task.deadline, zone, now))
+        for task in chosen
+    )
+    try:
+        notifier.send_digest(Digest(claimed.key, digest_heading(len(lines)), lines))
+    except NotifierError:
+        with store.transaction():
+            store.release_digest(claimed.id, claimed_at=now)
+        return False
+    with store.transaction():
+        store.mark_digest_sent(claimed.id, at=now)
+    return True

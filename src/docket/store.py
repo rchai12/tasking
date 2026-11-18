@@ -6,12 +6,13 @@ import sqlite3
 from collections.abc import Collection, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
 from docket import (
     _store_audit,
+    _store_digests,
     _store_keys,
     _store_links,
     _store_posts,
@@ -39,6 +40,7 @@ _TASK_ID = re.compile(r"t[1-9][0-9]*")
 _LINK_ID = re.compile(r"l[1-9][0-9]*")
 _REMINDER_ID = re.compile(r"r[1-9][0-9]*")
 _POST_ID = re.compile(r"p[1-9][0-9]*")
+_DIGEST_ID = re.compile(r"d[1-9][0-9]*")
 
 
 class _Unchanged:
@@ -113,6 +115,17 @@ class Post:
 
 
 @dataclass(frozen=True)
+class DailyDigest:
+    id: str
+    day: date
+    key: str
+    task_ids: tuple[str, ...]
+    queued_at: datetime
+    claimed_at: datetime | None
+    sent_at: datetime | None
+
+
+@dataclass(frozen=True)
 class RequestKey:
     client: str
     key: str
@@ -175,6 +188,18 @@ def _post_number(post_id: str) -> int | None:
     if _POST_ID.fullmatch(post_id) is None:
         return None
     return int(post_id[1:])
+
+
+def _digest_number(digest_id: str) -> int | None:
+    if _DIGEST_ID.fullmatch(digest_id) is None:
+        return None
+    return int(digest_id[1:])
+
+
+def _digest_day(day: object) -> date:
+    if isinstance(day, datetime) or not isinstance(day, date):
+        raise StoreError("invalid digest day")
+    return day
 
 
 class Store:
@@ -811,6 +836,106 @@ class Store:
     def _require_utc(self, at: datetime) -> None:
         if at.tzinfo is not UTC:
             raise StoreError(INSTANT_MESSAGE)
+
+    def digest(self, day: date) -> DailyDigest | None:
+        row = _store_digests.select_digest(self._connection, _digest_day(day).isoformat())
+        if row is None:
+            return None
+        return self._digest_from(row)
+
+    def queue_digest(
+        self, day: date, task_ids: tuple[str, ...], *, key: str, at: datetime
+    ) -> DailyDigest:
+        self._require_write(at)
+        home = _digest_day(day)
+        if not isinstance(key, str) or not 1 <= len(key) <= domain.REQUEST_KEY_MAX:
+            raise StoreError("invalid digest key")
+        if not task_ids:
+            raise StoreError("a digest needs a task")
+        seen: set[int] = set()
+        numbers: list[int] = []
+        for task_id in task_ids:
+            number = _number(task_id)
+            if number is None:
+                raise StoreError("invalid task id")
+            task = self.task(task_id)
+            if task is None or task.state not in domain.OPEN_STATES or number in seen:
+                raise StoreError(f"task not open: {task_id}")
+            seen.add(number)
+            numbers.append(number)
+        if _store_digests.select_digest(self._connection, home.isoformat()) is not None:
+            raise StoreError(f"digest already queued: {home.isoformat()}")
+        cursor = _store_digests.insert_digest(self._connection, home.isoformat(), key, _instant(at))
+        digest = int(cursor.lastrowid)
+        for number in numbers:
+            _store_digests.insert_digest_task(self._connection, digest, number)
+        row = _store_digests.select_digest_by_number(self._connection, digest)
+        return self._digest_from(row)
+
+    def claim_digest(
+        self, day: date, *, at: datetime, stale_before: datetime, overdue_before: datetime
+    ) -> DailyDigest | None:
+        self._require_write(at)
+        self._require_utc(stale_before)
+        self._require_utc(overdue_before)
+        home = _digest_day(day)
+        row = _store_digests.claim_digest(
+            self._connection,
+            home.isoformat(),
+            _instant(at),
+            _instant(stale_before),
+            _instant(overdue_before),
+            domain.OPEN_STATES,
+        )
+        if row is None:
+            return None
+        return self._digest_from(row)
+
+    def release_digest(self, digest_id: str, *, claimed_at: datetime) -> None:
+        self._require_write(claimed_at)
+        number = self._require_digest(digest_id)
+        _store_digests.release_digest(self._connection, number, _instant(claimed_at))
+
+    def mark_digest_sent(self, digest_id: str, *, at: datetime) -> None:
+        self._require_write(at)
+        number = self._require_digest(digest_id)
+        _store_digests.mark_digest_sent(self._connection, number, _instant(at))
+
+    def _require_digest(self, digest_id: str) -> int:
+        number = _digest_number(digest_id)
+        if (
+            number is None
+            or _store_digests.select_digest_by_number(self._connection, number) is None
+        ):
+            raise StoreError("unknown digest")
+        return number
+
+    def _digest_from(self, row: sqlite3.Row) -> DailyDigest:
+        identifier = f"d{row['number']}"
+        queued_at = self._digest_time(row["queued_at"], identifier)
+        if queued_at is None:
+            raise StoreError(f"invalid stored digest time: {identifier}")
+        members = _store_digests.select_digest_tasks(self._connection, int(row["number"]))
+        return DailyDigest(
+            id=identifier,
+            day=date.fromisoformat(row["day"]),
+            key=row["key"],
+            task_ids=tuple(f"t{member['task']}" for member in members),
+            queued_at=queued_at,
+            claimed_at=self._digest_time(row["claimed_at"], identifier),
+            sent_at=self._digest_time(row["sent_at"], identifier),
+        )
+
+    def _digest_time(self, value: str | None, identifier: str) -> datetime | None:
+        if value is None:
+            return None
+        try:
+            parsed = datetime.fromisoformat(value)
+        except ValueError:
+            raise StoreError(f"invalid stored digest time: {identifier}") from None
+        if parsed.tzinfo is not UTC:
+            raise StoreError(f"invalid stored digest time: {identifier}")
+        return parsed
 
 
 def _startup_gate(path: Path) -> int:

@@ -265,3 +265,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 3d: Daily digest (2026-11-18)
+- Tests: 1558 -> 1650 (given 87)
+- New public names: docket.store: DailyDigest, digest, queue_digest, claim_digest, release_digest, mark_digest_sent; docket.reminders: digest_slot, digest_heading, send_digest
+- Changed files: 5
+- Deviations:
+  - None
+- Follow-ups:
+  - None
