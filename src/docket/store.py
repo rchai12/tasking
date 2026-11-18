@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import cast
 
-from docket import serialization
+from docket import _store_audit, _store_keys, _store_links, serialization
 from docket.config import Settings, prepare_data_dir
 from docket.deadlines import INSTANT_MESSAGE, Deadline, DeadlineError, WorkTime
 from docket.references import LINK_MAX, MESSAGE_ID_MAX, valid_reference
@@ -267,10 +267,14 @@ class Store:
     ) -> AuditEntry:
         self._require_write(at)
         number = self._require_task(task_id)
-        self._connection.execute(
-            "INSERT INTO audit_log (task, at, action, actor, before, after) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
-            (number, _instant(at), action, actor, _json(before), _json(after)),
+        _store_audit.insert_audit(
+            self._connection,
+            number,
+            _instant(at),
+            action,
+            actor,
+            _json(before),
+            _json(after),
         )
         return AuditEntry(
             task_id=task_id,
@@ -312,10 +316,7 @@ class Store:
         number = _number(task_id)
         if number is None:
             return []
-        rows = self._connection.execute(
-            "SELECT at, action, actor, before, after FROM audit_log WHERE task = ? ORDER BY number",
-            (number,),
-        ).fetchall()
+        rows = _store_audit.select_audit(self._connection, number)
         return [
             AuditEntry(
                 task_id=task_id,
@@ -339,10 +340,8 @@ class Store:
     ) -> Link:
         self._require_write(at)
         number = self._require_task(task_id)
-        cursor = self._connection.execute(
-            "INSERT INTO links (task, provider, message_id, link, created_at) "
-            "VALUES (?, ?, ?, ?, ?)",
-            (number, provider, message_id, link, _instant(at)),
+        cursor = _store_links.insert_link(
+            self._connection, number, provider, message_id, link, _instant(at)
         )
         return self._read_link(int(cursor.lastrowid))
 
@@ -350,11 +349,7 @@ class Store:
         number = _number(task_id)
         if number is None:
             return []
-        rows = self._connection.execute(
-            "SELECT number, task, provider, message_id, link, created_at "
-            "FROM links WHERE task = ? ORDER BY number",
-            (number,),
-        ).fetchall()
+        rows = _store_links.select_links(self._connection, number)
         return [self._link_from(row) for row in rows]
 
     def insert_request_key(
@@ -370,10 +365,14 @@ class Store:
         self._require_write(at)
         task_number = self._require_task(task_id)
         link_number = None if link_id is None else self._require_link(link_id)
-        self._connection.execute(
-            "INSERT INTO request_keys (client, key, request, task, link, created_at) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
-            (client, key, _json(request), task_number, link_number, _instant(at)),
+        _store_keys.insert_request_key(
+            self._connection,
+            client,
+            key,
+            _json(request),
+            task_number,
+            link_number,
+            _instant(at),
         )
         return RequestKey(
             client=client,
@@ -385,11 +384,7 @@ class Store:
         )
 
     def request_key(self, client: str, key: str) -> RequestKey | None:
-        row = self._connection.execute(
-            "SELECT client, key, request, task, link, created_at FROM request_keys "
-            "WHERE client = ? AND key = ?",
-            (client, key),
-        ).fetchone()
+        row = _store_keys.select_request_key(self._connection, client, key)
         if row is None:
             return None
         return RequestKey(
@@ -487,18 +482,10 @@ class Store:
         return number
 
     def _link_exists(self, number: int) -> bool:
-        row = self._connection.execute(
-            "SELECT 1 FROM links WHERE number = ?",
-            (number,),
-        ).fetchone()
-        return row is not None
+        return _store_links.select_existence(self._connection, number) is not None
 
     def _read_link(self, number: int) -> Link:
-        row = self._connection.execute(
-            "SELECT number, task, provider, message_id, link, created_at FROM links "
-            "WHERE number = ?",
-            (number,),
-        ).fetchone()
+        row = _store_links.select_link(self._connection, number)
         return self._link_from(cast(sqlite3.Row, row))
 
     def _link_from(self, row: sqlite3.Row) -> Link:

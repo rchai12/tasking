@@ -184,3 +184,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - The unchanged intake replay status is written as 201 minus 1 so intake has no literal 200.
 - Follow-ups:
   - None
+
+## Phase 2l: Audit, link and request-key boundaries (2026-11-17)
+- Tests: 1170 -> 1193 (given 18)
+- New public names: None
+- Changed files: 6
+- Deviations:
+  - Private SQL entry points are insert_audit/select_audit, insert_link/select_links/select_existence/select_link, and insert_request_key/select_request_key.
+- Follow-ups:
+  - None
