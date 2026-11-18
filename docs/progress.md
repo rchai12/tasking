@@ -256,3 +256,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - A combined edit writes the deadline reminder group before the start group.
 - Follow-ups:
   - None
+
+## Phase 3c: Claimed reminder sending (2026-11-18)
+- Tests: 1472 -> 1558 (given 80)
+- New public names: docket.store: Post, due_reminders, queue_post, claim_posts, release_post, mark_post_sent, posts; docket.reminders: CLAIM_MINUTES, notice_text, send_due
+- Changed files: 6
+- Deviations:
+  - None
+- Follow-ups:
+  - None

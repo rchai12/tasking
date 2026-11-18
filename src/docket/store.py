@@ -14,6 +14,7 @@ from docket import (
     _store_audit,
     _store_keys,
     _store_links,
+    _store_posts,
     _store_reminders,
     _store_tasks,
     domain,
@@ -36,6 +37,8 @@ UNKNOWN_LINK_MESSAGE = "unknown link"
 
 _TASK_ID = re.compile(r"t[1-9][0-9]*")
 _LINK_ID = re.compile(r"l[1-9][0-9]*")
+_REMINDER_ID = re.compile(r"r[1-9][0-9]*")
+_POST_ID = re.compile(r"p[1-9][0-9]*")
 
 
 class _Unchanged:
@@ -97,6 +100,19 @@ class Reminder:
 
 
 @dataclass(frozen=True)
+class Post:
+    id: str
+    task_id: str
+    key: str
+    kind: str
+    missed: int
+    reminder_ids: tuple[str, ...]
+    queued_at: datetime
+    claimed_at: datetime | None
+    sent_at: datetime | None
+
+
+@dataclass(frozen=True)
 class RequestKey:
     client: str
     key: str
@@ -147,6 +163,18 @@ def _link_number(link_id: str) -> int | None:
     if _LINK_ID.fullmatch(link_id) is None:
         return None
     return int(link_id[1:])
+
+
+def _reminder_number(reminder_id: str) -> int | None:
+    if _REMINDER_ID.fullmatch(reminder_id) is None:
+        return None
+    return int(reminder_id[1:])
+
+
+def _post_number(post_id: str) -> int | None:
+    if _POST_ID.fullmatch(post_id) is None:
+        return None
+    return int(post_id[1:])
 
 
 class Store:
@@ -651,6 +679,138 @@ class Store:
             created_at=created_at,
             updated_at=updated_at,
         )
+
+    def due_reminders(self, at: datetime) -> list[Reminder]:
+        self._require_utc(at)
+        return [
+            self._reminder_from(row)
+            for row in _store_reminders.select_due_reminders(self._connection, _instant(at))
+        ]
+
+    def queue_post(
+        self,
+        task_id: str,
+        reminder_ids: tuple[str, ...],
+        *,
+        key: str,
+        kind: str,
+        missed: int,
+        at: datetime,
+    ) -> Post:
+        self._require_write(at)
+        task = self._require_task(task_id)
+        if not isinstance(key, str) or not 1 <= len(key) <= domain.REQUEST_KEY_MAX:
+            raise StoreError("invalid post key")
+        if not isinstance(kind, str) or kind not in domain.REMINDER_KINDS:
+            raise StoreError("invalid reminder kind")
+        if (
+            isinstance(missed, bool)
+            or not isinstance(missed, int)
+            or not 0 <= missed <= len(reminder_ids)
+        ):
+            raise StoreError("invalid missed count")
+        if not reminder_ids:
+            raise StoreError("a post needs a reminder")
+        numbers: list[int] = []
+        seen: set[int] = set()
+        for reminder_id in reminder_ids:
+            number = _reminder_number(reminder_id)
+            if number is None:
+                raise StoreError("invalid reminder id")
+            if number in seen or not _store_reminders.pending_reminder(
+                self._connection, number, task
+            ):
+                raise StoreError(f"reminder not pending: {reminder_id}")
+            seen.add(number)
+            numbers.append(number)
+        instant = _instant(at)
+        cursor = _store_posts.insert_post(self._connection, task, key, kind, missed, instant)
+        post_number = int(cursor.lastrowid)
+        for number in numbers:
+            _store_posts.insert_post_reminder(self._connection, post_number, number)
+        _store_reminders.claim_reminders(self._connection, tuple(numbers), instant)
+        return Post(
+            id=f"p{post_number}",
+            task_id=task_id,
+            key=key,
+            kind=kind,
+            missed=missed,
+            reminder_ids=reminder_ids,
+            queued_at=at,
+            claimed_at=None,
+            sent_at=None,
+        )
+
+    def claim_posts(self, *, at: datetime, stale_before: datetime) -> list[Post]:
+        self._require_write(at)
+        self._require_utc(stale_before)
+        rows = _store_posts.claim_posts(self._connection, _instant(at), _instant(stale_before))
+        return [self._post_from(row) for row in sorted(rows, key=lambda row: int(row["number"]))]
+
+    def release_post(self, post_id: str, *, claimed_at: datetime) -> None:
+        self._require_write(claimed_at)
+        number = self._require_post(post_id)
+        _store_posts.release_post(self._connection, number, _instant(claimed_at))
+
+    def mark_post_sent(self, post_id: str, *, at: datetime) -> None:
+        self._require_write(at)
+        number = self._require_post(post_id)
+        cursor = _store_posts.mark_post_sent(self._connection, number, _instant(at))
+        if cursor.rowcount == 0:
+            return
+        links = _store_posts.select_post_reminders(self._connection, number)
+        if not links:
+            return
+        _store_reminders.mark_reminders_sent(
+            self._connection,
+            tuple(int(row["reminder"]) for row in links),
+            _instant(at),
+        )
+
+    def posts(self, task_id: str) -> list[Post]:
+        number = _number(task_id)
+        if number is None:
+            return []
+        return [self._post_from(row) for row in _store_posts.select_posts(self._connection, number)]
+
+    def _require_post(self, post_id: str) -> int:
+        number = _post_number(post_id)
+        if number is None or _store_posts.select_post(self._connection, number) is None:
+            raise StoreError("unknown post")
+        return number
+
+    def _post_from(self, row: sqlite3.Row) -> Post:
+        identifier = f"p{row['number']}"
+        queued_at = self._post_time(row["queued_at"], identifier)
+        if queued_at is None:
+            raise StoreError(f"invalid stored post time: {identifier}")
+        links = _store_posts.select_post_reminders(self._connection, int(row["number"]))
+        return Post(
+            id=identifier,
+            task_id=f"t{row['task']}",
+            key=row["key"],
+            kind=row["kind"],
+            missed=int(row["missed"]),
+            reminder_ids=tuple(f"r{link['reminder']}" for link in links),
+            queued_at=queued_at,
+            claimed_at=self._post_time(row["claimed_at"], identifier),
+            sent_at=self._post_time(row["sent_at"], identifier),
+        )
+
+    def _post_time(self, value: str | None, identifier: str) -> datetime | None:
+        if value is None:
+            return None
+        try:
+            parsed = datetime.fromisoformat(value)
+        except ValueError:
+            raise StoreError(f"invalid stored post time: {identifier}") from None
+        if parsed.tzinfo is not UTC:
+            raise StoreError(f"invalid stored post time: {identifier}")
+        return parsed
+
+    def _require_utc(self, at: datetime) -> None:
+        if at.tzinfo is not UTC:
+            raise StoreError(INSTANT_MESSAGE)
 
 
 def _startup_gate(path: Path) -> int:
