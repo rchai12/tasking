@@ -1,9 +1,9 @@
-import json
 import unicodedata
 from dataclasses import dataclass
+from datetime import datetime
 from typing import cast
 
-from docket import clock
+from docket import clock, serialization
 from docket.deadlines import Deadline, WorkTime
 from docket.references import LINK_MAX, MESSAGE_ID_MAX, valid_reference
 from docket.store import UNCHANGED, Link, Store, Task
@@ -77,35 +77,17 @@ def create_task(
         raise CoreError(WORK_AFTER_DEADLINE)
     at = clock.now()
     with store.transaction():
-        task = store.insert_task(
-            title=str(title),
-            state="open",
+        return _insert_open_task(
+            store,
+            title=title,
+            source=source,
             deadline=deadline,
             work=work,
-            source=source,
             provider=provider,
             message_id=message_id,
             link=link,
             at=at,
         )
-        store.append_audit(
-            task.id,
-            at=at,
-            action="create",
-            actor=_ACTOR_FOR_SOURCE[source],
-            before={},
-            after={
-                "title": title,
-                "state": "open",
-                "deadline": _deadline_snapshot(deadline),
-                "work": _work_snapshot(work),
-                "source": source,
-                "provider": provider,
-                "message_id": message_id,
-                "link": link,
-            },
-        )
-        return task
 
 
 def change_state(store: Store, task_id: str, action: str, *, actor: str) -> Outcome:
@@ -220,33 +202,16 @@ def create_task_once(
             if found.link_id is None and _same_request(found.request, request):
                 return Outcome(cast(Task, store.task(found.task_id)), False)
             raise CoreError(KEY_REUSED)
-        task = store.insert_task(
-            title=str(title),
-            state="open",
+        task = _insert_open_task(
+            store,
+            title=title,
+            source=source,
             deadline=deadline,
             work=work,
-            source=source,
             provider=provider,
             message_id=message_id,
             link=link,
             at=at,
-        )
-        store.append_audit(
-            task.id,
-            at=at,
-            action="create",
-            actor=_ACTOR_FOR_SOURCE[source],
-            before={},
-            after={
-                "title": title,
-                "state": "open",
-                "deadline": _deadline_snapshot(deadline),
-                "work": _work_snapshot(work),
-                "source": source,
-                "provider": provider,
-                "message_id": message_id,
-                "link": link,
-            },
         )
         store.insert_request_key(
             client=cast(str, client),
@@ -306,17 +271,56 @@ def add_link(
         return LinkOutcome(created, True)
 
 
+def _insert_open_task(
+    store: Store,
+    *,
+    title: object,
+    source: str,
+    deadline: Deadline | None,
+    work: WorkTime | None,
+    provider: str | None,
+    message_id: str | None,
+    link: str | None,
+    at: datetime,
+) -> Task:
+    task = store.insert_task(
+        title=str(title),
+        state="open",
+        deadline=deadline,
+        work=work,
+        source=source,
+        provider=provider,
+        message_id=message_id,
+        link=link,
+        at=at,
+    )
+    store.append_audit(
+        task.id,
+        at=at,
+        action="create",
+        actor=_ACTOR_FOR_SOURCE[source],
+        before={},
+        after={
+            "title": title,
+            "state": "open",
+            "deadline": _deadline_snapshot(deadline),
+            "work": _work_snapshot(work),
+            "source": source,
+            "provider": provider,
+            "message_id": message_id,
+            "link": link,
+        },
+    )
+    return task
+
+
 def _check_key(key: object) -> None:
     if not isinstance(key, str) or not 1 <= len(key) <= 200:
         raise CoreError(INVALID_KEY)
 
 
-def _canonical(request: dict[str, object]) -> str:
-    return json.dumps(request, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
-
-
 def _same_request(stored: dict[str, object], request: dict[str, object]) -> bool:
-    return _canonical(stored) == _canonical(request)
+    return serialization.canonical_json(stored) == serialization.canonical_json(request)
 
 
 def _check_reference(source: str, provider: object, message_id: object, link: object) -> None:

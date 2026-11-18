@@ -10,6 +10,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import cast
 
+from docket import serialization
 from docket.config import Settings, prepare_data_dir
 from docket.deadlines import INSTANT_MESSAGE, Deadline, DeadlineError, WorkTime
 from docket.references import LINK_MAX, MESSAGE_ID_MAX, valid_reference
@@ -103,7 +104,7 @@ def _instant(at: datetime) -> str:
 
 
 def _json(value: dict[str, object]) -> str:
-    return json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return serialization.canonical_json(value)
 
 
 def _deadline_values(deadline: Deadline | None) -> tuple[str | None, str | None, int | None]:

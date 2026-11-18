@@ -166,3 +166,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 2j: Shared creation and serialization (2026-11-17)
+- Tests: 1042 -> 1074 (given 25)
+- New public names: `docket.serialization`: `canonical_json`
+- Changed files: 5
+- Deviations:
+  - None
+- Follow-ups:
+  - None
