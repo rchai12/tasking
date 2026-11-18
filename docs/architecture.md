@@ -100,6 +100,10 @@ Phase 2m specifies `_store_tasks` for ordinary task SELECT/INSERT/UPDATE, existe
 
 Phase 2n specifies root `docket_tools/` for repository-only report, acceptance and spot-check utilities, moved byte-for-byte out of src/docket. Product discovery stays src-only, with no compatibility shims or tooling dependency in the application. Four command wrappers and the architect linter bootstrap their resolved repository root before imports; the existing Phase 2e probe retains its root semantics and gets its scoped import/bootstrap migration. Commands, parser behavior, mutation allowlist and report formats remain unchanged. Full checks measure product and tooling together but enforce separate 100% `critical coverage` and `tooling coverage` inventories; no dependency is added.
 
+## Shared product test support
+
+Phase 2o specifies shared product-test support without changing runtime or tooling code. `tests.support` supplies explicit default function-scoped `path` and `store` fixtures and one `refused(code, call)` helper that requires CoreError with matching code and string. Eight consumer modules import those same objects locally; the seeded link-store fixture borrows `base_store` and retains its exact transaction/seed data. No conftest plugin or eager/global connection is added. Existing files, 304 scoped case IDs, assertions, support helpers and global guards remain pinned. Product and tooling file consolidation are separate later phases with explicit selector/manifest migration.
+
 ## Shared domain rules and parsing
 
 Phase 2k specifies `docket.domain` as the shared owner of immutable state/source/client/actor/action/provider definitions, state labels, source actors, forbidden text categories and repeated title/key/work limits. Core, views, CLI, references, deadlines, settings and intake/HTTP consume those definitions while retaining their existing boundary checks. The core client list includes email and agent; token issuance and HTTP intake remain email-only. Shipped SQL stays literal and unchanged, with tests comparing the current CHECKs and bounds against the shared definitions, including both provider constraints.

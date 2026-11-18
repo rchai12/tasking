@@ -23,6 +23,7 @@ Applies to every phase. Phase specs list the specific tests; this file sets the 
 9. **Expected values are literal**, never built by the code under test.
 10. **HTTP concurrency:** use events and temporary SQLite locks to prove loop progress and connection thread ownership. Timeouts are failure watchdogs; do not assert elapsed performance or coordinate with wall-clock sleeps. ASGI fakes match the installed server scope and never open a socket.
 11. **Store startup:** use spawn-mode processes and standard-library IPC against synthetic temporary databases to test independent openers and lock release on process exit. Probe entry points have a main guard so spawned children do not recursively run them. Keep process/queue cleanup in finally blocks; no real database or account is used.
+12. **Shared product support (Phase 2o):** import `path as path` and `store as store` explicitly from tests.support in the assigned consumer modules. Fixtures are function-scoped with no explicit decorator name/autouse; seeded adapters borrow `store as base_store` and never own a second context. Use the shared strict `refused` helper for CoreError code/text assertions. Preserve existing cases, body assertions, data and node IDs; later file consolidation requires an explicit selector/manifest migration first.
 
 ## Critical modules
 
