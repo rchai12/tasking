@@ -1,5 +1,4 @@
 import ast
-import hashlib
 import importlib
 import inspect
 import sqlite3
@@ -10,6 +9,7 @@ import pytest
 from docket.core import CoreError
 from docket.store import Store
 from tests import support
+from tests.preservation_cases import assert_preserved
 from tests.product_support_cases import (
     MANIFEST,
     ROOT,
@@ -73,7 +73,7 @@ def test_existing_support_helpers_keep_their_bodies(name: str) -> None:
 
 def test_product_tooling_and_global_guards_are_untouched() -> None:
     for path, expected in MANIFEST["frozen"].items():
-        assert hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == expected, path
+        assert_preserved(ROOT / path, expected)
 
 
 class OtherError(Exception):

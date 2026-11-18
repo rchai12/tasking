@@ -114,7 +114,7 @@ def test_version_one_keeps_its_rows_through_every_migration(tmp_path: Path) -> N
     assert after["tasks"] == tasks_before
     assert after["audit_log"] == audit_before
     with sqlite3.connect(path) as db:
-        assert db.execute("PRAGMA user_version").fetchone() == (3,)
+        assert db.execute("PRAGMA user_version").fetchone() == (4,)
 
 
 def test_direct_store_writes_keep_valid_references_and_roll_back_overlong_ones(

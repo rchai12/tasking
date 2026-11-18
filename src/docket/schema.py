@@ -145,5 +145,30 @@ INSERT INTO sqlite_sequence SELECT name, seq FROM reference_sequences;
 DROP TABLE reference_sequences;
 """
 
-MIGRATIONS: tuple[str, ...] = (MIGRATION_1, MIGRATION_2, MIGRATION_3)
+MIGRATION_4 = """
+CREATE TABLE reminders (
+    number INTEGER PRIMARY KEY AUTOINCREMENT CHECK (number > 0),
+    task INTEGER NOT NULL REFERENCES tasks (number),
+    kind TEXT NOT NULL CHECK (kind IN ('start', 'before', 'due_soon', 'due', 'late')),
+    fire_at TEXT NOT NULL,
+    planned_at TEXT NOT NULL,
+    claimed_at TEXT,
+    sent_at TEXT,
+    voided_at TEXT
+) STRICT;
+CREATE INDEX reminders_by_task ON reminders (task, number);
+CREATE INDEX reminders_pending ON reminders (fire_at, number)
+    WHERE sent_at IS NULL AND voided_at IS NULL;
+CREATE TRIGGER reminders_are_never_removed BEFORE DELETE ON reminders
+BEGIN
+    SELECT RAISE(ABORT, 'reminders are never removed');
+END;
+CREATE TRIGGER reminder_plans_are_immutable
+BEFORE UPDATE OF number, task, kind, fire_at, planned_at ON reminders
+BEGIN
+    SELECT RAISE(ABORT, 'reminder plan is immutable');
+END;
+"""
+
+MIGRATIONS: tuple[str, ...] = (MIGRATION_1, MIGRATION_2, MIGRATION_3, MIGRATION_4)
 SCHEMA_VERSION = len(MIGRATIONS)

@@ -343,7 +343,7 @@ def test_legacy_reference_upgrade_keeps_the_store_preflight(
             monkeypatch.setattr(module, name, function)
         assert len(opened) == 1
         connection = opened[0]
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 3
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 4
         assert connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
         assert connection.execute("PRAGMA busy_timeout").fetchone()[0] == 5000
         assert str(connection.execute("PRAGMA journal_mode").fetchone()[0]).lower() == "wal"

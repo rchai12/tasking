@@ -36,7 +36,7 @@ Product critical modules guard task approval, retry safety, reminder integrity a
 - config.py and keychain.py
 - deadlines.py; Phase 3a adds reminders.py for pure scheduling
 - schema.py and store.py
-- _store_tasks.py, _store_audit.py, _store_links.py and _store_keys.py
+- _store_tasks.py, _store_audit.py, _store_links.py and _store_keys.py; Phase 3b adds _store_reminders.py
 - core.py
 - references.py
 - serialization.py
@@ -46,3 +46,5 @@ Product critical modules guard task approval, retry safety, reminder integrity a
 Tooling coverage preserves the existing complete coverage of reports.py, acceptance.py and spotcheck.py under docket_tools. Their bodies move byte-identically; existing tests change only the explicitly scoped imports. The checker itself is exercised by fake-runner/gate tests; this phase does not create a new 100% promise for scripts/check.py.
 
 Future reminder, press and calendar-sync/reconciliation modules join the product critical inventory when their phases add them. Product packaging remains confined to src; repository tooling is not installed or imported by product code. The Phase 2n packaging check uses unchanged discovery plus an isolated src-copy CLI smoke test with network and Keychain access blocked; it does not claim a wheel was built.
+
+Phase 3b adds populated v3 upgrade/restart, independent upgraders, last-approved-time/past-slot preservation and post-reminder-write rollback across tasks/audits/keys/reminders/sequences. Its scoped structural freezes retain unaffected source nodes, existing imports and mutable-method signatures while permitting the named feature bodies; all unrelated byte guards remain exact. Do not refresh guards from an implementation to make tests pass. Claim/delivery and double-loop send tests remain requirements of the later sender, not claims made by persistence tests.

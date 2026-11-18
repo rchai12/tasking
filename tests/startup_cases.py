@@ -17,7 +17,7 @@ def prepare(path: Path, version: int) -> None:
     if version == 2:
         version_two(path)
         return
-    if version == 3:
+    if version == 4:
         with Store(path):
             pass
         return

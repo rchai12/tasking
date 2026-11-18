@@ -43,3 +43,6 @@ WORK_MINUTES_MAX = 720
 @functools.cache
 def zone_names() -> frozenset[str]:
     return frozenset(zoneinfo.available_timezones())
+
+
+REMINDER_KINDS = ("start", "before", "due_soon", "due", "late")

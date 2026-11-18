@@ -54,7 +54,7 @@ def startup() -> None:
             assert messages.get(timeout=10) == ("ready",)
             start.set()
             results = [messages.get(timeout=10), messages.get(timeout=10)]
-            expected = [("ok", ["t1"], ["l1"], 3, []), ("ok", ["t1"], ["l1"], 3, [])]
+            expected = [("ok", ["t1"], ["l1"], 4, []), ("ok", ["t1"], ["l1"], 4, [])]
             if results != expected:
                 print(f"  expected two successful v3 openers; found {results}")
                 raise AssertionError

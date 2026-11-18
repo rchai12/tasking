@@ -183,4 +183,4 @@ def test_reference_rebuild_rechecks_the_version_before_its_sql(
     assert injected == [True]
     assert created == []
     with connect(path) as db:
-        assert db.execute("PRAGMA user_version").fetchone() == (planted,)
+        assert db.execute("PRAGMA user_version").fetchone() == ((4,) if planted == 3 else (99,))

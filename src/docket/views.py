@@ -124,6 +124,7 @@ def status_text(task: Task, now: datetime) -> str:
 
 
 _REFUSALS = {
+    "invalid_reminder_plan": "That time cannot be scheduled for reminders.",
     "invalid_title": "A title is 1 to 100 characters on one line, with no space at either end.",
     "invalid_source": "That source is not allowed.",
     "invalid_reference": "That email reference is not complete.",

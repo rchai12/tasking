@@ -9,6 +9,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from tests.preservation_cases import assert_preserved
+
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = json.loads((ROOT / "tests/product_consolidation_manifest.json").read_text())
 FAMILIES = MANIFEST["families"]
@@ -103,7 +105,7 @@ def check_selection(index: int) -> None:
 
 def check_frozen() -> None:
     for path, expected in MANIFEST["frozen"].items():
-        assert hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == expected, path
+        assert_preserved(ROOT / path, expected)
 
 
 def check_oracle() -> None:

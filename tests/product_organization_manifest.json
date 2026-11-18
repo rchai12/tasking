@@ -41,7 +41,7 @@
     },
     "tests/integration/test_store_boundaries_more.py": {
       "destination": "tests/integration/test_audit_link_key_contracts.py",
-      "sha256": "025c7a18ecb763d63b292778dd064fe240b2c3b44eddcba1c88e6e0b820a0028",
+      "sha256": "e9ffe88c01dad8c6d2fd8e774e096ecfac21d24253b15c2b49a7579762fdcc4c",
       "mapping": {
         "tests/integration/test_store_boundaries_more.py::test_non_utc_link_and_key_writes_stop_before_lookup": "tests/integration/test_audit_link_key_contracts.py::test_non_utc_link_and_key_writes_stop_before_lookup",
         "tests/integration/test_store_boundaries_more.py::test_quote_key_and_nested_request_round_trip_and_conflicts_write_nothing": "tests/integration/test_audit_link_key_contracts.py::test_quote_key_and_nested_request_round_trip_and_conflicts_write_nothing",
@@ -205,7 +205,7 @@
     "scripts/accept.py": "d6f23be839cd68c7c966dc2a685e2e5f55b250e317c7e33552693e8a5b4d025e",
     "scripts/check.py": "b733105a12829a82ff38ee7762bf06cd09bbd49123411bb6183820ac4937ee48",
     "scripts/check_reports.py": "b2c37e0fad26699c3f4c829f231bd297ba6c2eaa759b665613535fbc820f7308",
-    "scripts/critical_modules.txt": "1cf6b19444d51743821a28a863675cbecbfb08898b3bfd01d16db1428ddf33e4",
+    "scripts/critical_modules.txt": "0d91020fed60d31c5ed3c14148f0afe4bd719140de2508dd615fba9bdc5b176e",
     "scripts/progress.py": "46c5c186ad344e6b0f182e98cb33b2c92e35eb2e5eb21f3dbcd3188d8f6381b0",
     "scripts/spot_check.py": "45ffc864367c5fd26d6bacb93ed2940ecfc6f521e62f2c1282f670e3c8c1150a",
     "scripts/tooling_modules.txt": "e275ba62b06fb92c7f05e5650a1915c23e481c89dc2bde3e6d719885bd775097",
@@ -218,19 +218,425 @@
     "src/docket/clients.py": "fc918d6fc93c1a94af57525e24f0cf85423c11e717d8465b0f5a335b5b9c2180",
     "src/docket/clock.py": "6b1fec99c6afcebbdd8b775b37520da2dd29004baea288cd296faf54c5c69b8f",
     "src/docket/config.py": "22b9c7f7df977b6cb1804a5c72d46beb3a37509bab41802322195309fb579ed3",
-    "src/docket/core.py": "dec60420c3c1861396aa4331fd525562f2a50c0b721f31df0d9002260c48c0dd",
+    "src/docket/core.py": {
+      "imports": [
+        [
+          "from",
+          "dataclasses",
+          "dataclass",
+          null
+        ],
+        [
+          "from",
+          "datetime",
+          "datetime",
+          null
+        ],
+        [
+          "from",
+          "docket",
+          "clock",
+          null
+        ],
+        [
+          "from",
+          "docket",
+          "domain",
+          null
+        ],
+        [
+          "from",
+          "docket",
+          "serialization",
+          null
+        ],
+        [
+          "from",
+          "docket.deadlines",
+          "Deadline",
+          null
+        ],
+        [
+          "from",
+          "docket.deadlines",
+          "WorkTime",
+          null
+        ],
+        [
+          "from",
+          "docket.references",
+          "LINK_MAX",
+          null
+        ],
+        [
+          "from",
+          "docket.references",
+          "MESSAGE_ID_MAX",
+          null
+        ],
+        [
+          "from",
+          "docket.references",
+          "valid_reference",
+          null
+        ],
+        [
+          "from",
+          "docket.store",
+          "Link",
+          null
+        ],
+        [
+          "from",
+          "docket.store",
+          "Store",
+          null
+        ],
+        [
+          "from",
+          "docket.store",
+          "Task",
+          null
+        ],
+        [
+          "from",
+          "docket.store",
+          "UNCHANGED",
+          null
+        ],
+        [
+          "from",
+          "typing",
+          "cast",
+          null
+        ],
+        [
+          "import",
+          "unicodedata",
+          null
+        ]
+      ],
+      "stable_nodes": {
+        "UNKNOWN_TASK": "c939a6c1b7b47545f812f083accbc47dbccb699fbd57743ad0440703f2a585e7",
+        "INVALID_TITLE": "302a65a10f8245887082cb1c7a9b581ab7eb4c297e3ccf5ec26caff80bac199d",
+        "INVALID_SOURCE": "87e817e3e8bf851a096bc471d566b2b9f1592bbb21cdbdc42a22644ca2204d70",
+        "INVALID_REFERENCE": "a33372953d83da6bcd11bde8684c487b0dd7bc2bdf4bd63d242150f78a8c5ad4",
+        "INVALID_ACTOR": "c8ee5a330938045c321ef29d57a26e7f9ece2f4793f5875c0e66be6c1ebaa4e9",
+        "INVALID_ACTION": "0fa8e99e15cf356985bf4fa61857bfb8dd34b1eff1ebeb078ba608b357ed66e9",
+        "TASK_ENDED": "bf4c72be3955edbc9d1cfb83960fb7f17d8fe2f558b5bd3937da396aee868c2e",
+        "WORK_AFTER_DEADLINE": "f8218a6905c51f989dce2345eafd6340c62d483a1e4308d90261ff3cc7607d4c",
+        "INVALID_CLIENT": "baf9e785da550bf5949ab3386a942bacc44c4ba22ffe7808e290fe92b7603353",
+        "INVALID_KEY": "1c985e35e8831bb8ad3af8bc0caa41da2cd3902fc363a6442fb7ee121d4118f1",
+        "KEY_REUSED": "9589f321c8b77d48d9c95312142e46379f5d22cd838bc81accf3a9fcbbf1eff4",
+        "_SOURCES": "c5d54f1d4e333335ce54e5490bf351d383ef3f7ecba519268da91c7d3210c01b",
+        "_CLIENTS": "7a522b66d2d773dded306010f2bfd5e8eaae93875458192177712ea8ea3760c2",
+        "_ACTORS": "6ac1c264ea415cea852dd00c3880ea617bcf6e2922a8b0612201a2982155a273",
+        "_ACTIONS": "8dcd3d4104db06d733cf6efa0c4f9c9e432b44ce19fd1e001908d8c66f44d18d",
+        "_PROVIDERS": "eecd2b0a3ea6ee2d312d50784b36128527605b8397f3ea289246d37a5924247c",
+        "_ACTOR_FOR_SOURCE": "250cefe6f27c15d8994f0790e34b51f73b74e4ac267fe71e4f80af1455b1e158",
+        "_BAD_CATEGORIES": "f78bdc670a7b911227d2dbd0483da3de7cacc850beb2d282288cbe60742f79f9",
+        "_OPEN": "8899103ad3f682862387fdb9c069c9f528fc7f40ebf1d93045705018160aa2c6",
+        "CoreError": "7040147331012161905b37cb4272ea0b817d02bf1ba4dd88013e596dca1b4bfe",
+        "CoreError.__init__": "713d31db9b9c07a451403573f7cf46f7a14a0230b908917ded6c61a0a73b71d9",
+        "Outcome": "af58e3faac585dceeef16382b1c740e578c58721d2a8946c77f171915fee05c9",
+        "Outcome.0": "9eb73e0692111bb690b36e0342c15afa011507c9f906d873bd2b8d433764b552",
+        "Outcome.1": "91938fe56682ec08b2c41cf502cdffb6f69bb94b363056dbc2b778bdfee00bf8",
+        "LinkOutcome": "297df0ec0e30a6053bccc7ea7d4be4e00df3834539bc172f64b69005aed80388",
+        "LinkOutcome.0": "b4f21e4ae21665c23971c7ed2d3f9c0afbf1c17918988a2f8bb76266871ff616",
+        "LinkOutcome.1": "91938fe56682ec08b2c41cf502cdffb6f69bb94b363056dbc2b778bdfee00bf8",
+        "check_title": "3d269d60fb1e9427f6da045b575b11083682d5f48866c0cb034f26fccddd69a4",
+        "create_task": "50d06be3e6501f0586a73ab5ed5538329263b5bdfad54b9a6edae98f275fe751",
+        "create_task_once": "0fad09b58f63fcba53f840dacf63a106cf477afebb24a174033023b317b65ea2",
+        "add_link": "9cef815ef7cf2ba2a7da6500e0c254624743edf914a459ac935aee14c635fa8c",
+        "_check_key": "68bddc6905c696345c40d1fe7263ff8c2cfb11a22c23c5428b163b629d038ea6",
+        "_same_request": "b8b046e031213a549d73d3283a881c68b0e33c0f1d7a46e38facdf794a387902",
+        "_check_reference": "f5e24d2938824c15ba0b5022ad233b5c0d3a94e903d38967162c72e155b0b71a",
+        "_work_after_deadline": "2404c1fe972635430222d75c0e40e0b1f96f8b0728d78624a0db82322a69e7cd",
+        "_next_state": "e788d8fc3735e1859b57cfdc4c730dd41813078e280027f0a834becf44772803",
+        "_deadline_snapshot": "02715d0d8e6b4c244dd197f33e398a617eaa587ddbbf8c98d73fd7d674dd6bd4",
+        "_work_snapshot": "97a37a098f68fba5c81068397ca93781868f98eefe504ea9fcf8300e36cb29ee"
+      },
+      "mutable_signatures": {
+        "_insert_open_task": "4afc2fab95a64470343c528cec61beab50f74cc3c047b931b61fdc8b0437865b",
+        "change_state": "01fe94711cc4236e9f5e9e36c497ecf289985f47bc2946a1a8b94aee1effca3e",
+        "edit_task": "4c1f4680aa18183bbd45e6587ca63554e782f0b64124f0f1ea320dc4ae914ab9"
+      }
+    },
     "src/docket/deadlines.py": "cbcd6ae83389ef7e4f3e617d1fa5311f8ab3a3a161bedf6509da6d1d9ac962ad",
-    "src/docket/domain.py": "3e6bbb479133a01125689ec5b5a286cf6a208c9d5d43a2b8350725ac3e3acd82",
+    "src/docket/domain.py": "4f4fc1b93c8c68c7dcbf3b1f6186f1b2b67c356e8c8a18965d5421ed39c8c4e4",
     "src/docket/ids.py": "55f2b8577fbba29b3b9157361be8a9424db24db15d5c76ded7c1d1c90da2ff0e",
     "src/docket/intake.py": "64b9ab6d3ce1bb5836330358112ba78de79fe7cfce544a74762dc1d25c22fa0e",
     "src/docket/keychain.py": "319534a85eee773a10b33294fc98cb3695311326ad50dde3ebbbbc754a6bc44e",
     "src/docket/parsing.py": "960328fb81fa804cf2a11624123e72dd113a6e3430ad3880e151603158afa691",
     "src/docket/references.py": "d38b411efd3593d013df5d8ebba423ba4a684741669d71c9c9b62a31612cfdd9",
-    "src/docket/schema.py": "29ee3866e32991d32e1acdec3893b44b29fd0bde2f42c0c90b1092f61721a2cf",
+    "src/docket/schema.py": "2bf3d6be5d393835cda69ed80cb1ce1425f16753cb346a9c0060d1e1b1e5233e",
     "src/docket/serialization.py": "324c49f404bc36c31acbf00df0005411ac4e2d01eb937fb9f6e249163ca05191",
     "src/docket/server.py": "851023ba44cb11e76e418a7c79f5382cc0e0a4dbe1cc53529d25d54e076ec523",
-    "src/docket/store.py": "50f56a7ecdf0f162ecdc02f3beaebef7203221919ad6751c9361f14b4f141889",
-    "src/docket/views.py": "b9375662812e8561dbb2a4c56539ed020d62325b21d7b9bfda54c06d48b87799",
+    "src/docket/store.py": {
+      "imports": [
+        [
+          "from",
+          "collections.abc",
+          "Collection",
+          null
+        ],
+        [
+          "from",
+          "collections.abc",
+          "Iterator",
+          null
+        ],
+        [
+          "from",
+          "contextlib",
+          "contextmanager",
+          null
+        ],
+        [
+          "from",
+          "dataclasses",
+          "dataclass",
+          null
+        ],
+        [
+          "from",
+          "datetime",
+          "UTC",
+          null
+        ],
+        [
+          "from",
+          "datetime",
+          "datetime",
+          null
+        ],
+        [
+          "from",
+          "docket",
+          "_store_audit",
+          null
+        ],
+        [
+          "from",
+          "docket",
+          "_store_keys",
+          null
+        ],
+        [
+          "from",
+          "docket",
+          "_store_links",
+          null
+        ],
+        [
+          "from",
+          "docket",
+          "_store_tasks",
+          null
+        ],
+        [
+          "from",
+          "docket",
+          "serialization",
+          null
+        ],
+        [
+          "from",
+          "docket.config",
+          "Settings",
+          null
+        ],
+        [
+          "from",
+          "docket.config",
+          "prepare_data_dir",
+          null
+        ],
+        [
+          "from",
+          "docket.deadlines",
+          "Deadline",
+          null
+        ],
+        [
+          "from",
+          "docket.deadlines",
+          "DeadlineError",
+          null
+        ],
+        [
+          "from",
+          "docket.deadlines",
+          "INSTANT_MESSAGE",
+          null
+        ],
+        [
+          "from",
+          "docket.deadlines",
+          "WorkTime",
+          null
+        ],
+        [
+          "from",
+          "docket.references",
+          "LINK_MAX",
+          null
+        ],
+        [
+          "from",
+          "docket.references",
+          "MESSAGE_ID_MAX",
+          null
+        ],
+        [
+          "from",
+          "docket.references",
+          "valid_reference",
+          null
+        ],
+        [
+          "from",
+          "docket.schema",
+          "MIGRATIONS",
+          null
+        ],
+        [
+          "from",
+          "docket.schema",
+          "SCHEMA_VERSION",
+          null
+        ],
+        [
+          "from",
+          "pathlib",
+          "Path",
+          null
+        ],
+        [
+          "from",
+          "typing",
+          "cast",
+          null
+        ],
+        [
+          "import",
+          "fcntl",
+          null
+        ],
+        [
+          "import",
+          "json",
+          null
+        ],
+        [
+          "import",
+          "os",
+          null
+        ],
+        [
+          "import",
+          "re",
+          null
+        ],
+        [
+          "import",
+          "sqlite3",
+          null
+        ]
+      ],
+      "stable_nodes": {
+        "DB_FILENAME": "72c7615886fe453a8d72f13b48ebf320c4bef358583bb3b63956f47f670b6520",
+        "SCHEMA_MESSAGE": "ee37ddd33fa5c43e90c1b7d68b05076a1ddbcd1fc3bed02c99769d524c39ae75",
+        "TRANSACTION_MESSAGE": "7b90ebb2786bc3fa273d831f47db2d1df0373b0a176b19416be578e06cfa4390",
+        "NESTED_MESSAGE": "afd1679fbd588d463a64b95d2d497bb5accb9d7400c10f1369d72b70954ae9af",
+        "UNKNOWN_TASK_MESSAGE": "c0ffe1c0b573822114d1027bb153952f91d40b27c861594e8048b5a2272ab64f",
+        "UNKNOWN_LINK_MESSAGE": "35f7022521ed22292cfd8cb7f005b8f1a5ad7044dd42c42c2422c6c14618fe09",
+        "_TASK_ID": "36d9d6f80360ff5fa7538b3f46e1912ad0a0c5c08fcc7b9462106d4586584291",
+        "_LINK_ID": "82c63068ac7551df5adf3697375b135c617e1db5a531ce5947d60d0973913025",
+        "_Unchanged": "387566225a1e2b163699ce16658ad66f3fd1bee716ece9b8f872282e1cf7f955",
+        "_Unchanged.0": "f8e211bd496e62be79e8542ba1d0a7cebbf2a6143ae07b375ae14ce00a91b69c",
+        "UNCHANGED": "1ab853d95303f0906608fab4e7df0a371e81a133414c4d2578c17286766aa499",
+        "StoreError": "08235503278057c4f66f43f36728987f1e3f0cfeecc964f4133608e1d1c1620b",
+        "StoreError.0": "f8e211bd496e62be79e8542ba1d0a7cebbf2a6143ae07b375ae14ce00a91b69c",
+        "Task": "849ef886c932f2160495a0cd1865332a439400fe57c90f8363f5045e21329163",
+        "Task.0": "083645d223483dd0ba966f7fba0b19489c639521acdccf584b52cc76d325b650",
+        "Task.1": "eeaa81a3c6a6f8cfb0d70751389c8a69d88b3c66f11799e0972776be09584fce",
+        "Task.2": "c839897851ada3c2f1008c82b5cf79eb0e0fad6a05206d96d44b0ab8b57da1b3",
+        "Task.3": "43d14bf2faf0c5262db2fe58a2ea979329ec70c4a45fbd6c6b91ab5a1c2634d2",
+        "Task.4": "9c4e748a885b220b94451eebb61d90b2f48f8b93e39e85bdaf74723f8407c689",
+        "Task.5": "436c979cd5d926f9b14229d07c82f148a58d2ce7cb14842928af60294cdaff5a",
+        "Task.6": "4830933f69c514eb27a2d3f2d247009b477789675b233b199aef4bff307cc347",
+        "Task.7": "ec01ee9bd5f9dd58be59a7b6da4a57028ab9495aa24de81aa95e4aa421634b21",
+        "Task.8": "e0383dec142d36c94b997c0a8dbb73ea2180b95f403bc34c9f3365353b9d12df",
+        "Task.9": "21c372cc791669dc260a855b3e072db355aaca0db8a47d0ce7bd2dc3dc8cfbeb",
+        "Task.10": "eb3a5b88c76bd6fac53f235b1e811176c29a94c28d9e613aedb2b80ff713cf40",
+        "AuditEntry": "c2d6559fe236dd79ad3a3dd52cc6717f1cd71a7b04cadcaf4727c8ed2e612548",
+        "AuditEntry.0": "fb277e7a78f5bf9727d08e9e2e57181acfb57103512b017c7699f620c88e6c84",
+        "AuditEntry.1": "1b5e834ffb9024c465d1fdec078d3a09b10ea5c6f7376e33194b8e209cab5b90",
+        "AuditEntry.2": "c0994e70852ea0563d6095957b62f0cbb013fc829fef2dba7344d31101f5842a",
+        "AuditEntry.3": "a256375e5480ae913b2c3a5305d582b4c4b948f7ff3a7e8b2f3af56a73a96473",
+        "AuditEntry.4": "c50c2f4392656217233fcb0bdadc5c47c0aecdef49e27c1ee8733514aae88687",
+        "AuditEntry.5": "4728e8ec33c752c2c397de1259c5ac8dc0f46209697bf871fd8227df1dbce224",
+        "Link": "bb5653bc683d5b780084e5a4dbb5165936297a662944240eccba36541497ad53",
+        "Link.0": "083645d223483dd0ba966f7fba0b19489c639521acdccf584b52cc76d325b650",
+        "Link.1": "fb277e7a78f5bf9727d08e9e2e57181acfb57103512b017c7699f620c88e6c84",
+        "Link.2": "54065482f0184bddcacd9f4cafffa9b2e8ae9c370f0add1383d29d2e8d5166b9",
+        "Link.3": "71f1c965a7656361013c6101e150d10f81ab377b3b3eacd56e587d01dd85c0b7",
+        "Link.4": "9f61f9a72459cf99badce075fdefb66ea7de9bc8a48792bc2d63ff112a7cd29e",
+        "Link.5": "21c372cc791669dc260a855b3e072db355aaca0db8a47d0ce7bd2dc3dc8cfbeb",
+        "RequestKey": "ef1948f44ced8b04fc0c1b0638d0215da58794e6e2cbed8112fb167609c94ca8",
+        "RequestKey.0": "2c1b195d5ba1b46b8ff8fd5ee61d8d780b7492494147c1a58ea7fe5ecbf71525",
+        "RequestKey.1": "bfba2dccf3f5b48b1d82493248b472d3db82cf53688071305b40d1448b32e279",
+        "RequestKey.2": "cc6fe10a71521d350219dc390569a047b23b05a930a59873af079928632a9742",
+        "RequestKey.3": "fb277e7a78f5bf9727d08e9e2e57181acfb57103512b017c7699f620c88e6c84",
+        "RequestKey.4": "53f44ea68a13501c5668e297d1ce3a9fc72678a4a686936a70a60081634a18f8",
+        "RequestKey.5": "21c372cc791669dc260a855b3e072db355aaca0db8a47d0ce7bd2dc3dc8cfbeb",
+        "_statements": "4a5541b7e1f883f546f3557b9f223e34195d4a54a62cae5f154cec82097a1196",
+        "_instant": "b1544a462203cfa4347b8a2532f7c054bdaa220921ff413762b0daf062d849cb",
+        "_json": "9879541f67746c1ce31d6b0737a483a44784a959728bccba8bc49bdeebc28fd5",
+        "_deadline_values": "9bbc63683168f9e738c135b7176e7e478e59271b7ff9af12f07537d80451a01b",
+        "_work_values": "5214fad1132504db62c9a92f210175b1f893fb6fd782e7a4af685010fa704272",
+        "_number": "90bff0ee8063ea8161071ce5a3a3c3fcea72d98bf3e3b31346c206f1bfdb8788",
+        "_link_number": "e08dc9b95519a3e4821c6ae0296f4989d9977a3ffa046a89b8c8db869141063b",
+        "Store": "15b6011dda9bdca2924db28defd93121fd44e3017507f90db661b7b521465497",
+        "Store.__init__": "04601050d74c35b2d32fbb7b338fe06a19e1691144080d73bca695a85ee128ed",
+        "Store.close": "2ade007c692a3bd0d8d24246d81fce53c4f4229313f52e2b2ae127a9a557c16e",
+        "Store.__enter__": "b14797aaef580c32bcd8e62c4a1fa20e3ea3d4da9401b1374e07ef5e86152478",
+        "Store.__exit__": "1a4433cd4a037c42f1ceb999867b94c31f8f990963210e14858b1bb4831d164e",
+        "Store.transaction": "d62a63a81af4c5b79610c51dca2ed658653d57bd54cd13ccab8100d8dffd7877",
+        "Store.insert_task": "c523a005e47c0a9da7624d2c2d03c972835c5566d833c7945f58afb2cbe20e64",
+        "Store.update_task": "2c8a0e2ec7ed7701e1d953474c6a47e453f1df4b46bbe4f0bb33ca2b849a663c",
+        "Store.append_audit": "8e5be0cfccdeedee735fbb9b103fe5251992d677ec70113229bc9c9e506f289d",
+        "Store.task": "f29e854d6179320a1d3f330c0ab455e1059783cb6a15ff6abf87acc2888f4130",
+        "Store.tasks": "2e575b1abd2bd3cea000d91c5192f4df1cd50b464a436b83701026b0f4de8bdb",
+        "Store.audit": "52e6d0df56377033b56075b033a79baf7ee33b41c7ad600e601bf6defb4a8d7d",
+        "Store.insert_link": "7191c4bb90597ccdd84af9f92ba82fbd0c83c1ed0dffa0b9abbd76057b7b3178",
+        "Store.links": "604b30050f8a32aab21507d8747c94043d0911e1b47ee93039e50ffb3a837701",
+        "Store.insert_request_key": "fad72672685fae180d320994b8df4259cd11492672044ae395bfb8e6fa3e6f57",
+        "Store.request_key": "105e99c85902cb0dfca1ee9ae55e6506a90e221072c6c504f318cfc310056adb",
+        "Store._migrate": "822a5cbee4ba488755a9759fccfecde990ca3a72e558e3d132505fb23479d656",
+        "Store._user_version": "1daf7e5f95b17976950e56d2c1f9f2ac2ffb08d71476735e5995864d6787267c",
+        "Store._migrate_references": "d0d293a340f4919c131bc4428d9b4d25bb88531ba33a7570f91b62e1ac84f7bb",
+        "Store._refuse_invalid_references": "9067634693ef48173a05cc89be599419c5468de3e7c8409664019bac5a5e42b8",
+        "Store._refuse_reference": "81778b9d20fd28b84743d4d421aba49ea51aea085c9afe436616b0254b556f2f",
+        "Store._require_write": "0f46981029b01516d960296fe4d0cfcd11901700677d98444d96286e6c087c5d",
+        "Store._require_task": "9c741f021e01d18c67832ebd764254a7b3f9853abc5399cf12e8be4b4d45a036",
+        "Store._exists": "eb7d64ab1f7798ba6e42e43f94f75fa8ec684992cebc588535167165f7909e23",
+        "Store._require_link": "add6aca6487c1aea9c50ec6c560eb9084bf3ce74be363f53da0fa6d2731ef954",
+        "Store._link_exists": "971c43a07eb9ce5f011392fddc4ee3458e2328ac16afdc9bb4e293a8eb0c629e",
+        "Store._read_link": "fba62f2e42e7f14fe95d739e352ebd82ac4dde6970f54ad7f708a0a0be11a8aa",
+        "Store._link_from": "74b8967a9910a7d604234f505f89a4c0d33d57f34aba196dd69020a027ef155a",
+        "Store._read_task": "64781110d66ebff4d6543c369220863bd47433836c8cf8ae6eee1563d191e96e",
+        "Store._task_from": "853bb44f1180d69faf6df93109e379ecfd912fcfa1e7378605208caf56a0ccd4",
+        "_startup_gate": "bc4d500da40ca25c3b96456ae822e744192f4eae93fc5670d604cec564b3acc7",
+        "_release_gate": "026e818f0de7d8cdae53cd6df0f0a3658d78d124e6b7a090c6aee72a6f71ae2b",
+        "open_store": "bce1fcd26064750a1d000a4315c215dadb316aafdbccf23e9d1533e9fc61dc39"
+      },
+      "mutable_signatures": {
+        "Store._apply_migration": "a45db6a87ece6c45e542587de2b8d3c9d4dfdc3ebb8a092d7e10a57eb2f6f698"
+      }
+    },
+    "src/docket/views.py": "ec22d0c90cc65e8763faf9c31cf14def51d8888c608521c98022c382d90c56ae",
     "src/docket/web.py": "f3318cfb3b1f342921e3b21460fd4fc514ef8ed0ba7eadc619917ec6e81ffb0d",
     "tests/conftest.py": "a9be18f993269440758b50efaf78556b09e3110984fd46c711e35909b74a9c85",
     "tests/e2e/test_cli_clients.py": "caed2d031714289c686cd068bfd17882df34897954caa6df6b79cee25c453088",
@@ -252,15 +658,15 @@
     "tests/integration/test_identity_coverage.py": "fddf17395e7efafa09d3809298ac955109b9e1ba7fe9162a207d7f296a1cd4a2",
     "tests/integration/test_intake.py": "ed5a90352ed35a9753d56e5dd7ed86cd3839ff535274e4ed4ac08dfcc0b9b4e8",
     "tests/integration/test_intake_identity.py": "bcfe00bf57b9c114c97c2aa721b0bd503e9a25ac11b1d63c71181a0125bcf020",
-    "tests/integration/test_reference_coverage.py": "d15271644b3bab7e207f18f893434aeb78268a45c3665480ea34bc1be48ab578",
-    "tests/integration/test_reference_migration.py": "60e64d6c1ea5d3d3fdabdf18d588384cd4aa3eacc031742acd07f11e2a3bb1ba",
-    "tests/integration/test_server.py": "68bd7952c072353f31425097a58b688104ae01990dfd746630ca4f44a3210ab2",
+    "tests/integration/test_reference_coverage.py": "8ec949e38c4849d0961c36b9539f02c23a1af6e7374e861495f1112467823120",
+    "tests/integration/test_reference_migration.py": "94ab25af91c7b3cb07edcfd9c2d93d53dedbed6c18aab9d19f13c8614aa2fc77",
+    "tests/integration/test_server.py": "ecd2a964e70e1f1993775721bac7a1f7b714cbfd3da1c2f96d863eb7888fade7",
     "tests/integration/test_shared_creation.py": "ce6083ec2aa30d03b27674f6a41e707c2cd6140f7733b6758eb79e634defa115",
     "tests/integration/test_shared_parser_adapters.py": "8afd07ad6946ba144d106b68b78a4cb44ed5dc4d0d3571733129f721bc2a9a02",
-    "tests/integration/test_store.py": "d0aa4cab5c524cece572ca5f7d84402364a7e00c3f8ffa683eb9d8187b9feab1",
-    "tests/integration/test_store_coordination.py": "a4c1330aba03024c70d1709ba8cb24a26731e0145a2628e4635dc276a56d0678",
-    "tests/integration/test_store_links.py": "ff3211352e07b152c9036054ea0540ef104ae004e2d4b8ac1a1fe32ed0ff2214",
-    "tests/integration/test_store_safety_coverage.py": "55593ed77d3ebf821aa38ccd14e1ef3e9b70e0788e94e919ceabca8e913e6b82",
+    "tests/integration/test_store.py": "ebc1e0752b0cfb933d79c5da053f018c49dc3147945bf0a077bcc90bfb169e9e",
+    "tests/integration/test_store_coordination.py": "850a1113a530a74114073c29e4bd772e920f41933df3261bd128e326b114ab08",
+    "tests/integration/test_store_links.py": "40823f66b48692ce416fa475d4c19c7c1e0d849895f2b77e92b856c1a978eb77",
+    "tests/integration/test_store_safety_coverage.py": "6f8a9d1348afb4120d5ccd12f6826f476b7c803d0098031878041caeeb5ae8af",
     "tests/integration/test_store_startup.py": "e21754a51b627c49fbd7bf4d3ec7db71e5118beeac4afb92399836c124c01273",
     "tests/integration/test_store_table_boundaries.py": "5fe2e00a29dbb7fb2a9dd2187b5580e664966d2b113411e76f60b5e0eaed3ee9",
     "tests/integration/test_stored_task_times.py": "69853c824fc2bb27dc3964006958175637c337d6d939e980e4bc3433f51c35e9",
@@ -269,17 +675,17 @@
     "tests/integration/test_web_identity.py": "2a402d12b7e8cab8e2f6bc60e72e868ac10c339f9f5fce7912bfba0173ed711f",
     "tests/integration/test_web_streaming.py": "d8da076c7c0ccc670ea2d81bff28f801d614d08780d2233793bf5a332a08b048",
     "tests/integration/test_web_workers.py": "8f1982d419370503f64757fef8e03016481187f7b07402aa2fcc431492315381",
-    "tests/product_consolidation_cases.py": "f38dbab451fe51f3fe656e97c59e692b5630827ae0e140d8528e2970d5fddf50",
+    "tests/product_consolidation_cases.py": "95b8febb3be2528673080cf7e4e100e0837f8323ce7078ff5d9b0f607978e447",
     "tests/product_support_cases.py": "4376eb55aae021b1ee02df37574471d812548c2946e6a6c3c959d88af7212428",
-    "tests/product_support_manifest.json": "dfde3cea6fab9351998043e1e3249d24a185076a23b9e91a97c4dec143eab7bd",
+    "tests/product_support_manifest.json": "39ed9ace56a88a65e152ebd3edd55e38a4e1beed6cb23c8d705d21b72477dee0",
     "tests/reference_cases.py": "42a6c7bfed0ee2246e4eacd0050d9469d22b2c9659870eba472d9563980da108",
     "tests/sections.toml": "e4a5455db255d4cf28f0374a2d3c8f708809252167986595d7c022bfa3c611c0",
-    "tests/startup_cases.py": "43364dcebb132d80fe3bd70c55f2918108dcfe107e1dbecc6a093b726b1e8a04",
+    "tests/startup_cases.py": "c22b4eb6f5c2d9b0b4373becd0b33ad4f1b443b641eb9b0149f5e512cfe56786",
     "tests/store_boundary_cases.py": "59b50e6847b707cc429c0fd1bf8e7df2fee2f1c748b458279d46d2043b480c00",
     "tests/support.py": "f0addbde48f9b4572375eb93209c6f94afb9a0f25686a7b031a9bcb91e50729a",
     "tests/task_boundary_cases.py": "5a1d4b698727b4c20c52aab75aca9addd6abf672939961eb8aa870be8e65d659",
     "tests/tooling_boundary_cases.py": "118dd25fddbf63f6a243c76cdefe7be97f2d7920bdfd6d16fae87d54c3cc8d85",
-    "tests/tooling_boundary_manifest.json": "556b650dbe9e451317800df2dbb86a466b463e1303461fb6c6764695201a6a87",
+    "tests/tooling_boundary_manifest.json": "5698651d73f9f616323d67f225bc13971bbf39e1fd81256cdf426542d0612ebd",
     "tests/unit/test_acceptance.py": "99168933518c302016141603038e0b12c24b92540a2d9128a0fc727f2fb97f02",
     "tests/unit/test_acceptance_more.py": "8b635131b5f0afd066fac94651b7b82b323be51f1445691f8db4d0e6820c9a8b",
     "tests/unit/test_acceptance_script.py": "1d671a9d083a594ec9d2100088f8efd59eb06f691151564d95bbb7895e5edc8c",
@@ -295,7 +701,7 @@
     "tests/unit/test_keychain_write.py": "09190488aa55cbc3099d8f47925e01784ff9fc5abbd2ea62d623e6d19ff70d27",
     "tests/unit/test_product_consolidation.py": "51edec998cca710e2e37b5e07edb2c36d48e2e831993e96d01ec4c34be412525",
     "tests/unit/test_product_selector_runtime.py": "616fc75fabaee59e1aa8d7ad5686053c72580fc9c85bc75c165b0bad600a29a6",
-    "tests/unit/test_product_test_support.py": "8620d141e4b1aedec06d6afed33b51c3792b9afe3f88a7a08484342ee7475fba",
+    "tests/unit/test_product_test_support.py": "9607e9285ad0f9303098fe0599a9c29e44af4cc592a10ef826b26e9538b35ed4",
     "tests/unit/test_progress_script.py": "e330503873a7501453907e54796a38a0df6939061b7e14e01989567bb3f13466",
     "tests/unit/test_references.py": "752fe2d0a3424ab1257bbccbef02dda7b62067f16d64d779c7aa4ff1b2ad467c",
     "tests/unit/test_reports.py": "1d40596b816068dc93a7a5e1907e6368de3e2af71d1f93e684d426564ccebb67",
@@ -321,6 +727,6 @@
   "manifest": {
     "path": "tests/product_consolidation_manifest.json",
     "before_sha256": "e645d1d69999b7cf653cab59f7b5e6a7ee07f8ed6038d2e960a10e5022a16abe",
-    "after_sha256": "5bc3733a3c32a9bbe2f954310b4950e4f7133488c9d488518c3e38ed4e4a09cb"
+    "after_sha256": "14110fa6d8359f1b9b2d10f47c4cc4e619b0a31284446f04ccfe8c4970a0b93c"
   }
 }

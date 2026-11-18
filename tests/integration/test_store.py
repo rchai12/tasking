@@ -66,7 +66,7 @@ def test_the_names() -> None:
     assert TRANSACTION_MESSAGE == "a write needs a transaction"
     assert NESTED_MESSAGE == "a transaction is already open"
     assert UNKNOWN_TASK_MESSAGE == "unknown task"
-    assert SCHEMA_VERSION == 3
+    assert SCHEMA_VERSION == 4
 
 
 def test_opening_makes_a_private_file_in_wal_mode(store: Store, path: Path) -> None:
@@ -75,7 +75,7 @@ def test_opening_makes_a_private_file_in_wal_mode(store: Store, path: Path) -> N
     assert mode(path.with_name("docket.sqlite3-wal")) == 0o600
     assert mode(path.with_name("docket.sqlite3-shm")) == 0o600
     connection = raw(path)
-    assert connection.execute("PRAGMA user_version").fetchone() == (3,)
+    assert connection.execute("PRAGMA user_version").fetchone() == (4,)
     assert connection.execute("PRAGMA journal_mode").fetchone() == ("wal",)
 
 

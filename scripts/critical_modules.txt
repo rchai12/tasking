@@ -20,3 +20,4 @@ _store_links.py
 _store_keys.py
 _store_tasks.py
 reminders.py
+_store_reminders.py

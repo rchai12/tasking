@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 
+from tests.preservation_cases import assert_preserved
 from tests.product_consolidation_cases import collected, run_pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -50,7 +51,7 @@ def check_manifest() -> None:
 
 def check_frozen() -> None:
     for path, expected in MANIFEST["frozen"].items():
-        assert hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == expected, path
+        assert_preserved(ROOT / path, expected)
 
 
 def check_oracle() -> None:
