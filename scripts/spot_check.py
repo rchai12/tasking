@@ -10,9 +10,10 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 
-from docket.spotcheck import SpotError, spot_check
-
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from docket_tools.spotcheck import SpotError, spot_check  # noqa: E402
 
 
 def run_pytest(test: str, cwd: Path) -> tuple[int, str]:

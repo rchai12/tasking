@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from docket.acceptance import HEADING_MESSAGE, MAX_DETAIL, Row, accept, digest, read_rows
+from docket_tools.acceptance import HEADING_MESSAGE, MAX_DETAIL, Row, accept, digest, read_rows
 
 SPEC = """\
 # Phase 9z: Example

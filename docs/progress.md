@@ -202,3 +202,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - Private task SQL entry points are insert_task, update_task, select_task, select_tasks, select_tasks_in_states, and select_existence.
 - Follow-ups:
   - None
+
+## Phase 2n: Repository phase tooling (2026-11-17)
+- Tests: 1223 -> 1261 (given 33)
+- New public names: None
+- Changed files: 27
+- Deviations:
+  - The put-entry import is parenthesized so docket_tools.reports fits the line length; its AST matches the manifest.
+- Follow-ups:
+  - None

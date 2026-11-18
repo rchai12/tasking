@@ -1,4 +1,4 @@
-from docket.spotcheck import verdict
+from docket_tools.spotcheck import verdict
 
 
 def test_trailing_spaces_on_an_error_line_are_cut() -> None:

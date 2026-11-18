@@ -30,10 +30,17 @@ class Runner:
                 Path(part.removeprefix("--junitxml=")).write_text(JUNIT, encoding="utf-8")
             if part.startswith("--cov-report=json:"):
                 modules = check.read_critical(check.CRITICAL_FILE.read_text(encoding="utf-8"))
+                tooling = check.read_critical(check.TOOLING_FILE.read_text(encoding="utf-8"))
                 files = {
                     f"src/docket/{module}": {"summary": {"missing_lines": 0, "missing_branches": 0}}
                     for module in modules
                 }
+                files.update(
+                    {
+                        module: {"summary": {"missing_lines": 0, "missing_branches": 0}}
+                        for module in tooling
+                    }
+                )
                 Path(part.removeprefix("--cov-report=json:")).write_text(
                     json.dumps({"files": files}), encoding="utf-8"
                 )
@@ -55,6 +62,7 @@ def test_a_quiet_run_prints_the_tables_and_the_summary(
         "  format: passed\n"
         "  tests: passed\n"
         "  critical coverage: passed\n"
+        "  tooling coverage: passed\n"
         "All checks passed.\n"
         f"Logs: {tmp_path}\n"
     )
@@ -74,6 +82,7 @@ def test_a_quiet_failure_shows_the_last_lines_of_its_log(
         "  format: FAILED\n"
         "  tests: not run\n"
         "  critical coverage: not run\n"
+        "  tooling coverage: not run\n"
         "Check failed at: format\n"
         f"Logs: {tmp_path}\n"
     )
@@ -90,7 +99,9 @@ def test_quiet_sections_first_and_alone_log_each_run(
         tmp_path / "tests-first.log",
         tmp_path / "tests.log",
     ]
-    assert capsys.readouterr().out.startswith(CORE_TABLE + FULL_TABLE + "\nSummary:\n")
+    first_out = capsys.readouterr().out
+    assert first_out.startswith(CORE_TABLE + FULL_TABLE + "\nSummary:\n")
+    assert "  critical coverage: passed\n  tooling coverage: passed\n" in first_out
     alone = Runner()
     assert check.main(["--quiet", "--section", "core", "--log-dir", str(tmp_path)], run=alone) == 0
     assert alone.logs == [tmp_path / "section.log"]
@@ -104,5 +115,10 @@ def test_without_quiet_the_output_is_as_before(
     assert check.main([], run=runner) == 0
     assert runner.logs == [None, None, None]
     out = capsys.readouterr().out
-    assert out.startswith("== lint\n== format\n== tests\n" + FULL_TABLE + "== critical coverage\n")
+    assert out.startswith(
+        "== lint\n== format\n== tests\n"
+        + FULL_TABLE
+        + "== critical coverage\n== tooling coverage\n"
+    )
+    assert "  critical coverage: passed\n  tooling coverage: passed\n" in out
     assert "Logs:" not in out

@@ -28,6 +28,7 @@ from pathlib import Path
 FAILURES = 0
 ORACLE_ONLY = "--oracle-only" in sys.argv
 ROOT = Path.cwd()
+sys.path.insert(0, str(ROOT))
 PYTHON = sys.executable
 SPOTS = 600
 ENTRIES = 300
@@ -72,7 +73,7 @@ def spots() -> bool:
     rng = random.Random(7)
     reached = {"answers": 0, "raises": 0, "refused": 0}
     if not ORACLE_ONLY:
-        from docket.spotcheck import SpotError, spot_check
+        from docket_tools.spotcheck import SpotError, spot_check
 
         folder = Path(tempfile.mkdtemp())
     for step in range(SPOTS):
@@ -120,7 +121,7 @@ def spots() -> bool:
 
 
 def entries() -> bool:
-    from docket.reports import ProgressEntry, parse_progress, put_entry
+    from docket_tools.reports import ProgressEntry, parse_progress, put_entry
 
     rng = random.Random(11)
     base = ProgressEntry(
@@ -179,7 +180,7 @@ SPAN = re.compile(r"`([^`]+)`")
 
 
 def committed_docs() -> bool:
-    from docket.acceptance import read_rows
+    from docket_tools.acceptance import read_rows
 
     specs = sorted((ROOT / "docs" / "phases").glob("phase-0[1-9]*.md"))
     guides = sorted((ROOT / "docs" / "verification").glob("phase-0[1-9]*.md"))

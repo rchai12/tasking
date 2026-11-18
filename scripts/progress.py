@@ -8,9 +8,10 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from docket.reports import ProgressEntry, put_entry
-
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from docket_tools.reports import ProgressEntry, put_entry  # noqa: E402
 
 
 def main(argv: list[str] | None = None) -> int:

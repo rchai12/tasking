@@ -5,6 +5,7 @@
 [[section]]
 name = "tooling"
 patterns = [
+    "unit/test_tooling_boundary*.py",
     "unit/test_reports*.py",
     "unit/test_check*.py",
     "unit/test_acceptance*.py",

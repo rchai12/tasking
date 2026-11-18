@@ -68,6 +68,7 @@ from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT))
 
 
 def search_commands(spec: str) -> list[str]:
@@ -337,7 +338,7 @@ def collected_ids(clone: Path, tests: list[str]) -> dict[str, list[str]]:
 
 def lint(spec_path: Path, guide_path: Path, clone: Path, promoted: bool = False) -> int:
     """Check a spec and its guide against each other and against what pytest collects."""
-    from docket.acceptance import read_rows
+    from docket_tools.acceptance import read_rows
 
     spec = spec_path.read_text(encoding="utf-8")
     guide = guide_path.read_text(encoding="utf-8")

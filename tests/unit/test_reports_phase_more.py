@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from docket.reports import PHASE_MESSAGE, Problem, check_reports
+from docket_tools.reports import PHASE_MESSAGE, Problem, check_reports
 
 ENTRY = """## Phase 5: routing (2026-11-09)
 - Tests: 1 -> 2 (given 1)

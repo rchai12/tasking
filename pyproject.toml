@@ -38,11 +38,11 @@ extend-exclude = ["docs"]
 select = ["E", "F", "I", "B", "UP"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["docket", "tests"]
+known-first-party = ["docket", "docket_tools", "tests"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--import-mode=importlib --cov=docket --cov-branch --cov-report=term-missing"
+addopts = "--import-mode=importlib --cov=docket --cov=docket_tools --cov-branch --cov-report=term-missing"
 
 [tool.coverage.report]
 fail_under = 90

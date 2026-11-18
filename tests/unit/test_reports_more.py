@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from docket.reports import Problem, check_reports, parse_progress, parse_review
+from docket_tools.reports import Problem, check_reports, parse_progress, parse_review
 
 HEADING = "heading must be `## Phase <id>: <title> (YYYY-MM-DD)`"
 

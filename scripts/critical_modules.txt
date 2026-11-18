@@ -1,7 +1,6 @@
 # Modules where a bug loses or repeats a reminder, creates a task without approval, or leaks a
 # secret. Every line and every branch of each must be covered by tests. One path
 # per line, relative to src/docket/. Read by scripts/check.py.
-reports.py
 config.py
 keychain.py
 deadlines.py
@@ -12,8 +11,6 @@ intake.py
 clients.py
 web.py
 server.py
-acceptance.py
-spotcheck.py
 references.py
 serialization.py
 domain.py

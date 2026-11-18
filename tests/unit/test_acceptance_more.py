@@ -1,4 +1,4 @@
-from docket.acceptance import Row, digest, read_rows
+from docket_tools.acceptance import Row, digest, read_rows
 
 TWO_TABLES = """\
 ## Acceptance

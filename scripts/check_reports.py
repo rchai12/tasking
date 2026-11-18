@@ -7,9 +7,10 @@ import argparse
 import sys
 from pathlib import Path
 
-from docket.reports import check_reports
-
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from docket_tools.reports import check_reports  # noqa: E402
 
 
 def main(argv: list[str] | None = None) -> int:

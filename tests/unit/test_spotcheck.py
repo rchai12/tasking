@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from docket.spotcheck import MATCH_MESSAGE, SpotError, mutate, spot_check, verdict
+from docket_tools.spotcheck import MATCH_MESSAGE, SpotError, mutate, spot_check, verdict
 
 MODULE = 'HOST = "127.0.0.1"\nPORT = 8767\n'
 ASSERTION = """\

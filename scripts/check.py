@@ -17,8 +17,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 CRITICAL_FILE = Path(__file__).resolve().parent / "critical_modules.txt"
+TOOLING_FILE = ROOT / "scripts/tooling_modules.txt"
 SECTIONS_FILE = ROOT / "tests" / "sections.toml"
 COVERAGE_STEP = "critical coverage"
+TOOLING_COVERAGE_STEP = "tooling coverage"
 LAYERS = ("unit", "integration", "e2e")
 
 
@@ -45,12 +47,12 @@ def read_critical(text: str) -> list[str]:
     return modules
 
 
-def coverage_gaps(report: dict, modules: list[str]) -> list[str]:
+def coverage_gaps(report: dict, modules: list[str], *, prefix: str = "src/docket") -> list[str]:
     """Return one line for each module that is not fully covered, in the order of modules."""
     files = report["files"]
     gaps = []
     for module in modules:
-        found = files.get(f"src/docket/{module}")
+        found = files.get(f"{prefix}/{module}" if prefix else module)
         if found is None:
             gaps.append(f"{module}: not measured")
             continue
@@ -153,6 +155,7 @@ def steps(python: str, coverage_json: Path, *, first: list[str] | None = None) -
                 ],
             ),
             Step(COVERAGE_STEP, None),
+            Step(TOOLING_COVERAGE_STEP, None),
         ]
     )
     return found
@@ -193,13 +196,21 @@ def _show_tail(log: Path) -> None:
         print(line)
 
 
-def _critical_coverage(coverage_json: Path) -> bool:
+def _coverage_gate(coverage_json: Path, inventory: Path, *, prefix: str) -> bool:
     report = json.loads(coverage_json.read_text(encoding="utf-8"))
-    modules = read_critical(CRITICAL_FILE.read_text(encoding="utf-8"))
-    gaps = coverage_gaps(report, modules)
+    modules = read_critical(inventory.read_text(encoding="utf-8"))
+    gaps = coverage_gaps(report, modules, prefix=prefix)
     for gap in gaps:
         print(f"  {gap}")
     return not gaps
+
+
+def _critical_coverage(coverage_json: Path) -> bool:
+    return _coverage_gate(coverage_json, CRITICAL_FILE, prefix="src/docket")
+
+
+def _tooling_coverage(coverage_json: Path) -> bool:
+    return _coverage_gate(coverage_json, TOOLING_FILE, prefix="")
 
 
 def _print_table(report_path: Path, names: list[str] | None) -> None:
@@ -292,7 +303,10 @@ def main(
                 print(f"== {step.name}", flush=True)
             log: Path | None = None
             if step.command is None:
-                passed = _critical_coverage(coverage_json)
+                if step.name == TOOLING_COVERAGE_STEP:
+                    passed = _tooling_coverage(coverage_json)
+                else:
+                    passed = _critical_coverage(coverage_json)
             else:
                 if log_dir is not None:
                     log = log_dir / _log_name(step.name)

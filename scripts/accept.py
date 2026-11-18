@@ -11,10 +11,12 @@ import tempfile
 from collections.abc import Callable
 from pathlib import Path
 
-from docket.acceptance import accept, read_rows
-from docket.reports import PHASE_MESSAGE
-
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from docket_tools.acceptance import accept, read_rows  # noqa: E402
+from docket_tools.reports import PHASE_MESSAGE  # noqa: E402
+
 _PHASE = re.compile(r"^(?:0|[1-9][0-9]*)[a-z]?$")
 
 

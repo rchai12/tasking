@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from docket.reports import (
+from docket_tools.reports import (
     Finding,
     Problem,
     ProgressEntry,

@@ -1,4 +1,4 @@
-from docket.reports import format_entry, parse_progress, put_entry
+from docket_tools.reports import format_entry, parse_progress, put_entry
 from tests.unit.test_reports_put import EARLIER, ENTRY, HEAD, TEXT
 
 
