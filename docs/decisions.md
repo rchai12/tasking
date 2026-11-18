@@ -119,3 +119,9 @@ The private SQL modules receive the existing SQLite connection and bound values 
 ## Task table boundary decisions (architect, Nov 17, Phase 2m)
 
 No new owner choice. Complete the existing split with `_store_tasks`, moving ordinary task SQL, its column list and SQL assembly while retaining public records, guards, encoded-value selection, sentinel semantics and safe task-time conversion in Store. Store supplies an update map of fixed internal column names; the private helper constructs the SQL and binds all values. External keys/fragments are never used as identifiers. Ordinary task reads/existence/readback use the same connection; migration/preflight task reads stay local to startup. Existing 2l modules, schema and public APIs remain unchanged.
+
+## Repository tooling decisions (architect, Nov 17, Phase 2n)
+
+Use a root docket_tools package outside src, keeping src-only package discovery unchanged. Move the three utilities byte-identically and update explicit consumers/bootstrap; no shims, installation, dependency, parser rewrite or test consolidation. A manifest preserves utility bytes and earlier consumer ASTs. Historical fixture strings naming old modules remain data.
+
+Preserve the product critical list except for removing the three moved utilities, and give those utilities a separate immutable repository-relative coverage list. Full pytest measures docket and docket_tools; critical coverage and tooling coverage independently require all listed lines/branches, refusing absent measurements. Keep the overall 90% floor and existing command behavior. Wheel build tools are absent, so packaging evidence is the unchanged discovery configuration plus an isolated src-copy CLI smoke test with external access blocked.

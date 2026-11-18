@@ -20,6 +20,7 @@ A phase id is a number with an optional letter: `0`, `1`, `1a`, `12b`. Files use
 The tests are grouped into the sections of `tests/sections.toml`. Each spec names its own under "Sections", for example `core`.
 
 - While you work, run a section alone: `.venv/bin/python scripts/check.py --section core` (no coverage, seconds).
+- From Phase 2n, the full check measures both product and repository tooling and runs separate `critical coverage` and `tooling coverage` gates. Both require every listed line and branch; an absent measurement fails. Section-only runs and the preliminary section of --first keep --no-cov; the following full run measures both packages.
 - Your check is `.venv/bin/python scripts/check.py --first <the spec's sections>`: its sections' tests run first, and the full run, coverage, and gates follow only once they all pass. Fix a failing section before anything else.
 - **When coverage falls short**, a behaviour has no test. Write a test that checks what the uncovered line or branch does, from the spec, not one that only runs it. If the line can never run, or the spec does not need it, remove it and say so in your progress entry. Never add `# pragma: no cover` (unless the spec allows one) and never change a given test to reach the number.
 - A new test file belongs in the section of the code it tests. If `core` would take it otherwise, add a pattern to `tests/sections.toml`, and list that file in your Scope.

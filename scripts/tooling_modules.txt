@@ -1,0 +1,4 @@
+# Repository-relative tooling paths; every line and branch remains covered.
+docket_tools/reports.py
+docket_tools/acceptance.py
+docket_tools/spotcheck.py

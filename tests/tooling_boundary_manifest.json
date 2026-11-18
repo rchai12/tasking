@@ -1,0 +1,40 @@
+{
+  "modules": {
+    "docket_tools/reports.py": "50f6f5678eef980fe0c1d01d4d0c7046e4a9316dd7b5e3f8f6f5d93d9a5ec783",
+    "docket_tools/acceptance.py": "e950fa43208fb78c32f69716af76a2bcf031455c8e80c79bda03dc177e981a55",
+    "docket_tools/spotcheck.py": "59f3ace7270f65e5f655da9b137d66cf64c081cf35679cd38757cd03ac79b5e1"
+  },
+  "tests": {
+    "tests/unit/test_acceptance.py": "f42a49e085c8763fd392268da781e99305d04b479250a456498b8fca7a7ec627",
+    "tests/unit/test_acceptance_more.py": "7f558d2647ce30e4ceac2282e35d077c8f5b98ec0347a25b30b40a24ff08b377",
+    "tests/unit/test_reports.py": "045dc5070dbb63844084df18f3e06cac57878b62b18504685645b3d214fae909",
+    "tests/unit/test_reports_more.py": "1b7290c1d3909bab29674a0c6f1c52741d13265e55785ea571ab47e2df47dff4",
+    "tests/unit/test_reports_phase.py": "e6fef6f95e118a47527d4a2d09ad20b72b624ded517a5757a52760085a2a6bf3",
+    "tests/unit/test_reports_phase_more.py": "91b70081993446a1ccc5ab59d74c70fa13f238192352098a06a0ff252ddcc69b",
+    "tests/unit/test_reports_put.py": "cb549459aead70c6b1839478235fba42d7047ae9f8b4461e2bd652cd69cd47ab",
+    "tests/unit/test_reports_put_more.py": "fcfcd513cabd2e17b9d5a5d709d1cd011f02757f024ec16c116d93f878771e73",
+    "tests/unit/test_spotcheck.py": "da2d992ccd514d3899f55e3daf1ae1273b9946253a2291be9f5a627d5e48710b",
+    "tests/unit/test_spotcheck_more.py": "e13d938289726998f2e360498a34e0dd50a5ad509b3d55da4584eeccec1583e9",
+    "docs/verification/probe-02e.py": "5ae983b4dbce6b3ad28b784f15964d18b01651e0c738d9534db49b96a4d3be7e"
+  },
+  "product_critical": [
+    "config.py",
+    "keychain.py",
+    "deadlines.py",
+    "schema.py",
+    "store.py",
+    "core.py",
+    "intake.py",
+    "clients.py",
+    "web.py",
+    "server.py",
+    "references.py",
+    "serialization.py",
+    "domain.py",
+    "parsing.py",
+    "_store_audit.py",
+    "_store_links.py",
+    "_store_keys.py",
+    "_store_tasks.py"
+  ]
+}

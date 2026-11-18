@@ -19,26 +19,27 @@ Applies to every phase. Phase specs list the specific tests; this file sets the 
 5. **Deterministic.** Time comes only from replacing `docket.clock.now`, ids from `docket.ids.new_id`. Tests that cross a daylight-saving change name the zone and the dates.
 6. **Isolated settings.** Every `DOCKET_*` variable is removed, and `HOME` and `DOCKET_DATA_DIR` point at fresh temporary folders.
 7. **Every bug fix adds a test** that fails before the fix.
-8. **Coverage:** branch coverage on every run, overall at least 90%; every line and branch of each critical module.
+8. **Coverage:** branch coverage on every run, overall at least 90%; every line and branch of each product critical module and every listed tooling module (separate gates from Phase 2n).
 9. **Expected values are literal**, never built by the code under test.
 10. **HTTP concurrency:** use events and temporary SQLite locks to prove loop progress and connection thread ownership. Timeouts are failure watchdogs; do not assert elapsed performance or coordinate with wall-clock sleeps. ASGI fakes match the installed server scope and never open a socket.
 11. **Store startup:** use spawn-mode processes and standard-library IPC against synthetic temporary databases to test independent openers and lock release on process exit. Probe entry points have a main guard so spawned children do not recursively run them. Keep process/queue cleanup in finally blocks; no real database or account is used.
 
 ## Critical modules
 
-A bug here loses a reminder, sends one twice, creates a task without approval, or leaks a secret. The list lives in `scripts/critical_modules.txt`; a phase that adds a critical module adds it there and here.
+Phase 2n specifies two independent 100% line-and-branch gates after the same full test run. Product `critical coverage` uses `scripts/critical_modules.txt`, relative to src/docket. Repository `tooling coverage` uses `scripts/tooling_modules.txt`, relative to the repository. Missing measurements fail either gate. Pytest measures both docket and docket_tools with branch coverage and retains the overall 90% floor. A product failure stops before the tooling gate; a tooling failure cannot produce overall success.
 
-- `config.py` and `keychain.py` (Phase 0)
-- `deadlines.py` (instants, exact zone names, the 17:00 default, work-time rules; Phase 1a)
-- `schema.py` and `store.py` (every write whole or not at all, in a transaction; nothing removed or rewritten; Phase 1b)
-- `_store_audit.py`, `_store_links.py` and `_store_keys.py` (table SQL on the same Store connection and transaction; Phase 2l)
-- `_store_tasks.py` (task SQL and update assembly with facade-owned conversion/guards; Phase 2m)
-- `core.py` (the state rules, the title rule and one audit row per change; Phase 1c)
-- `references.py` (email reference text bounds and forbidden Unicode categories; Phase 2g)
-- `serialization.py` (the same canonical JSON for saved requests and replay comparisons; Phase 2j)
-- `domain.py` and `parsing.py` (shared approval/domain bounds, exact zone names and strict input parsing; Phase 2k)
-- `intake/` (who may create what, and retry safety; Phase 2)
-- `reminders.py` (nothing lost, nothing twice; Phase 3)
-- the press handler (who may press, and idempotency; Phase 4)
-- `calendar/sync.py` (one event per task, only title and time sent; Phase 7)
-- `calendar/reconcile.py` (a mismatch holds and asks, never edits; Phase 9)
+Product critical modules guard task approval, retry safety, reminder integrity and secrets. The target inventory after Phase 2n is:
+
+- config.py and keychain.py
+- deadlines.py
+- schema.py and store.py
+- _store_tasks.py, _store_audit.py, _store_links.py and _store_keys.py
+- core.py
+- references.py
+- serialization.py
+- domain.py and parsing.py
+- intake.py, clients.py, web.py and server.py
+
+Tooling coverage preserves the existing complete coverage of reports.py, acceptance.py and spotcheck.py under docket_tools. Their bodies move byte-identically; existing tests change only the explicitly scoped imports. The checker itself is exercised by fake-runner/gate tests; this phase does not create a new 100% promise for scripts/check.py.
+
+Future reminder, press and calendar-sync/reconciliation modules join the product critical inventory when their phases add them. Product packaging remains confined to src; repository tooling is not installed or imported by product code. The Phase 2n packaging check uses unchanged discovery plus an isolated src-copy CLI smoke test with network and Keychain access blocked; it does not claim a wheel was built.

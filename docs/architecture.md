@@ -96,6 +96,10 @@ Phase 2l specifies three private SQL modules, `_store_audit`, `_store_links` and
 
 Phase 2m specifies `_store_tasks` for ordinary task SELECT/INSERT/UPDATE, existence/readback, task columns and SQL construction, completing the four-table boundary. It follows the same connection-only SQL contract as the 2l modules. Store retains field selection, None versus UNCHANGED handling, timestamp/domain encoding and `_task_from` validation. Update identifiers come from its fixed internal field map; values and state filters are bound parameters. Startup/reference preflight continues to use local migration SQL. Public records, errors, sentinel, IDs and signatures remain in Store; the new module joins the 100% critical gate.
 
+## Repository phase tooling
+
+Phase 2n specifies root `docket_tools/` for repository-only report, acceptance and spot-check utilities, moved byte-for-byte out of src/docket. Product discovery stays src-only, with no compatibility shims or tooling dependency in the application. Four command wrappers and the architect linter bootstrap their resolved repository root before imports; the existing Phase 2e probe retains its root semantics and gets its scoped import/bootstrap migration. Commands, parser behavior, mutation allowlist and report formats remain unchanged. Full checks measure product and tooling together but enforce separate 100% `critical coverage` and `tooling coverage` inventories; no dependency is added.
+
 ## Shared domain rules and parsing
 
 Phase 2k specifies `docket.domain` as the shared owner of immutable state/source/client/actor/action/provider definitions, state labels, source actors, forbidden text categories and repeated title/key/work limits. Core, views, CLI, references, deadlines, settings and intake/HTTP consume those definitions while retaining their existing boundary checks. The core client list includes email and agent; token issuance and HTTP intake remain email-only. Shipped SQL stays literal and unchanged, with tests comparing the current CHECKs and bounds against the shared definitions, including both provider constraints.
@@ -250,7 +254,8 @@ docket/
   AGENTS.md, CLAUDE.md
   pyproject.toml
   docs/
-  scripts/check.py, scripts/check_reports.py, scripts/critical_modules.txt
+  scripts/check.py, scripts/check_reports.py, scripts/critical_modules.txt, scripts/tooling_modules.txt
+  docket_tools/        reports.py, acceptance.py, spotcheck.py (repository-only, Phase 2n)
   src/docket/
     config.py, clock.py, ids.py, keychain.py
     deadlines.py        time rules (critical)
