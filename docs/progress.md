@@ -238,3 +238,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 3a: Deterministic reminder planning (2026-11-18)
+- Tests: 1349 -> 1382 (given 30)
+- New public names: docket.reminders: LATE_MINUTES, PlannedReminder, plan_reminders
+- Changed files: 3
+- Deviations:
+  - None
+- Follow-ups:
+  - None
