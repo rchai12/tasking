@@ -8,13 +8,24 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
-from docket import _store_audit, _store_keys, _store_links, _store_tasks, serialization
+from docket import (
+    _store_audit,
+    _store_keys,
+    _store_links,
+    _store_reminders,
+    _store_tasks,
+    domain,
+    serialization,
+)
 from docket.config import Settings, prepare_data_dir
 from docket.deadlines import INSTANT_MESSAGE, Deadline, DeadlineError, WorkTime
 from docket.references import LINK_MAX, MESSAGE_ID_MAX, valid_reference
 from docket.schema import MIGRATIONS, SCHEMA_VERSION
+
+if TYPE_CHECKING:
+    from docket.reminders import PlannedReminder
 
 DB_FILENAME = "docket.sqlite3"
 SCHEMA_MESSAGE = "unsupported schema version"
@@ -71,6 +82,18 @@ class Link:
     message_id: str
     link: str
     created_at: datetime
+
+
+@dataclass(frozen=True)
+class Reminder:
+    id: str
+    task_id: str
+    kind: str
+    fire_at: datetime
+    planned_at: datetime
+    claimed_at: datetime | None
+    sent_at: datetime | None
+    voided_at: datetime | None
 
 
 @dataclass(frozen=True)
@@ -389,9 +412,48 @@ class Store:
             if rebuild:
                 self._migrate_references()
 
+    def insert_reminders(
+        self,
+        task_id: str,
+        plans: tuple["PlannedReminder", ...],
+        *,
+        at: datetime,
+    ) -> list[Reminder]:
+        self._require_write(at)
+        number = self._require_task(task_id)
+        return self._write_reminders(task_id, number, plans, at)
+
+    def void_reminders(
+        self,
+        task_id: str,
+        *,
+        at: datetime,
+        kinds: Collection[str] | None = None,
+    ) -> None:
+        self._require_write(at)
+        number = self._require_task(task_id)
+        selected = domain.REMINDER_KINDS if kinds is None else tuple(kinds)
+        for kind in selected:
+            if not isinstance(kind, str) or kind not in domain.REMINDER_KINDS:
+                raise StoreError("invalid reminder kind")
+        if not selected:
+            return
+        _store_reminders.void_reminders(self._connection, number, _instant(at), selected)
+
+    def reminders(self, task_id: str) -> list[Reminder]:
+        number = _number(task_id)
+        if number is None:
+            return []
+        return [
+            self._reminder_from(row)
+            for row in _store_reminders.select_reminders(self._connection, number)
+        ]
+
     def _apply_migration(self, version: int) -> None:
         for statement in _statements(MIGRATIONS[version]):
             self._connection.execute(statement)
+        if version == 3:
+            self._backfill_reminders()
         self._connection.execute(f"PRAGMA user_version = {version + 1}")
 
     def _user_version(self) -> int:
@@ -432,6 +494,84 @@ class Store:
             raise StoreError(f"invalid stored reference: {identifier} message_id")
         if not valid_reference(link, LINK_MAX):
             raise StoreError(f"invalid stored reference: {identifier} link")
+
+    def _backfill_reminders(self) -> None:
+        from docket import reminders
+
+        rows = self._connection.execute(
+            "SELECT number, title, state, deadline_at, deadline_zone, deadline_time_given, "
+            "work_start, work_minutes, work_zone, source, provider, message_id, link, "
+            "created_at, updated_at FROM tasks WHERE state IN ("
+            + ", ".join("?" for _ in domain.OPEN_STATES)
+            + ") ORDER BY number",
+            domain.OPEN_STATES,
+        ).fetchall()
+        for row in rows:
+            task = self._task_from(row)
+            try:
+                plans = reminders.plan_reminders(task, task.updated_at)
+            except OverflowError:
+                raise StoreError(f"invalid reminder plan: {task.id}") from None
+            self._write_reminders(task.id, int(row["number"]), plans, task.updated_at)
+
+    def _write_reminders(
+        self,
+        task_id: str,
+        number: int,
+        plans: tuple["PlannedReminder", ...],
+        at: datetime,
+    ) -> list[Reminder]:
+        for plan in plans:
+            if not isinstance(plan.kind, str) or plan.kind not in domain.REMINDER_KINDS:
+                raise StoreError("invalid reminder kind")
+            if plan.fire_at.tzinfo is not UTC:
+                raise StoreError(INSTANT_MESSAGE)
+        written: list[Reminder] = []
+        for plan in plans:
+            cursor = _store_reminders.insert_reminder(
+                self._connection,
+                number,
+                plan.kind,
+                _instant(plan.fire_at),
+                _instant(at),
+            )
+            written.append(
+                Reminder(
+                    id=f"r{cursor.lastrowid}",
+                    task_id=task_id,
+                    kind=plan.kind,
+                    fire_at=plan.fire_at,
+                    planned_at=at,
+                    claimed_at=None,
+                    sent_at=None,
+                    voided_at=None,
+                )
+            )
+        return written
+
+    def _reminder_from(self, row: sqlite3.Row) -> Reminder:
+        identifier = f"r{row['number']}"
+        return Reminder(
+            id=identifier,
+            task_id=f"t{row['task']}",
+            kind=row["kind"],
+            fire_at=self._reminder_time(row["fire_at"], identifier),
+            planned_at=self._reminder_time(row["planned_at"], identifier),
+            claimed_at=self._reminder_time(row["claimed_at"], identifier),
+            sent_at=self._reminder_time(row["sent_at"], identifier),
+            voided_at=self._reminder_time(row["voided_at"], identifier),
+        )
+
+    def _reminder_time(self, value: str | None, identifier: str) -> datetime | None:
+        if value is None:
+            return None
+        try:
+            parsed = datetime.fromisoformat(value)
+        except ValueError:
+            raise StoreError(f"invalid stored reminder time: {identifier}") from None
+        if parsed.tzinfo is not UTC:
+            raise StoreError(f"invalid stored reminder time: {identifier}")
+        return parsed
 
     def _require_write(self, at: datetime) -> None:
         if not self._in_transaction:

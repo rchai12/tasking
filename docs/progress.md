@@ -247,3 +247,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 3b: Durable reminder plans (2026-11-18)
+- Tests: 1382 -> 1472 (given 83)
+- New public names: docket.core: INVALID_REMINDER_PLAN; docket.store: Reminder, insert_reminders, void_reminders, reminders
+- Changed files: 5
+- Deviations:
+  - A combined edit writes the deadline reminder group before the start group.
+- Follow-ups:
+  - None

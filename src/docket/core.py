@@ -1,11 +1,12 @@
 import unicodedata
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 from typing import cast
 
 from docket import clock, domain, serialization
 from docket.deadlines import Deadline, WorkTime
 from docket.references import LINK_MAX, MESSAGE_ID_MAX, valid_reference
+from docket.reminders import plan_reminders
 from docket.store import UNCHANGED, Link, Store, Task
 
 UNKNOWN_TASK = "unknown_task"
@@ -19,6 +20,7 @@ WORK_AFTER_DEADLINE = "work_after_deadline"
 INVALID_CLIENT = "invalid_client"
 INVALID_KEY = "invalid_key"
 KEY_REUSED = "key_reused"
+INVALID_REMINDER_PLAN = "invalid_reminder_plan"
 
 _SOURCES = domain.SOURCES
 _CLIENTS = domain.CORE_CLIENTS
@@ -112,6 +114,10 @@ def change_state(store: Store, task_id: str, action: str, *, actor: str) -> Outc
             before={"state": task.state},
             after={"state": new_state},
         )
+        if action in ("done", "cancel"):
+            store.void_reminders(task_id, at=at)
+        elif action == "reopen":
+            _persist_plan(store, updated, at)
         return Outcome(updated, True)
 
 
@@ -169,6 +175,13 @@ def edit_task(
             store.append_audit(
                 task_id, at=at, action=action, actor=actor, before=before, after=after
             )
+        _replace_reminders(
+            store,
+            updated,
+            at,
+            deadline="deadline" in fields,
+            work="work" in fields,
+        )
         return Outcome(updated, True)
 
 
@@ -311,7 +324,34 @@ def _insert_open_task(
             "link": link,
         },
     )
+    _persist_plan(store, task, at)
     return task
+
+
+def _persist_plan(store: Store, task: Task, at: datetime) -> None:
+    try:
+        plans = plan_reminders(task, at)
+    except OverflowError:
+        raise CoreError(INVALID_REMINDER_PLAN) from None
+    store.insert_reminders(task.id, plans, at=at)
+
+
+def _replace_reminders(
+    store: Store,
+    task: Task,
+    at: datetime,
+    *,
+    deadline: bool,
+    work: bool,
+) -> None:
+    if deadline:
+        store.void_reminders(task.id, at=at, kinds=("before", "due_soon", "due", "late"))
+        if task.deadline is not None:
+            _persist_plan(store, replace(task, work=None), at)
+    if work:
+        store.void_reminders(task.id, at=at, kinds=("start",))
+        if task.work is not None:
+            _persist_plan(store, replace(task, deadline=None), at)
 
 
 def _check_key(key: object) -> None:
