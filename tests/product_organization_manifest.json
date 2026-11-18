@@ -172,7 +172,7 @@
     }
   },
   "frozen": {
-    "AGENTS.md": "751cd465262aa3b95d28d6b631a784ef8b1e032a27bb3598f2784155422696fb",
+    "AGENTS.md": "ca511aa58ea5d5af03aa2e5632d04b75958d310a4a359b6fe7bce02bc6e4fc05",
     "docket_tools/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "docket_tools/acceptance.py": "e950fa43208fb78c32f69716af76a2bcf031455c8e80c79bda03dc177e981a55",
     "docket_tools/reports.py": "50f6f5678eef980fe0c1d01d4d0c7046e4a9316dd7b5e3f8f6f5d93d9a5ec783",
@@ -205,7 +205,7 @@
     "scripts/accept.py": "d6f23be839cd68c7c966dc2a685e2e5f55b250e317c7e33552693e8a5b4d025e",
     "scripts/check.py": "b733105a12829a82ff38ee7762bf06cd09bbd49123411bb6183820ac4937ee48",
     "scripts/check_reports.py": "b2c37e0fad26699c3f4c829f231bd297ba6c2eaa759b665613535fbc820f7308",
-    "scripts/critical_modules.txt": "03ce976820899b655fa96d679e08b515d22afb75163a83fc955dd3a2e871f0bd",
+    "scripts/critical_modules.txt": "1cf6b19444d51743821a28a863675cbecbfb08898b3bfd01d16db1428ddf33e4",
     "scripts/progress.py": "46c5c186ad344e6b0f182e98cb33b2c92e35eb2e5eb21f3dbcd3188d8f6381b0",
     "scripts/spot_check.py": "45ffc864367c5fd26d6bacb93ed2940ecfc6f521e62f2c1282f670e3c8c1150a",
     "scripts/tooling_modules.txt": "e275ba62b06fb92c7f05e5650a1915c23e481c89dc2bde3e6d719885bd775097",
@@ -271,7 +271,7 @@
     "tests/integration/test_web_workers.py": "8f1982d419370503f64757fef8e03016481187f7b07402aa2fcc431492315381",
     "tests/product_consolidation_cases.py": "f38dbab451fe51f3fe656e97c59e692b5630827ae0e140d8528e2970d5fddf50",
     "tests/product_support_cases.py": "4376eb55aae021b1ee02df37574471d812548c2946e6a6c3c959d88af7212428",
-    "tests/product_support_manifest.json": "2c84aa600e992d8ddf105ee1b90b868c8afaad69726d56df58ff6baf8a9736bf",
+    "tests/product_support_manifest.json": "dfde3cea6fab9351998043e1e3249d24a185076a23b9e91a97c4dec143eab7bd",
     "tests/reference_cases.py": "42a6c7bfed0ee2246e4eacd0050d9469d22b2c9659870eba472d9563980da108",
     "tests/sections.toml": "e4a5455db255d4cf28f0374a2d3c8f708809252167986595d7c022bfa3c611c0",
     "tests/startup_cases.py": "43364dcebb132d80fe3bd70c55f2918108dcfe107e1dbecc6a093b726b1e8a04",
@@ -279,7 +279,7 @@
     "tests/support.py": "f0addbde48f9b4572375eb93209c6f94afb9a0f25686a7b031a9bcb91e50729a",
     "tests/task_boundary_cases.py": "5a1d4b698727b4c20c52aab75aca9addd6abf672939961eb8aa870be8e65d659",
     "tests/tooling_boundary_cases.py": "118dd25fddbf63f6a243c76cdefe7be97f2d7920bdfd6d16fae87d54c3cc8d85",
-    "tests/tooling_boundary_manifest.json": "c7209c59bbaa799715c8ff38fdbfe7c6084cd6b6a6fc3f967e76a6eecead4ced",
+    "tests/tooling_boundary_manifest.json": "556b650dbe9e451317800df2dbb86a466b463e1303461fb6c6764695201a6a87",
     "tests/unit/test_acceptance.py": "99168933518c302016141603038e0b12c24b92540a2d9128a0fc727f2fb97f02",
     "tests/unit/test_acceptance_more.py": "8b635131b5f0afd066fac94651b7b82b323be51f1445691f8db4d0e6820c9a8b",
     "tests/unit/test_acceptance_script.py": "1d671a9d083a594ec9d2100088f8efd59eb06f691151564d95bbb7895e5edc8c",
@@ -321,6 +321,6 @@
   "manifest": {
     "path": "tests/product_consolidation_manifest.json",
     "before_sha256": "e645d1d69999b7cf653cab59f7b5e6a7ee07f8ed6038d2e960a10e5022a16abe",
-    "after_sha256": "86fe2c4170864001cbcda0cb6e834f2bd073c5e54a7ee3844869aa926beda3e2"
+    "after_sha256": "5bc3733a3c32a9bbe2f954310b4950e4f7133488c9d488518c3e38ed4e4a09cb"
   }
 }

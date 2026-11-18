@@ -34,7 +34,7 @@ This file applies to every phase. Read it, then `docs/architecture.md`, then `do
 ## Determinism rules
 
 - **Code decides everything.** Reminder times, backoff, state changes and every policy are code.
-- **Time and ids come from one place.** Read the current time only through `docket.clock.now()` and new ids only through `docket.ids.new_id()`, called through the module (`clock.now()`, not `from docket.clock import now`), so tests can replace them.
+- **Time and ids come from one place.** Read the current time only through `docket.clock.now()`, called through the module (`clock.now()`, not `from docket.clock import now`). Persistent internal rows use SQLite-assigned, never-reused row numbers: existing tasks `t1`, links `l1`, and future reminders `r1`. Outbound retry keys come only from `docket.ids.new_id()`, called through the module, and are persisted once and reused on retry. Pure planners allocate no IDs. Tests can replace clock/ID functions.
 - **Everything is retry-safe.** Every create is keyed, every reminder is claimed before it is sent, every press can be repeated.
 - **Deadlines are UTC instants plus a zone.** Never store local time strings; never use the machine's zone implicitly.
 

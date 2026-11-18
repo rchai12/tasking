@@ -139,3 +139,9 @@ The original store(path) design collided with the existing plain/keyed/link path
 ## Cleanup sequencing (2026-11-18)
 
 The owner approved stopping further subdivision of audit test cleanup and preventing it from postponing the reminder engine. Complete independent verification of already implemented Phase 2q, then plan Stage 3 after settling its persistent-ID contract. Phase 2r tooling test organization is deferred maintenance, not a reminder prerequisite. Phase 2s type checking remains separate and requires the owner’s checker/dependency decision. No further prerequisite phases for file organization without explicit owner agreement. Existing phase IDs and historical evidence remain unchanged.
+
+## Reminder IDs and planning (2026-11-18)
+
+Owner chose SQLite IDs for internal rows and generated IDs for outbound retry keys. Preserve existing task/link IDs; durable reminder IDs use r1, r2, onward from never-reused SQLite numbers. Generate each outbound retry key once through docket.ids.new_id(), persist it, and reuse it for every attempt/restart. The alternative of generated IDs for both reminder rows and retry keys was not chosen. AGENTS.md and architecture.md are reconciled with this policy; no database change or ID allocation occurs in Phase 3a.
+
+Architect scope: Stage 3 starts with the pure reminder plan, with exact UTC offset, boundary, state, work-start and tie-order contracts. Include past due/late/start instants as evidence for later catch-up coalescing; do not send them individually or repeatedly replan during polling. The finite late schedule ends at 12 elapsed hours; digest remains a later Stage 3 responsibility. Datetime overflow is explicit, never silently clipped. Durable core integration must handle it before committing changes. This phase adds no delivery, service connection or dependency.

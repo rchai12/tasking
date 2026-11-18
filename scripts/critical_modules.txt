@@ -19,3 +19,4 @@ _store_audit.py
 _store_links.py
 _store_keys.py
 _store_tasks.py
+reminders.py

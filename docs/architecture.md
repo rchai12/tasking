@@ -78,6 +78,8 @@ The data folder is `DOCKET_DATA_DIR`, by default `~/Library/Application Support/
 
 Task ids are `t` followed by the row's number (`t1`, `t2`), given out in order and never reused once committed; they fit the email service's rule (ASCII letters, digits, `-` and `_`). Titles are 1 to 100 characters with no leading or trailing whitespace and no control, format or line-separator characters (Unicode categories Cc, Cf, Zl, Zp); a title that breaks the rule is refused, never rewritten.
 
+Owner decision (2026-11-18): persistent internal rows use SQLite-assigned, never-reused row numbers. Tasks keep t1, links keep l1, and durable reminders will use r1, r2, onward. Outbound retry keys are generated through docket.ids.new_id(), persisted once for the send operation and reused across attempts and restarts. They are separate from row IDs; no retry allocates a replacement key. Pure planning allocates neither kind of ID. AGENTS.md uses this same rule.
+
 Phase 2g specifies email references as plain text: `message_id` is 1–512 Unicode code points and `link` is 1–2,048, with no Cc, Cf, Zl or Zp characters. Neither field is trimmed, normalized or parsed as a URL. `docket.references` supplies the pure policy to core and the upgrade preflight. Migration 3 bounds stored lengths and prevents NUL length bypasses, rebuilding tasks and links without changing IDs, audit rows, retry JSON or sequences. Invalid legacy references stop the upgrade with `invalid stored reference: <task/link id> <field>`; no automatic repair is performed. Foreign keys are disabled only for that rebuild and restored on every exit.
 
 The store (`docket.store`, Phase 1b) is one SQLite file, `docket.sqlite3`, mode `0600`, in WAL mode with a 5-second busy timeout, so the service, the `docket` command and the MCP server can each open it. Every write runs inside `Store.transaction()` (`BEGIN IMMEDIATE`), so a change and its audit row commit together or not at all. Tasks are never deleted and audit rows never changed or removed; triggers enforce both.
@@ -170,6 +172,10 @@ Conductor calls `create_task` and the other write tools over MCP only after you 
 `POST /proposals` with a source, title, optional deadline, evidence quote and confidence. A proposal posts a card; only your press (or `docket proposals approve`) makes it a task. One follow-up after 30 minutes, then it waits in the daily digest. Nothing is created on a timeout. No source sends proposals in v1; cameras will.
 
 ## Reminder engine (`docket.reminders`, critical)
+
+Phase 3a specifies the pure plan only: frozen PlannedReminder(kind, fire_at) values and plan_reminders(task, now), with an explicit canonical UTC planning instant and no persistence or sends. It includes all due/late instants even when past, for the later single-status catch-up sender; due_soon exists only for a strictly future deadline under one elapsed hour away. At exactly one hour the before reminder fires at now. Active planned work retains its original start instant, independent of deadline. Done/cancelled produce no plan. Results sort by UTC fire_at, then start, before, due_soon, due, late for ties. All seven late slots are deadline offsets of 30, 60, 120, 180, 240, 480 and 720 elapsed minutes.
+
+The supplied now is the approved creation/replanning instant, not each poll's time. Durable integration will persist a plan atomically with task changes and load it after restart; it must not recreate warnings on every poll. The pure function exposes standard OverflowError for an unrepresentable datetime offset; future integration must handle scheduling failure before committing a task change. Digest planning, claims, delivery retry/catch-up, snooze and lifecycle wiring remain subsequent Stage 3 work. Phase 3a alone does not claim crash-safe delivery.
 
 Each task with a deadline gets planned reminders:
 
