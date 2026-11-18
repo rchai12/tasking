@@ -7,7 +7,7 @@ Spec: `docs/phases/phase-02m-task-table-boundary.md`. Follow `docs/phase-convent
 Stop with FAIL ("the coder did not run") if any of these is missing:
 
 - `src/docket/_store_tasks.py`
-- `tests/integration/test_task_boundary_more.py`
+- `tests/integration/test_task_sql_contracts.py`
 - `grep -c "^## Phase 2m: " docs/progress.md` prints `1`
 
 Stop with FAIL ("the coder stopped") if that entry's first `Follow-ups` line starts with `Stopped:`, as "A stopped coder" in `docs/phase-conventions.md` says. With no entry, `git status --short` tells "the coder did not run" (no Scope path changed) from "the coder broke off without reporting" (Scope paths changed; name them under `For the architect`).
@@ -88,3 +88,7 @@ These are correct even though the spec does not spell them out:
 ## 7. Verdict
 
 Write `docs/reviews/phase-02m-task-table-boundary.md` in the form `docs/phase-conventions.md` gives (`# Review: Phase 2m`), then run `.venv/bin/python scripts/check_reports.py --phase 2m`; it must print `Reports OK.`
+
+## Test path migration (Phase 2q)
+
+The product continuation paths above now use behaviour names. This is a byte-identical file move; function names, parameter IDs, counts and original implementation history are unchanged. The phase's immutable move inventory records every old/new selector.

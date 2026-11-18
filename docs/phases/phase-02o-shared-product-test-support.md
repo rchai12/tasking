@@ -77,7 +77,7 @@ Given test count: **32** (10 functions), including the corrected runtime-collisi
 
 ## Tests to write
 
-Write tests/unit/test_product_test_support_more.py:
+Write tests/unit/test_product_support_runtime.py:
 
 - Use a conventional __all__ = ["base_store"] re-export where the seeded fixture alias would otherwise be unused; remove no-op decorators in both the real adapter and the synthetic consumer.
 - Import the actual shared fixtures into a synthetic temporary pytest consumer; show two tests receive distinct empty stores/paths and the first connection is closed before the second test. Keep the synthetic runner offline and use no real settings/data.
@@ -90,7 +90,7 @@ Write tests/unit/test_product_test_support_more.py:
 
 | Path | Change |
 |---|---|
-| `tests/unit/test_product_test_support_more.py` | create |
+| `tests/unit/test_product_support_runtime.py` | create |
 | `tests/support.py` | edit: add shared path/store fixtures and strict refusal helper; preserve four existing helper bodies |
 | `tests/integration/test_core.py` | edit: shared fixture imports and removal of local copies only; body AST pinned; shared refused import/removal |
 | `tests/integration/test_core_keyed.py` | edit: shared fixture imports and removal of local copies only; body AST pinned; shared refused import/removal |
@@ -146,3 +146,7 @@ git grep --untracked -n -E '\.(insert_task|update_task|append_audit|insert_link|
 git grep --untracked -n -E 'ollama|anthropic|openai|langchain' -- src docket_tools tests/support.py
 git grep --untracked -n -E 'pragma: no cover|noqa' -- tests/support.py
 ```
+
+## Test path migration (Phase 2q)
+
+The product continuation paths above now use behaviour names. This is a byte-identical file move; function names, parameter IDs, counts and original implementation history are unchanged. The phase's immutable move inventory records every old/new selector.

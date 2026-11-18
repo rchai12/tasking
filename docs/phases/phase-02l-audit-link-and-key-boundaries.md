@@ -61,7 +61,7 @@ Given test count: **18** (9 functions). Baseline gives seven intended extraction
 
 ## Tests to write
 
-Write `tests/integration/test_store_boundaries_more.py`:
+Write `tests/integration/test_audit_link_key_contracts.py`:
 
 - A normal link/key write with a non-UTC timestamp is refused before ID lookup and any table entry call; task/link ID errors retain their existing messages and priority inside a valid transaction.
 - A quote-containing retry key and nested request JSON round-trip literally and cannot change query selection. Agent/email keys with the same text remain independent; different-body task/link conflicts write nothing.
@@ -77,7 +77,7 @@ Write `tests/integration/test_store_boundaries_more.py`:
 | `src/docket/_store_audit.py` | create |
 | `src/docket/_store_links.py` | create |
 | `src/docket/_store_keys.py` | create |
-| `tests/integration/test_store_boundaries_more.py` | create |
+| `tests/integration/test_audit_link_key_contracts.py` | create |
 | `src/docket/store.py` | edit: delegate ordinary audit/link/key SQL; retain records, conversion, guards, task SQL and setup/migrations |
 | `docs/progress.md` | append your entry |
 
@@ -125,3 +125,7 @@ git grep --untracked -n -E '\.(insert_task|update_task|append_audit|insert_link|
 git grep --untracked -n -E 'ollama|anthropic|openai|langchain' -- src
 git grep --untracked -n -E 'pragma: no cover|noqa' -- src/docket/_store_audit.py src/docket/_store_links.py src/docket/_store_keys.py src/docket/store.py
 ```
+
+## Test path migration (Phase 2q)
+
+The product continuation paths above now use behaviour names. This is a byte-identical file move; function names, parameter IDs, counts and original implementation history are unchanged. The phase's immutable move inventory records every old/new selector.

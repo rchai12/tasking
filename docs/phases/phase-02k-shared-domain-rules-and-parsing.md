@@ -84,7 +84,7 @@ Given test count: **87** (19 functions). Names-only modules give 63 failures and
 
 ## Tests to write
 
-Write `tests/integration/test_shared_rules_more.py`:
+Write `tests/integration/test_domain_adapter_contracts.py`:
 
 - Preserve the 100/101 title, 200/201 retry key and 5/720 work bounds at the consumers. Through synthetic HTTP, show an overlong key is refused before malformed JSON or store opening. At intake/core, combine bad keys, clients and bodies to retain their established order and no writes.
 - Prove the shared open-state list and label/actor mappings are actually used by CLI/views/core, with deciding task states and all four sources; do not only import the new module.
@@ -98,7 +98,7 @@ Write `tests/integration/test_shared_rules_more.py`:
 |---|---|
 | `src/docket/domain.py` | create |
 | `src/docket/parsing.py` | create |
-| `tests/integration/test_shared_rules_more.py` | create |
+| `tests/integration/test_domain_adapter_contracts.py` | create |
 | `src/docket/config.py` | edit: shared work bounds and zone names; explicit safe settings error mapping |
 | `src/docket/deadlines.py` | edit: shared work bounds and zone names, with old public bounds re-exported |
 | `src/docket/core.py` | edit: shared domain collections and bounds without changing validation order or creation |
@@ -153,3 +153,7 @@ git grep --untracked -n -E '\.(insert_task|update_task|append_audit|insert_link|
 git grep --untracked -n -E 'ollama|anthropic|openai|langchain' -- src
 git grep --untracked -n -E 'pragma: no cover|noqa' -- src/docket/domain.py src/docket/parsing.py src/docket/config.py src/docket/deadlines.py src/docket/core.py src/docket/views.py src/docket/cli.py src/docket/intake.py src/docket/web.py src/docket/references.py
 ```
+
+## Test path migration (Phase 2q)
+
+The product continuation paths above now use behaviour names. This is a byte-identical file move; function names, parameter IDs, counts and original implementation history are unchanged. The phase's immutable move inventory records every old/new selector.

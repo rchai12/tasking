@@ -229,3 +229,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 2q: Product behaviour test paths (2026-11-18)
+- Tests: 1321 -> 1349 (given 28)
+- New public names: None
+- Changed files: 17
+- Deviations:
+  - None
+- Follow-ups:
+  - None

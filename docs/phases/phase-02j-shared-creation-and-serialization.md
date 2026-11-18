@@ -58,7 +58,7 @@ Given test count: **25** (9 functions). Fourteen unchanged-behaviour guards pass
 
 ## Tests to write
 
-Write `tests/integration/test_shared_creation_more.py` without changing earlier tests:
+Write `tests/integration/test_creation_transactions_and_retries.py` without changing earlier tests:
 
 - Spy on transaction entry: one context for unkeyed create, keyed create, replay and conflict; insertion, create audit and key recording run inside it. The private helper never opens a nested context.
 - Combine invalid inputs to preserve existing refusal order: bad client before key/title, bad key before title, bad title before source/reference and wrong source before reference/work. Assert no writes and no added clock read on these refusals.
@@ -71,7 +71,7 @@ Write `tests/integration/test_shared_creation_more.py` without changing earlier 
 | Path | Change |
 |---|---|
 | `src/docket/serialization.py` | create |
-| `tests/integration/test_shared_creation_more.py` | create |
+| `tests/integration/test_creation_transactions_and_retries.py` | create |
 | `src/docket/core.py` | edit: shared private insertion/create-audit helper and module-based canonical comparisons |
 | `src/docket/store.py` | edit: use shared JSON writer for audit snapshots and request keys; retain decoding |
 | `docs/progress.md` | append your entry |
@@ -121,3 +121,7 @@ git grep --untracked -n -E '\.(insert_task|update_task|append_audit|insert_link|
 git grep --untracked -n -E 'ollama|anthropic|openai|langchain' -- src
 git grep --untracked -n -E 'pragma: no cover|noqa' -- src/docket/serialization.py src/docket/core.py src/docket/store.py
 ```
+
+## Test path migration (Phase 2q)
+
+The product continuation paths above now use behaviour names. This is a byte-identical file move; function names, parameter IDs, counts and original implementation history are unchanged. The phase's immutable move inventory records every old/new selector.

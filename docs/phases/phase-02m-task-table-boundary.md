@@ -61,7 +61,7 @@ Given test count: **26** (7 functions). Baseline has 13 intended extraction/impo
 
 ## Tests to write
 
-Write `tests/integration/test_task_boundary_more.py`:
+Write `tests/integration/test_task_sql_contracts.py`:
 
 - Combine title/state/deadline/work changes in one low-level update and verify exact readback and timestamps; combine None clears with unchanged fields. Include a quote-containing title and a filtered lookup for an unknown valid state.
 - Inside a valid transaction, unknown well-formed task ID vs malformed ID retain their existing refusal, with helper call counts showing that only the valid integer reaches existence SQL. Outside/non-UTC checks still precede lookup.
@@ -74,7 +74,7 @@ Write `tests/integration/test_task_boundary_more.py`:
 | Path | Change |
 |---|---|
 | `src/docket/_store_tasks.py` | create |
-| `tests/integration/test_task_boundary_more.py` | create |
+| `tests/integration/test_task_sql_contracts.py` | create |
 | `src/docket/store.py` | edit: delegate normal task SQL and SQL assembly; retain conversion, guards, records and setup/migrations |
 | `docs/progress.md` | append your entry |
 
@@ -122,3 +122,7 @@ git grep --untracked -n -E '\.(insert_task|update_task|append_audit|insert_link|
 git grep --untracked -n -E 'ollama|anthropic|openai|langchain' -- src
 git grep --untracked -n -E 'pragma: no cover|noqa' -- src/docket/_store_tasks.py src/docket/store.py
 ```
+
+## Test path migration (Phase 2q)
+
+The product continuation paths above now use behaviour names. This is a byte-identical file move; function names, parameter IDs, counts and original implementation history are unchanged. The phase's immutable move inventory records every old/new selector.
