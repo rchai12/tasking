@@ -32,6 +32,7 @@ A bug here loses a reminder, sends one twice, creates a task without approval, o
 - `deadlines.py` (instants, exact zone names, the 17:00 default, work-time rules; Phase 1a)
 - `schema.py` and `store.py` (every write whole or not at all, in a transaction; nothing removed or rewritten; Phase 1b)
 - `_store_audit.py`, `_store_links.py` and `_store_keys.py` (table SQL on the same Store connection and transaction; Phase 2l)
+- `_store_tasks.py` (task SQL and update assembly with facade-owned conversion/guards; Phase 2m)
 - `core.py` (the state rules, the title rule and one audit row per change; Phase 1c)
 - `references.py` (email reference text bounds and forbidden Unicode categories; Phase 2g)
 - `serialization.py` (the same canonical JSON for saved requests and replay comparisons; Phase 2j)
