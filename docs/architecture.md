@@ -90,6 +90,14 @@ When a task is loaded, Phase 2i requires UTC deadline/work instants and created/
 
 Phase 2j specifies one private core helper for inserting an open task and its complete create audit snapshot, called directly by both public creation functions. Validation, the single timestamp, transaction and retry-key decisions remain with each public caller. The helper never opens a transaction or reads the clock. `docket.serialization.canonical_json(value: dict[str, object]) -> str` becomes the shared writer for audit snapshots, saved request bodies and both sides of task/link retry comparisons. It preserves the existing `json.dumps` options: sorted keys, unescaped Unicode and compact separators, with all other defaults unchanged. Store decoding remains local; no schema or public core/store contract changes.
 
+## Shared domain rules and parsing
+
+Phase 2k specifies `docket.domain` as the shared owner of immutable state/source/client/actor/action/provider definitions, state labels, source actors, forbidden text categories and repeated title/key/work limits. Core, views, CLI, references, deadlines, settings and intake/HTTP consume those definitions while retaining their existing boundary checks. The core client list includes email and agent; token issuance and HTTP intake remain email-only. Shipped SQL stays literal and unchanged, with tests comparing the current CHECKs and bounds against the shared definitions, including both provider constraints.
+
+`docket.parsing.parse_date(value: object) -> date` and `parse_time(value: object) -> time` enforce full ASCII YYYY-MM-DD and HH:MM shapes and valid calendar/clock values. Their typed ParseError has fixed text; CLI and intake map it to their existing messages and refusal order. Optional time stays a caller concern, and stored-time decoding keeps its existing semantics. `domain.zone_names()` supplies one cached frozenset of exact zone names to settings and deadlines. No DST, UTC, date-only or work-time rule changes.
+
+Settings validation explicitly maps data_dir, time_zone, work_minutes and web_port in that priority. Unknown/root/empty validation failures become `Invalid docket settings.`, with no library text or chained error; a recognized field still wins over an unknown one in the same failure. No setting or dependency is added.
+
 ## Task states
 
 Stored states are **open**, **in progress**, **done** and **cancelled**. **Due** (at or after the deadline, within the first late reminder) and **overdue** (later) are worked out from the deadline and the clock when read; they are never stored. Time passing can make a task overdue but never done.

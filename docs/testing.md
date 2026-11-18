@@ -34,6 +34,7 @@ A bug here loses a reminder, sends one twice, creates a task without approval, o
 - `core.py` (the state rules, the title rule and one audit row per change; Phase 1c)
 - `references.py` (email reference text bounds and forbidden Unicode categories; Phase 2g)
 - `serialization.py` (the same canonical JSON for saved requests and replay comparisons; Phase 2j)
+- `domain.py` and `parsing.py` (shared approval/domain bounds, exact zone names and strict input parsing; Phase 2k)
 - `intake/` (who may create what, and retry safety; Phase 2)
 - `reminders.py` (nothing lost, nothing twice; Phase 3)
 - the press handler (who may press, and idempotency; Phase 4)

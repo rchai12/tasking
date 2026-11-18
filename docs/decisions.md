@@ -101,3 +101,11 @@ Await one synchronous operation in the installed framework's worker pool for the
 No new owner choice changes product behaviour. Both public create functions call one private insertion/create-audit helper; public callers retain validation, clock reads, their transaction and request-key handling. The helper receives the timestamp and validated values and returns the task.
 
 `docket.serialization.canonical_json(value: dict[str, object]) -> str` is the single writer for audit snapshots, request-key bodies and retry comparisons. Core and store call it through the module. Preserve sorted keys, unescaped Unicode, compact separators and every other existing standard-library default, including numeric and failure behaviour. No stricter JSON policy or historic-row rewrite is introduced. Add the shared writer to the 100% critical coverage gate because retry safety depends on it.
+
+## Domain and parsing decisions (architect, Nov 17, Phase 2k)
+
+No new owner policy choice. Put current domain collections and repeated limits in `docket.domain` as immutable tuples, read-only mappings and a forbidden-category frozenset. Keep reference caps in `docket.references` and re-export the existing deadline work-limit names. Keep email-only token issuance and intake separate from the core's email/agent client set. SQL remains an unchanged deliberate copy, checked against the shared values.
+
+`docket.parsing` supplies strict ASCII date/time readers and a typed ParseError with fixed text `invalid date or time`. CLI/intake call through that module and retain their optional-value handling, refusal order and existing public messages. Settings and deadlines use the same cached exact `domain.zone_names()` set; there is no normalization or time-policy change.
+
+Explicit settings error priority remains data_dir, time_zone, work_minutes, web_port, independent of error-list order. A recognized field wins over unknown fields; when none is recognized, including root/empty errors, use the new constant `Invalid docket settings.` without a library-error chain. This prevents future validation errors from being mislabeled as web-port failures without adding a setting.
