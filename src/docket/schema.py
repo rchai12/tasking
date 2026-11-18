@@ -206,11 +206,45 @@ BEGIN
 END;
 """
 
+MIGRATION_6 = """
+CREATE TABLE digests (
+    number INTEGER PRIMARY KEY AUTOINCREMENT CHECK (number > 0),
+    day TEXT NOT NULL UNIQUE CHECK (date(day) IS day),
+    key TEXT NOT NULL UNIQUE CHECK (length(key) BETWEEN 1 AND 200),
+    queued_at TEXT NOT NULL,
+    claimed_at TEXT,
+    sent_at TEXT
+) STRICT;
+CREATE TABLE digest_tasks (
+    digest INTEGER NOT NULL REFERENCES digests (number),
+    task INTEGER NOT NULL REFERENCES tasks (number),
+    PRIMARY KEY (digest, task)
+) STRICT;
+CREATE TRIGGER digests_are_never_removed BEFORE DELETE ON digests
+BEGIN
+    SELECT RAISE(ABORT, 'digests are never removed');
+END;
+CREATE TRIGGER digest_contents_are_immutable
+BEFORE UPDATE OF number, day, key, queued_at ON digests
+BEGIN
+    SELECT RAISE(ABORT, 'digest contents are immutable');
+END;
+CREATE TRIGGER digest_tasks_are_never_removed BEFORE DELETE ON digest_tasks
+BEGIN
+    SELECT RAISE(ABORT, 'digest tasks are never removed');
+END;
+CREATE TRIGGER digest_tasks_are_immutable BEFORE UPDATE ON digest_tasks
+BEGIN
+    SELECT RAISE(ABORT, 'digest tasks are immutable');
+END;
+"""
+
 MIGRATIONS: tuple[str, ...] = (
     MIGRATION_1,
     MIGRATION_2,
     MIGRATION_3,
     MIGRATION_4,
     MIGRATION_5,
+    MIGRATION_6,
 )
 SCHEMA_VERSION = len(MIGRATIONS)

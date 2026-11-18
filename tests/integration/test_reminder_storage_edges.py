@@ -142,7 +142,7 @@ def test_inactive_and_empty_legacy_plans_upgrade_without_clock_or_ids(
     with Store(path) as opened:
         assert opened.reminders("t1") == opened.reminders("t2") == []
     with sqlite3.connect(path) as db:
-        assert db.execute("PRAGMA user_version").fetchone() == (5,)
+        assert db.execute("PRAGMA user_version").fetchone() == (6,)
 
 
 def test_a_backfill_sql_failure_rolls_back_and_releases_the_startup_lock(

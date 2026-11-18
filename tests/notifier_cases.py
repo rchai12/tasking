@@ -1,4 +1,4 @@
-"""A fake notifier, synthetic sending inputs and helpers for the Phase 3c tests."""
+"""A fake notifier, synthetic sending inputs and helpers for the Phase 3c and 3d tests."""
 
 import sqlite3
 from collections.abc import Callable
@@ -6,7 +6,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from docket.deadlines import Deadline, WorkTime
-from docket.notifier import Notice, NotifierError
+from docket.notifier import Digest, Notice, NotifierError
 
 NOW = datetime(2026, 11, 20, 16, tzinfo=UTC)
 
@@ -35,20 +35,27 @@ class SyntheticBug(Exception):
 class FakeNotifier:
     """Delivers each key at most once, as the shared Discord service's keyed request does.
 
-    `attempts` records every send. `fail` is how many next sends raise NotifierError before
-    delivering. `before` is raised before delivering, `after` after delivering, each once.
+    Notices and digests share one record and the same hooks. `attempts` records every send.
+    `fail` is how many next sends raise NotifierError before delivering. `before` is raised
+    before delivering, `after` after delivering, each once.
     `during` runs once inside the next send, before anything else, to interleave a second loop.
     """
 
     def __init__(self) -> None:
-        self.attempts: list[Notice] = []
-        self.delivered: list[Notice] = []
+        self.attempts: list[Notice | Digest] = []
+        self.delivered: list[Notice | Digest] = []
         self.fail = 0
         self.before: BaseException | None = None
         self.after: BaseException | None = None
         self.during: Callable[[], None] | None = None
 
     def send(self, notice: Notice) -> None:
+        self._deliver(notice)
+
+    def send_digest(self, digest: Digest) -> None:
+        self._deliver(digest)
+
+    def _deliver(self, notice: Notice | Digest) -> None:
         self.attempts.append(notice)
         if self.during is not None:
             hook, self.during = self.during, None

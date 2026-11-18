@@ -13,7 +13,7 @@ from tests.reference_cases import snapshot
 from tests.startup_cases import held_gate, open_child, prepare
 
 
-@pytest.mark.parametrize("version", [0, 1, 2, 5], ids=["empty", "v1", "v2", "current"])
+@pytest.mark.parametrize("version", [0, 1, 2, 6], ids=["empty", "v1", "v2", "current"])
 def test_two_processes_initialize_the_same_database_once(tmp_path: Path, version: int) -> None:
     path = tmp_path / "docket.sqlite3"
     prepare(path, version)
@@ -30,12 +30,12 @@ def test_two_processes_initialize_the_same_database_once(tmp_path: Path, version
         start.set()
         results = [messages.get(timeout=10), messages.get(timeout=10)]
         if version == 2:
-            assert results == [("ok", ["t1"], ["l1"], 5, []), ("ok", ["t1"], ["l1"], 5, [])]
+            assert results == [("ok", ["t1"], ["l1"], 6, []), ("ok", ["t1"], ["l1"], 6, [])]
             assert snapshot(path) == before
         elif version == 1:
-            assert results == [("ok", ["t1"], [], 5, []), ("ok", ["t1"], [], 5, [])]
+            assert results == [("ok", ["t1"], [], 6, []), ("ok", ["t1"], [], 6, [])]
         else:
-            assert results == [("ok", [], [], 5, []), ("ok", [], [], 5, [])]
+            assert results == [("ok", [], [], 6, []), ("ok", [], [], 6, [])]
         for worker in workers:
             worker.join(timeout=10)
             assert worker.exitcode == 0
@@ -174,7 +174,19 @@ def test_migration_foreign_keys_remain_scoped_to_the_reference_rebuild(
     )
     with Store(tmp_path / "docket.sqlite3") as store:
         assert store._connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
-    assert observed == [(0, 1), (0, 1), (1, 1), (1, 1), (2, 0), (2, 0), (3, 1), (4, 1), (4, 1)]
+    assert observed == [
+        (0, 1),
+        (0, 1),
+        (1, 1),
+        (1, 1),
+        (2, 0),
+        (2, 0),
+        (3, 1),
+        (4, 1),
+        (4, 1),
+        (5, 1),
+        (5, 1),
+    ]
 
 
 def test_process_exit_releases_a_gate_without_deleting_it(tmp_path: Path) -> None:

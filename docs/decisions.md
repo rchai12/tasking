@@ -162,3 +162,9 @@ Owner chose: two or more due reminders for a task in one pass go out as one stat
 
 Architect: migration 5 adds `posts` and `post_reminders` rather than a column on `reminders`, so a coalesced message is one outbound row with one persisted key, each reminder belongs to at most one post, and the Phase 3b columns stay as pinned. The claim is one UPDATE in a BEGIN IMMEDIATE transaction; a crashed claim is retried with the same key after 5 minutes, and a post whose reminders were all voided is never sent. The engine passes `Notice(key, task_id, title, text)` to a given `Notifier` protocol; Stage 4 implements it. Notice texts live in `reminders.py` because `views.py` is byte-frozen; Stage 4's cards render them. No loop runner, command, alert or digest in this phase.
 
+## Daily digest (2026-11-18, Phase 3d)
+
+Owner chose: a morning with nothing overdue sends nothing and stores nothing (not an "all clear" message). A missed 07:00 goes out on the first pass later that same home day; after days away only the current day's digest is sent (not a catch-up per missed day, not skipped until tomorrow). The heading is "Still open past their deadlines: N tasks.", one line per task with its title and "Was due" time. A refused or crashed digest is retried with the same key and leaves out tasks that ended or stopped being overdue since it was queued (not resent as first queued).
+
+Architect: migration 6 adds `digests` (one per home day, unique key) and `digest_tasks`; contents are immutable and rows never removed, as for posts. A task is in the digest when it is open or in progress and its deadline plus the last late offset (720 minutes) is at or before the slot. The engine takes the zone and time as arguments rather than reading settings, so Stage 5 wires `DOCKET_TIME_ZONE` and `DOCKET_DIGEST_TIME`. The digest goes through `Notifier.send_digest` with the same once-per-key contract as `send`. Proposals are added in Stage 10.
+

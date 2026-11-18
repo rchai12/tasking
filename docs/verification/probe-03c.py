@@ -30,7 +30,7 @@ def text(kind: str, missed: int) -> str:
 def oracle() -> None:
     from docket import schema
 
-    assert schema.SCHEMA_VERSION == 5
+    assert schema.SCHEMA_VERSION == 6
     assert text("late", 0) == text("late", 1) == "This is late."
     assert text("due", 3) == "Missed while docket was offline: 3 reminders.\nThis is now due."
     with sqlite3.connect(":memory:") as db:

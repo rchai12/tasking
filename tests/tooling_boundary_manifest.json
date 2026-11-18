@@ -38,6 +38,7 @@
     "_store_tasks.py",
     "reminders.py",
     "_store_reminders.py",
-    "_store_posts.py"
+    "_store_posts.py",
+    "_store_digests.py"
   ]
 }

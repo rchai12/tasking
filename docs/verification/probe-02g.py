@@ -76,7 +76,7 @@ def upgrade():
         with Store(path):
             assert snapshot(path) == before
         with sqlite3.connect(path) as db:
-            assert db.execute("PRAGMA user_version").fetchone() == (5,)
+            assert db.execute("PRAGMA user_version").fetchone() == (6,)
             assert db.execute("PRAGMA foreign_key_check").fetchall() == []
 
 

@@ -46,7 +46,7 @@ def store(base_store: Store):
 
 def test_the_names() -> None:
     assert UNKNOWN_LINK_MESSAGE == "unknown link"
-    assert len(MIGRATIONS) == 5
+    assert len(MIGRATIONS) == 6
 
 
 def test_links_are_numbered_and_listed_per_task(store: Store) -> None:
@@ -252,7 +252,7 @@ def test_a_version_1_database_moves_to_version_2_keeping_its_tasks(path: Path) -
         with opened.transaction():
             opened.insert_link("t1", at=T0, **GMAIL)
         assert [link.id for link in opened.links("t1")] == ["l1"]
-    assert sqlite3.connect(path).execute("PRAGMA user_version").fetchone() == (5,)
+    assert sqlite3.connect(path).execute("PRAGMA user_version").fetchone() == (6,)
 
 
 def test_links_and_keys_can_be_pruned_but_tasks_cannot(store: Store, path: Path) -> None:

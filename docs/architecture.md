@@ -73,6 +73,7 @@ The data folder is `DOCKET_DATA_DIR`, by default `~/Library/Application Support/
 | `calendar_links` | task, kind (`deadline` or `work`), calendar, event id, the title and time last written, last checked |
 | `calendar_queue` | Event writes waiting to be sent, retried each round |
 | `posts` | Each message sent through the notifier: task, retry key, the newest reminder's kind, the missed count, queued, claimed and sent times (migration 5); Stage 4 adds its Discord message id and whether it was answered. `post_reminders` links each reminder to at most one post |
+| `digests` | One daily digest a home day: its day, retry key, queued, claimed and sent times (migration 6). `digest_tasks` holds the tasks it was queued with |
 | `alerts`, `problems` | As in the email service: each problem once when it starts and once when it is fixed |
 | `audit_log` | Every change: when (UTC), what, who or what caused it (press, command, agent, email), before and after |
 
@@ -174,6 +175,8 @@ Conductor calls `create_task` and the other write tools over MCP only after you 
 ## Reminder engine (`docket.reminders`, critical)
 
 Phase 3c specifies sending. One pass (`send_due`) reads the clock once; in one transaction it groups each task's due, unclaimed reminders into one post with a key from `ids.new_id()` and claims every unsent post that has no claim or one older than 5 minutes and still has a live reminder; then it sends each claimed post's notice through the `Notifier`, marking it sent on success and releasing its claim on a `NotifierError`. Owner decisions (2026-11-18): two or more due reminders in one pass become one message, "Missed while docket was offline: N reminders." plus the newest reminder's line; only reminders that came due after they were planned count as missed; a refused send is retried every pass with the same key. Delivering once per key is the notifier's contract (the shared Discord service's keyed request).
+
+Phase 3d specifies the digest. One pass (`send_digest`) reads the clock once and takes the home day and its slot (`DOCKET_DIGEST_TIME` in your zone, passed in by the caller). From the slot on, if that day has no digest and some open task's deadline plus 720 minutes is at or before the slot, it queues one with a key from `ids.new_id()` and those tasks; it claims the day's digest when it is unsent, unclaimed or claimed more than 5 minutes ago, and still has a member overdue; then it sends a `Digest` of the still-overdue members, in deadline order, marking it sent or releasing the claim on a `NotifierError`. Owner decisions (2026-11-18): a day with nothing overdue sends and stores nothing; a missed 07:00 goes out on the first pass later that home day, never for an earlier day; the heading is "Still open past their deadlines: N tasks."; a retry leaves out tasks that ended.
 
 Phase 3b specifies durable reminder plans in migration 4. Each row has a never-reused r<number>, task FK, shared-domain kind, original UTC fire time, approved planning instant and nullable claimed/sent/voided metadata. Plan identity and time are immutable; rows remain as history. Normal reminder SQL belongs to _store_reminders on the Store connection, with validation/conversion in Store. Reserved claimed/sent fields do not implement a sender in this phase.
 
