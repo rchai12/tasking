@@ -211,3 +211,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - The put-entry import is parenthesized so docket_tools.reports fits the line length; its AST matches the manifest.
 - Follow-ups:
   - None
+
+## Phase 2o: Shared product test support (2026-11-18)
+- Tests: 1261 -> 1267 (given 31)
+- New public names: tests.support: path, store, refused
+- Changed files: 11
+- Deviations:
+  - The seeded adapter references its imported base_store with a no-op decorator so Ruff keeps the alias; the seed statements are unchanged.
+- Follow-ups:
+  - Stopped: tests/integration/test_core_references.py | the shared store fixture's path argument receives each pinned path parameter, so Store is constructed with a case label | give store a fixture argument whose name is not path, or rename those pinned parameters

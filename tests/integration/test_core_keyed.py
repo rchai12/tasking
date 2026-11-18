@@ -1,5 +1,4 @@
 from datetime import UTC, datetime
-from pathlib import Path
 
 import pytest
 
@@ -13,7 +12,6 @@ from docket.core import (
     KEY_REUSED,
     UNKNOWN_TASK,
     WORK_AFTER_DEADLINE,
-    CoreError,
     LinkOutcome,
     Outcome,
     add_link,
@@ -22,6 +20,9 @@ from docket.core import (
 from docket.deadlines import Deadline, WorkTime
 from docket.store import Link, Store, Task
 from tests.support import fixed_times
+from tests.support import path as path
+from tests.support import refused as refused
+from tests.support import store as store
 
 NY = "America/New_York"
 NOW = "2026-11-14T14:00:00+00:00"
@@ -33,12 +34,6 @@ LATE_WORK = WorkTime(datetime(2026, 11, 20, 21, 30, tzinfo=UTC), 60, NY)
 GMAIL = {"provider": "gmail", "message_id": "personal/1", "link": "https://mail.example/1"}
 FOLLOW = {"provider": "gmail", "message_id": "personal/2", "link": "https://mail.example/2"}
 REQUEST = {"source": "email", "title": "Pay rent", "deadline": None, **GMAIL}
-
-
-@pytest.fixture
-def store(tmp_path: Path):
-    with Store(tmp_path / "docket.sqlite3") as opened:
-        yield opened
 
 
 def from_email(store: Store, key: str = "gmail:personal/1", **fields: object) -> Outcome:
@@ -58,12 +53,6 @@ def link_to(store: Store, task_id: str = "t1", key: str = "gmail:personal/2", **
     values: dict[str, object] = {"client": "email", "key": key, "request": FOLLOW, **FOLLOW}
     values.update(fields)
     return add_link(store, task_id, **values)  # type: ignore[arg-type]
-
-
-def refused(code: str, call) -> None:
-    with pytest.raises(CoreError) as raised:
-        call()
-    assert raised.value.code == code
 
 
 def test_the_new_codes() -> None:

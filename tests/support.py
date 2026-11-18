@@ -4,6 +4,7 @@ New tests import these instead of copying them.
 """
 
 import importlib.util
+from collections.abc import Callable, Iterator
 from datetime import datetime
 from pathlib import Path
 from types import ModuleType
@@ -13,6 +14,8 @@ from typer.testing import CliRunner
 
 from docket import clock, ids
 from docket.cli import app
+from docket.core import CoreError
+from docket.store import Store
 
 runner = CliRunner(env={"COLUMNS": "200"})
 
@@ -42,3 +45,20 @@ def load_script(name: str) -> ModuleType:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+@pytest.fixture
+def path(tmp_path: Path) -> Path:
+    return tmp_path / "docket.sqlite3"
+
+
+@pytest.fixture
+def store(path: Path) -> Iterator[Store]:
+    with Store(path) as opened:
+        yield opened
+
+
+def refused(code: str, call: Callable[[], object]) -> None:
+    with pytest.raises(CoreError) as raised:
+        call()
+    assert (raised.value.code, str(raised.value)) == (code, code)

@@ -1,18 +1,11 @@
-from collections.abc import Iterator
-from pathlib import Path
-
 import pytest
 
 from docket import core
 from docket.store import Store, Task
 from tests.reference_cases import BODY, LINK, NOW
 from tests.support import fixed_times
-
-
-@pytest.fixture
-def store(tmp_path: Path) -> Iterator[Store]:
-    with Store(tmp_path / "docket.sqlite3") as opened:
-        yield opened
+from tests.support import path as path
+from tests.support import store as store
 
 
 def create(store: Store, path: str, fields: dict[str, object]) -> Task | core.Outcome:

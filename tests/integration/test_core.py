@@ -1,5 +1,4 @@
 from datetime import UTC, datetime
-from pathlib import Path
 
 import pytest
 
@@ -23,6 +22,9 @@ from docket.core import (
 from docket.deadlines import Deadline, WorkTime
 from docket.store import UNCHANGED, AuditEntry, Store, Task
 from tests.support import fixed_times
+from tests.support import path as path
+from tests.support import refused as refused
+from tests.support import store as store
 
 NY = "America/New_York"
 NOW = "2026-11-14T09:00:00+00:00"
@@ -37,12 +39,6 @@ EARLY_WORK = WorkTime(datetime(2026, 11, 20, 17, 0, tzinfo=UTC), 60, NY)
 DEADLINE_TEXT = {"at": "2026-11-20T22:00:00.000000+00:00", "zone": NY, "time_given": False}
 WORK_TEXT = {"start": "2026-11-20T19:00:00.000000+00:00", "minutes": 60, "zone": NY}
 GMAIL = {"provider": "gmail", "message_id": "personal/18c2f0a1", "link": "https://mail.example/1"}
-
-
-@pytest.fixture
-def store(tmp_path: Path):
-    with Store(tmp_path / "docket.sqlite3") as opened:
-        yield opened
 
 
 def seed(store: Store, state: str = "open", **fields: object) -> Task:
@@ -61,12 +57,6 @@ def seed(store: Store, state: str = "open", **fields: object) -> Task:
     values.update(fields)
     with store.transaction():
         return store.insert_task(**values)  # type: ignore[arg-type]
-
-
-def refused(code: str, call) -> None:
-    with pytest.raises(CoreError) as raised:
-        call()
-    assert (raised.value.code, str(raised.value)) == (code, code)
 
 
 def test_the_codes() -> None:

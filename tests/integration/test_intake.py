@@ -1,5 +1,4 @@
 from datetime import UTC, datetime
-from pathlib import Path
 
 import pytest
 
@@ -15,6 +14,8 @@ from docket.intake import (
 )
 from docket.store import Store
 from tests.support import fixed_times
+from tests.support import path as path
+from tests.support import store as store
 
 NY = "America/New_York"
 NOW = "2026-11-14T14:00:00+00:00"
@@ -35,12 +36,6 @@ LINK = {
     "message_id": "personal/18c2f0b7",
     "link": "https://mail.google.com/mail/?authuser=me@example.com#all/18c2f0b7",
 }
-
-
-@pytest.fixture
-def store(tmp_path: Path):
-    with Store(tmp_path / "docket.sqlite3") as opened:
-        yield opened
 
 
 def changed(**fields: object) -> dict[str, object]:

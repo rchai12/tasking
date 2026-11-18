@@ -1,5 +1,4 @@
 import inspect
-from pathlib import Path
 
 import pytest
 
@@ -8,6 +7,8 @@ from docket.intake import Answer, accept_link, accept_task
 from docket.store import Store
 from tests.integration.test_core_identity import EqualText
 from tests.support import fixed_times
+from tests.support import path as path
+from tests.support import store as store
 
 NOW = "2026-11-17T14:00:00+00:00"
 BODY = {
@@ -24,12 +25,6 @@ LINK = {
     "message_id": "synthetic/2",
     "link": "https://mail.example/2",
 }
-
-
-@pytest.fixture
-def store(tmp_path: Path):
-    with Store(tmp_path / "docket.sqlite3") as opened:
-        yield opened
 
 
 @pytest.mark.parametrize("function", [accept_task, accept_link], ids=["task", "link"])

@@ -25,6 +25,8 @@ from docket.store import (
     Task,
     open_store,
 )
+from tests.support import path as path
+from tests.support import store as store
 
 NY = "America/New_York"
 T0 = datetime(2026, 11, 14, 9, 0, tzinfo=UTC)
@@ -56,17 +58,6 @@ def add(store: Store, title: str = "Pay rent", **fields: object) -> Task:
 
 def raw(path: Path) -> sqlite3.Connection:
     return sqlite3.connect(path, isolation_level=None)
-
-
-@pytest.fixture
-def path(tmp_path: Path) -> Path:
-    return tmp_path / "docket.sqlite3"
-
-
-@pytest.fixture
-def store(path: Path):
-    with Store(path) as opened:
-        yield opened
 
 
 def test_the_names() -> None:
