@@ -69,7 +69,7 @@ Already committed with this spec; never change them.
 | `tests/integration/test_core_keyed.py` | 38 tests from 14 functions (requirements 5 to 9) |
 | `src/docket/schema.py` | Migration 2 (requirement 1) |
 | `tests/integration/test_store.py` | Edited: the schema version pins become 2 |
-| `tests/e2e/test_cli_tasks_more.py` | Edited: its "newer schema" becomes 99, since 2 is now current |
+| `tests/e2e/test_cli_tasks.py` | Edited: its "newer schema" becomes 99, since 2 is now current |
 | `docs/verification/probe-02a.py` | The verifier's probe |
 
 Given test count: **57**.
@@ -115,7 +115,7 @@ The given tests cover every requirement's main cases. To reach full coverage, ad
 | `.venv/bin/python docs/verification/probe-02a.py` | last line `FAILURES 0` |
 | `grep -c "^## Phase 2a: " docs/progress.md` | `1` |
 | `.venv/bin/python scripts/check_reports.py --phase 2a` | `Reports OK.` |
-| `git diff HEAD --stat -- tests/integration/test_store_links.py tests/integration/test_core_keyed.py src/docket/schema.py tests/integration/test_store.py tests/e2e/test_cli_tasks_more.py docs/verification/probe-02a.py` | no output |
+| `git diff HEAD --stat -- tests/integration/test_store_links.py tests/integration/test_core_keyed.py src/docket/schema.py tests/integration/test_store.py tests/e2e/test_cli_tasks.py docs/verification/probe-02a.py` | no output |
 | `git status --short` | only the Scope paths |
 
 ### Searches
@@ -138,3 +138,7 @@ Added 2026-11-14, after the first coder run stopped on the probe (its `Stopped:`
 1. **`docs/verification/probe-02a.py`.** The walk used `t99` as a task that doesn't exist, but it creates up to about 265 tasks, so by step 270 `t99` was real and the code rightly added a link to it while the probe expected `unknown_task`. The probe's fault, not the code's. The unknown id is now `t99999`, beyond any id the walk can create (it asserts that). Against the code the coder already wrote, the corrected probe prints `FAILURES 0`; `check.py --first core`, the coverage command and every search also pass on that code.
 
 Nothing else changes: no requirement, message, given test or count. The coder keeps its code, runs every command under Acceptance again, and updates its existing Phase 2a entry in place, replacing the `Stopped:` follow-up.
+
+## Selector migration (Phase 2p, 2026-11-18)
+
+The port-setting, server, CLI-serve and CLI-task continuation cases now live in their canonical modules. Executable selectors above preserve the original case sets: positive file selections deselect later cases; former file ignores deselect only their original functions. Counts and implementation history describe the original phase. Retired continuation paths in historical prose are historical names, not runnable selectors. This migration authorizes only the literal replacements recorded in tests/product_consolidation_manifest.json; earlier test bodies, spot-check decisions and review reports are unchanged.

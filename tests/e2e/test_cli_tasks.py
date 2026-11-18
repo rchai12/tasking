@@ -1,3 +1,4 @@
+import sqlite3
 from datetime import UTC, date, datetime, time
 from pathlib import Path
 
@@ -5,9 +6,9 @@ import pytest
 
 from docket import core
 from docket.cli import AT_MESSAGE, AT_WITHOUT_DUE_MESSAGE, DUE_MESSAGE, NO_TASKS_MESSAGE
-from docket.config import get_settings
+from docket.config import get_settings, prepare_data_dir
 from docket.deadlines import Deadline, make_deadline
-from docket.store import open_store
+from docket.store import DB_FILENAME, open_store
 from tests.support import fixed_times, run
 
 NY = "America/New_York"
@@ -284,3 +285,23 @@ def test_listing_and_showing_read_the_clock_once(monkeypatch: pytest.MonkeyPatch
     assert run("tasks", "show", "t3").exit_code == 0
     fixed_times(monkeypatch, NOW)
     assert run("tasks", "add", "One more").stdout == "Added t7: One more\n"
+
+
+@pytest.mark.parametrize(
+    "args",
+    [["add", "Pay rent"], ["list"], ["show", "t1"]],
+    ids=["add", "list", "show"],
+)
+def test_a_newer_schema_is_refused(monkeypatch: pytest.MonkeyPatch, args: list[str]) -> None:
+    monkeypatch.setenv("DOCKET_TIME_ZONE", "America/New_York")
+    folder = prepare_data_dir(get_settings())
+    connection = sqlite3.connect(folder / DB_FILENAME)
+    connection.execute("PRAGMA user_version = 99")
+    connection.close()
+    fixed_times(monkeypatch)
+    result = run("tasks", *args)
+    assert (result.exit_code, result.stdout, result.stderr) == (
+        1,
+        "",
+        "unsupported schema version: 99\n",
+    )

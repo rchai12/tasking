@@ -7,6 +7,7 @@ from pathlib import Path
 import httpx2
 import pytest
 import uvicorn
+from fastapi.testclient import TestClient
 
 from docket import server
 from docket.clients import issue_token
@@ -116,4 +117,23 @@ def test_the_built_app_answers_over_real_loopback(
         thread.join(timeout=10)
     assert not thread.is_alive()
     connection = sqlite3.connect(tmp_path / "data" / "docket.sqlite3")
+    assert connection.execute("SELECT title FROM tasks").fetchall() == [("Pay rent",)]
+
+
+def test_a_request_uses_the_settings_store(
+    fake_keychain: FakeKeychain, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    folder = tmp_path / "data"
+    monkeypatch.setenv("DOCKET_DATA_DIR", str(folder))
+    token = issue_token("email")
+    fixed_times(monkeypatch, NOW)
+    app = build_app(get_settings())
+    client = TestClient(app, base_url="http://127.0.0.1:8767")
+    answer = client.post(
+        "/tasks",
+        json=BODY,
+        headers={"Authorization": f"Bearer {token}", "Idempotency-Key": "gmail:personal/1"},
+    )
+    assert answer.status_code == 201
+    connection = sqlite3.connect(folder / "docket.sqlite3")
     assert connection.execute("SELECT title FROM tasks").fetchall() == [("Pay rent",)]

@@ -8,7 +8,7 @@ Sections: `core`. The `tooling` section runs in the full check.
 
 Follow `docs/phase-conventions.md`. N is 345, the tests the previous phase left passing.
 
-Start: `.venv/bin/python -m pytest --no-cov -q --ignore=tests/e2e/test_cli_tasks.py --ignore=tests/unit/test_views_tasks.py` must show `345 passed`. The ignored files import names you create.
+Start: `.venv/bin/python -m pytest --no-cov -q --deselect=tests/e2e/test_cli_tasks.py::test_the_messages --deselect=tests/e2e/test_cli_tasks.py::test_adding_a_task --deselect=tests/e2e/test_cli_tasks.py::test_a_title_may_start_with_a_dash --deselect=tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing --deselect=tests/e2e/test_cli_tasks.py::test_the_list_shows_open_work_soonest_first --deselect=tests/e2e/test_cli_tasks.py::test_the_full_list_adds_ended_tasks_in_the_same_order --deselect=tests/e2e/test_cli_tasks.py::test_tasks_with_one_deadline_keep_their_id_order --deselect=tests/e2e/test_cli_tasks.py::test_an_empty_list_says_so --deselect=tests/e2e/test_cli_tasks.py::test_showing_a_task --deselect=tests/e2e/test_cli_tasks.py::test_showing_an_unknown_task_is_refused --deselect=tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone --deselect=tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing --deselect=tests/e2e/test_cli_tasks.py::test_listing_and_showing_read_the_clock_once --ignore=tests/unit/test_views_tasks.py` must show `345 passed`. The ignored files import names you create.
 
 ## Facts
 
@@ -116,9 +116,9 @@ The given tests cover every requirement's main cases. To reach full coverage, ad
 
 | Command | Must show |
 |---|---|
-| `.venv/bin/python -m pytest --no-cov -q --ignore=tests/e2e/test_cli_tasks.py --ignore=tests/unit/test_views_tasks.py` (before you start) | `345 passed` |
+| `.venv/bin/python -m pytest --no-cov -q --deselect=tests/e2e/test_cli_tasks.py::test_the_messages --deselect=tests/e2e/test_cli_tasks.py::test_adding_a_task --deselect=tests/e2e/test_cli_tasks.py::test_a_title_may_start_with_a_dash --deselect=tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing --deselect=tests/e2e/test_cli_tasks.py::test_the_list_shows_open_work_soonest_first --deselect=tests/e2e/test_cli_tasks.py::test_the_full_list_adds_ended_tasks_in_the_same_order --deselect=tests/e2e/test_cli_tasks.py::test_tasks_with_one_deadline_keep_their_id_order --deselect=tests/e2e/test_cli_tasks.py::test_an_empty_list_says_so --deselect=tests/e2e/test_cli_tasks.py::test_showing_a_task --deselect=tests/e2e/test_cli_tasks.py::test_showing_an_unknown_task_is_refused --deselect=tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone --deselect=tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing --deselect=tests/e2e/test_cli_tasks.py::test_listing_and_showing_read_the_clock_once --ignore=tests/unit/test_views_tasks.py` (before you start) | `345 passed` |
 | `.venv/bin/python scripts/check.py --first core` | last line `All checks passed.`; summary lists `tests (core): passed`; at least 411 passed, 0 failed, 0 skipped |
-| `.venv/bin/python -m pytest tests/unit/test_views_tasks.py tests/e2e/test_cli_tasks.py --no-cov -q` | `66 passed` |
+| `.venv/bin/python -m pytest tests/unit/test_views_tasks.py tests/e2e/test_cli_tasks.py --no-cov -q --deselect=tests/e2e/test_cli_tasks.py::test_a_newer_schema_is_refused` | `66 passed` |
 | `.venv/bin/python -m coverage report --include=src/docket/views.py,src/docket/cli.py --fail-under=100`, right after `check.py` | exit 0, `TOTAL` at `100%` |
 | `.venv/bin/python docs/verification/probe-01e.py` | last line `FAILURES 0` |
 | `grep -c "^## Phase 1e: " docs/progress.md` | `1` |
@@ -147,3 +147,7 @@ Added 2026-11-14, after the first coder run stopped and the first review found n
 1. **`tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone`, rows `wrong-case-add`, `wrong-case-list`, `wrong-case-show`.** The test set `DOCKET_TIME_ZONE=america/new_york` and then, to find the data folder, called `get_settings()` itself, which raises `ConfigError` for that zone. The command was right; the test's own last line could not run. The test now takes the data folder from `tmp_path / "data"` (where `tests/conftest.py` puts `DOCKET_DATA_DIR`), and imports `Path`. Nothing else in the spec changes: no requirement, message or count. The 66 given tests pass against the code the coder already wrote, with no change to it.
 
 The coder keeps the code it wrote and finishes the phase: run every command under Acceptance, then write the progress entry.
+
+## Selector migration (Phase 2p, 2026-11-18)
+
+The port-setting, server, CLI-serve and CLI-task continuation cases now live in their canonical modules. Executable selectors above preserve the original case sets: positive file selections deselect later cases; former file ignores deselect only their original functions. Counts and implementation history describe the original phase. Retired continuation paths in historical prose are historical names, not runnable selectors. This migration authorizes only the literal replacements recorded in tests/product_consolidation_manifest.json; earlier test bodies, spot-check decisions and review reports are unchanged.

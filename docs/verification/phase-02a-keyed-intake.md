@@ -11,7 +11,7 @@ Stop with FAIL ("the coder did not run") if any of these is missing:
 
 Stop with FAIL ("the coder stopped") if that entry's first `Follow-ups` line starts with `Stopped:`, as "A stopped coder" in `docs/phase-conventions.md` says. With no entry, `git status --short` tells "the coder did not run" (no Scope path changed) from "the coder broke off without reporting" (Scope paths changed; name them under `For the architect`).
 
-Stop with FAIL ("the baseline is not committed") if `git ls-files --error-unmatch docs/phases/phase-02a-keyed-intake.md tests/integration/test_store_links.py tests/integration/test_core_keyed.py src/docket/schema.py tests/integration/test_store.py tests/e2e/test_cli_tasks_more.py docs/verification/probe-02a.py` fails: the diff gates can only be judged against a committed spec and given files.
+Stop with FAIL ("the baseline is not committed") if `git ls-files --error-unmatch docs/phases/phase-02a-keyed-intake.md tests/integration/test_store_links.py tests/integration/test_core_keyed.py src/docket/schema.py tests/integration/test_store.py tests/e2e/test_cli_tasks.py docs/verification/probe-02a.py` fails: the diff gates can only be judged against a committed spec and given files.
 
 ## 2. Gates
 
@@ -26,7 +26,7 @@ Run each from the repository root, in this order. Given test count: 56.
 | G5 | `.venv/bin/python docs/verification/probe-02a.py` | last line `FAILURES 0` |
 | G6 | `grep -c "^## Phase 2a: " docs/progress.md` | `1` |
 | G7 | `.venv/bin/python scripts/check_reports.py --phase 2a` | `Reports OK.` |
-| G8 | `git diff HEAD --stat -- tests/integration/test_store_links.py tests/integration/test_core_keyed.py src/docket/schema.py tests/integration/test_store.py tests/e2e/test_cli_tasks_more.py docs/verification/probe-02a.py` | no output |
+| G8 | `git diff HEAD --stat -- tests/integration/test_store_links.py tests/integration/test_core_keyed.py src/docket/schema.py tests/integration/test_store.py tests/e2e/test_cli_tasks.py docs/verification/probe-02a.py` | no output |
 | G9 | `git status --short` | only the Scope paths |
 | G10 | `.venv/bin/python -m pip list --format=freeze` | the same packages as before this phase: no new dependency |
 
@@ -92,3 +92,7 @@ These are correct even though the spec does not spell them out:
 ## 7. Verdict
 
 Write `docs/reviews/phase-02a-keyed-intake.md` in the form `docs/phase-conventions.md` gives (`# Review: Phase 2a`), then run `.venv/bin/python scripts/check_reports.py --phase 2a`; it must print `Reports OK.`
+
+## Selector migration (Phase 2p, 2026-11-18)
+
+The port-setting, server, CLI-serve and CLI-task continuation cases now live in their canonical modules. Executable selectors above preserve the original case sets: positive file selections deselect later cases; former file ignores deselect only their original functions. Counts and implementation history describe the original phase. Retired continuation paths in historical prose are historical names, not runnable selectors. This migration authorizes only the literal replacements recorded in tests/product_consolidation_manifest.json; earlier test bodies, spot-check decisions and review reports are unchanged.

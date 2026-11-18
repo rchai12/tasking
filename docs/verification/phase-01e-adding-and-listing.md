@@ -19,9 +19,9 @@ Run each from the repository root, in this order. Given test count: 66.
 
 | # | Command | Must show |
 |---|---|---|
-| G1 | `.venv/bin/python -m pytest --no-cov -q --ignore=tests/e2e/test_cli_tasks.py --ignore=tests/unit/test_views_tasks.py` | at least 345 passed, 0 failed (the coder's `*_more.py` tests add to the count) |
+| G1 | `.venv/bin/python -m pytest --no-cov -q --deselect=tests/e2e/test_cli_tasks.py::test_the_messages --deselect=tests/e2e/test_cli_tasks.py::test_adding_a_task --deselect=tests/e2e/test_cli_tasks.py::test_a_title_may_start_with_a_dash --deselect=tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing --deselect=tests/e2e/test_cli_tasks.py::test_the_list_shows_open_work_soonest_first --deselect=tests/e2e/test_cli_tasks.py::test_the_full_list_adds_ended_tasks_in_the_same_order --deselect=tests/e2e/test_cli_tasks.py::test_tasks_with_one_deadline_keep_their_id_order --deselect=tests/e2e/test_cli_tasks.py::test_an_empty_list_says_so --deselect=tests/e2e/test_cli_tasks.py::test_showing_a_task --deselect=tests/e2e/test_cli_tasks.py::test_showing_an_unknown_task_is_refused --deselect=tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone --deselect=tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing --deselect=tests/e2e/test_cli_tasks.py::test_listing_and_showing_read_the_clock_once --ignore=tests/unit/test_views_tasks.py` | at least 345 passed, 0 failed (the coder's `*_more.py` tests add to the count) |
 | G2 | `.venv/bin/python scripts/check.py --first core` | last line `All checks passed.`; summary lists `tests (core): passed`; at least 411 passed, 0 failed, 0 skipped |
-| G3 | `.venv/bin/python -m pytest tests/unit/test_views_tasks.py tests/e2e/test_cli_tasks.py --no-cov -q` | `66 passed` |
+| G3 | `.venv/bin/python -m pytest tests/unit/test_views_tasks.py tests/e2e/test_cli_tasks.py --no-cov -q --deselect=tests/e2e/test_cli_tasks.py::test_a_newer_schema_is_refused` | `66 passed` |
 | G4 | `.venv/bin/python -m coverage report --include=src/docket/views.py,src/docket/cli.py --fail-under=100`, right after `check.py` | exit 0, `TOTAL` at `100%` |
 | G5 | `.venv/bin/python docs/verification/probe-01e.py` | last line `FAILURES 0` |
 | G6 | `grep -c "^## Phase 1e: " docs/progress.md` | `1` |
@@ -95,3 +95,7 @@ These are correct even though the spec does not spell them out:
 ## 7. Verdict
 
 Write `docs/reviews/phase-01e-adding-and-listing.md` in the form `docs/phase-conventions.md` gives (`# Review: Phase 1e`), then run `.venv/bin/python scripts/check_reports.py --phase 1e`; it must print `Reports OK.`
+
+## Selector migration (Phase 2p, 2026-11-18)
+
+The port-setting, server, CLI-serve and CLI-task continuation cases now live in their canonical modules. Executable selectors above preserve the original case sets: positive file selections deselect later cases; former file ignores deselect only their original functions. Counts and implementation history describe the original phase. Retired continuation paths in historical prose are historical names, not runnable selectors. This migration authorizes only the literal replacements recorded in tests/product_consolidation_manifest.json; earlier test bodies, spot-check decisions and review reports are unchanged.

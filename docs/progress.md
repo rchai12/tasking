@@ -220,3 +220,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 2p: Product test consolidation (2026-11-18)
+- Tests: 1295 -> 1321 (given 24)
+- New public names: None
+- Changed files: 16
+- Deviations:
+  - None
+- Follow-ups:
+  - None

@@ -19,9 +19,9 @@ Run each from the repository root, in this order. Given test count: 24.
 
 | # | Command | Must show |
 |---|---|---|
-| G1 | `.venv/bin/python -m pytest --no-cov -q --ignore=tests/unit/test_settings_port.py --ignore=tests/integration/test_server.py --ignore=tests/e2e/test_cli_serve.py` | at least 703 passed, 0 failed (the coder's `*_more.py` tests add to the count) |
+| G1 | `.venv/bin/python -m pytest --no-cov -q --deselect=tests/unit/test_settings_port.py::test_the_port_setting_and_its_message --deselect=tests/unit/test_settings_port.py::test_the_ends_of_the_range --deselect=tests/unit/test_settings_port.py::test_a_bad_port_is_refused --deselect=tests/unit/test_settings_port.py::test_the_port_is_reported_after_the_work_length --deselect=tests/integration/test_server.py::test_the_message --deselect=tests/integration/test_server.py::test_with_no_client_the_app_is_not_built --deselect=tests/integration/test_server.py::test_building_the_app_opens_the_store_once_to_migrate_it --deselect=tests/integration/test_server.py::test_a_newer_store_stops_the_build --deselect=tests/integration/test_server.py::test_run_app_serves_on_loopback_only_and_quietly --deselect=tests/integration/test_server.py::test_the_built_app_answers_over_real_loopback --deselect=tests/e2e/test_cli_serve.py::test_serve_says_where_and_runs --deselect=tests/e2e/test_cli_serve.py::test_serve_uses_the_port_setting --deselect=tests/e2e/test_cli_serve.py::test_serve_needs_no_time_zone --deselect=tests/e2e/test_cli_serve.py::test_serve_refuses_to_start` | at least 703 passed, 0 failed (the coder's `*_more.py` tests add to the count) |
 | G2 | `.venv/bin/python scripts/check.py --first core` | last line `All checks passed.`; summary lists `tests (core): passed`; at least 727 passed, 0 failed, 0 skipped |
-| G3 | `.venv/bin/python -m pytest tests/unit/test_settings_port.py tests/integration/test_server.py tests/e2e/test_cli_serve.py --no-cov -q` | `24 passed` |
+| G3 | `.venv/bin/python -m pytest tests/unit/test_settings_port.py tests/integration/test_server.py tests/e2e/test_cli_serve.py --no-cov -q --deselect=tests/unit/test_settings_port.py::test_a_bad_data_folder_is_reported_before_the_port --deselect=tests/unit/test_settings_port.py::test_a_bad_time_zone_is_reported_before_the_port --deselect=tests/integration/test_server.py::test_a_request_uses_the_settings_store --deselect=tests/e2e/test_cli_serve.py::test_a_bad_port_leaves_no_data_folder --deselect=tests/e2e/test_cli_serve.py::test_a_down_keychain_leaves_no_data_folder` | `24 passed` |
 | G4 | `.venv/bin/python -m coverage report --include=src/docket/server.py,src/docket/config.py,src/docket/cli.py --fail-under=100`, right after `check.py` | exit 0, `TOTAL` at `100%` |
 | G5 | `.venv/bin/python docs/verification/probe-02d.py` | last line `FAILURES 0` |
 | G6 | `grep -c "^## Phase 2d: " docs/progress.md` | `1` |
@@ -92,3 +92,7 @@ These are correct even though the spec does not spell them out:
 ## 7. Verdict
 
 Write `docs/reviews/phase-02d-serve.md` in the form `docs/phase-conventions.md` gives (`# Review: Phase 2d`), then run `.venv/bin/python scripts/check_reports.py --phase 2d`; it must print `Reports OK.`
+
+## Selector migration (Phase 2p, 2026-11-18)
+
+The port-setting, server, CLI-serve and CLI-task continuation cases now live in their canonical modules. Executable selectors above preserve the original case sets: positive file selections deselect later cases; former file ignores deselect only their original functions. Counts and implementation history describe the original phase. Retired continuation paths in historical prose are historical names, not runnable selectors. This migration authorizes only the literal replacements recorded in tests/product_consolidation_manifest.json; earlier test bodies, spot-check decisions and review reports are unchanged.
