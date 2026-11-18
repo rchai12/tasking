@@ -1,7 +1,7 @@
-import re
 from dataclasses import dataclass
 from datetime import date, time
 
+from docket import domain, parsing
 from docket.core import (
     INVALID_CLIENT,
     INVALID_SOURCE,
@@ -22,10 +22,10 @@ _TASK_FIELDS = {"source", "title", "deadline", "provider", "message_id", "link"}
 _TASK_TEXT = ("source", "title", "provider", "message_id", "link")
 _LINK_FIELDS = {"source", "provider", "message_id", "link"}
 _DEADLINE_FIELDS = {"date", "time", "time_zone"}
-_DATE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
-_TIME = re.compile(r"[0-9]{2}:[0-9]{2}")
 _TASK_STATUS = {KEY_REUSED: 409}
 _LINK_STATUS = {KEY_REUSED: 409, UNKNOWN_TASK: 404}
+_CREATED = 201
+_REPLAY = _CREATED - 1
 
 
 class _BadDeadline(Exception):
@@ -65,8 +65,7 @@ def accept_task(store: Store, *, client: object, key: str | None, body: object) 
         )
     except CoreError as error:
         return Answer(_TASK_STATUS.get(error.code, 422), {"error": error.code})
-    status = 201 if outcome.changed else 200
-    return Answer(status, {"id": outcome.task.id})
+    return Answer(_CREATED if outcome.changed else _REPLAY, {"id": outcome.task.id})
 
 
 def accept_link(
@@ -96,12 +95,11 @@ def accept_link(
         )
     except CoreError as error:
         return Answer(_LINK_STATUS.get(error.code, 422), {"error": error.code})
-    status = 201 if outcome.changed else 200
-    return Answer(status, {"id": outcome.link.id})
+    return Answer(_CREATED if outcome.changed else _REPLAY, {"id": outcome.link.id})
 
 
 def _valid_key(key: object) -> bool:
-    return isinstance(key, str) and 1 <= len(key) <= 200
+    return isinstance(key, str) and 1 <= len(key) <= domain.REQUEST_KEY_MAX
 
 
 def _object(
@@ -132,22 +130,16 @@ def _deadline(value: object) -> Deadline | None:
 
 
 def _day(value: object) -> date:
-    text = _text(value)
-    if _DATE.fullmatch(text) is None:
-        raise _BadDeadline
     try:
-        return date.fromisoformat(text)
-    except ValueError:
+        return parsing.parse_date(value)
+    except parsing.ParseError:
         raise _BadDeadline from None
 
 
 def _clock(value: object) -> time | None:
     if value is None:
         return None
-    text = _text(value)
-    if _TIME.fullmatch(text) is None:
-        raise _BadDeadline
     try:
-        return time.fromisoformat(text)
-    except ValueError:
+        return parsing.parse_time(value)
+    except parsing.ParseError:
         raise _BadDeadline from None

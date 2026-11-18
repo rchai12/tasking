@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
+from docket import domain
 from docket.intake import MISSING_KEY, Answer, accept_link, accept_task
 from docket.store import Store
 
@@ -77,7 +78,7 @@ async def _handle(
     if raw is None:
         return _error(TOO_LARGE, 413)
     key = request.headers.get("idempotency-key")
-    if key is None or len(key) not in range(1, 201):
+    if key is None or not 1 <= len(key) <= domain.REQUEST_KEY_MAX:
         return _error(MISSING_KEY, 400)
     try:
         body = json.loads(raw.decode("utf-8"))

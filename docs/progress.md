@@ -175,3 +175,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 2k: Shared domain rules and parsing (2026-11-17)
+- Tests: 1074 -> 1170 (given 87)
+- New public names: `docket.domain`: `STATES`, `OPEN_STATES`, `ENDED_STATES`, `SOURCES`, `CORE_CLIENTS`, `ACTORS`, `STATE_ACTIONS`, `AUDIT_ACTIONS`, `PROVIDERS`, `SOURCE_ACTORS`, `STATE_LABELS`, `FORBIDDEN_TEXT_CATEGORIES`, `TITLE_MAX`, `REQUEST_KEY_MAX`, `WORK_MINUTES_MIN`, `WORK_MINUTES_MAX`, `zone_names`; `docket.parsing`: `ParseError`, `parse_date`, `parse_time`; `docket.config`: `SETTINGS_MESSAGE`
+- Changed files: 12
+- Deviations:
+  - The unchanged intake replay status is written as 201 minus 1 so intake has no literal 200.
+- Follow-ups:
+  - None

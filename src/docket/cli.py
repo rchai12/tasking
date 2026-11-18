@@ -1,13 +1,12 @@
-import re
 import sys
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
-from datetime import UTC, date, datetime, time
+from datetime import UTC, datetime
 from typing import NoReturn
 
 import typer
 
-from docket import __version__, clock
+from docket import __version__, clock, domain, parsing
 from docket.clients import ClientError, issue_token
 from docket.config import ConfigError, Settings, get_settings, home_zone
 from docket.core import CoreError, Outcome, change_state, create_task, edit_task
@@ -44,9 +43,6 @@ PLAN_DATE_MESSAGE = "The date must look like 2026-11-20."
 PLAN_TIME_MESSAGE = "The start time must look like 14:00."
 MINUTES_MESSAGE = "--minutes must be 5 to 720."
 MIDNIGHT_MESSAGE = "A work time must end by midnight."
-
-_DATE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
-_TIME = re.compile(r"[0-9]{2}:[0-9]{2}")
 
 app = typer.Typer()
 tasks_app = typer.Typer()
@@ -111,7 +107,7 @@ def list_tasks(all_tasks: bool = typer.Option(False, "--all")) -> None:
     settings, home = _home()
     with _store(settings) as store:
         now = clock.now()
-        states = None if all_tasks else ("open", "in_progress")
+        states = None if all_tasks else domain.OPEN_STATES
         found = store.tasks(states)
     if not found:
         print(NO_TASKS_MESSAGE)
@@ -212,8 +208,8 @@ def _apply(settings: Settings, task_id: str, **fields: object) -> Outcome:
 
 
 def _planned(day: str, start: str, minutes: int, home: str) -> WorkTime:
-    parsed_day = _parse(_DATE, day, date.fromisoformat, PLAN_DATE_MESSAGE)
-    parsed_start = _parse(_TIME, start, time.fromisoformat, PLAN_TIME_MESSAGE)
+    parsed_day = _read(parsing.parse_date, day, PLAN_DATE_MESSAGE)
+    parsed_start = _read(parsing.parse_time, start, PLAN_TIME_MESSAGE)
     try:
         return make_work_time(parsed_day, parsed_start, minutes, home, None)
     except DeadlineError as error:
@@ -252,17 +248,15 @@ def _store(settings: Settings) -> Iterator[Store]:
 def _deadline(due: str | None, at: str | None, home: str) -> Deadline | None:
     if due is None:
         return None
-    day = _parse(_DATE, due, date.fromisoformat, DUE_MESSAGE)
-    clock_time = None if at is None else _parse(_TIME, at, time.fromisoformat, AT_MESSAGE)
+    day = _read(parsing.parse_date, due, DUE_MESSAGE)
+    clock_time = None if at is None else _read(parsing.parse_time, at, AT_MESSAGE)
     return make_deadline(day, clock_time, home)
 
 
-def _parse[T](pattern: re.Pattern[str], value: str, read: Callable[[str], T], message: str) -> T:
-    if pattern.fullmatch(value) is None:
-        _fail(message)
+def _read[T](parse: Callable[[object], T], value: str, message: str) -> T:
     try:
-        return read(value)
-    except ValueError:
+        return parse(value)
+    except parsing.ParseError:
         _fail(message)
 
 

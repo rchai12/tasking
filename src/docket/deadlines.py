@@ -1,12 +1,12 @@
-import functools
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
-from zoneinfo import ZoneInfo, available_timezones
+from zoneinfo import ZoneInfo
+
+from docket import domain
+from docket.domain import WORK_MINUTES_MAX, WORK_MINUTES_MIN
 
 DEFAULT_TIME = time(17, 0)
 DUE_WINDOW = timedelta(minutes=30)
-WORK_MINUTES_MIN = 5
-WORK_MINUTES_MAX = 720
 
 ZONE_MESSAGE = "unknown time zone"
 TIME_MESSAGE = "a time is hours and minutes only"
@@ -20,13 +20,8 @@ class DeadlineError(ValueError):
     pass
 
 
-@functools.cache
-def _zone_names() -> frozenset[str]:
-    return frozenset(available_timezones())
-
-
 def _require_zone(zone: str) -> None:
-    if zone not in _zone_names():
+    if zone not in domain.zone_names():
         raise DeadlineError(ZONE_MESSAGE)
 
 

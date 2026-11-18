@@ -1,6 +1,7 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from docket import domain
 from docket.core import Outcome
 from docket.deadlines import Deadline, WorkTime, status
 from docket.store import Task
@@ -98,7 +99,7 @@ def change_text(action: str, outcome: Outcome) -> str:
     task = outcome.task
     if outcome.changed:
         return f"{_VERBS[action]} {task.id}: {task.title}"
-    return f"{task.id} is already {_LABELS[task.state]}."
+    return f"{task.id} is already {domain.STATE_LABELS[task.state]}."
 
 
 def refusal_text(code: str, task_id: str | None = None) -> str:
@@ -114,8 +115,8 @@ def refusal_text(code: str, task_id: str | None = None) -> str:
 
 
 def status_text(task: Task, now: datetime) -> str:
-    label = _LABELS[task.state]
-    if task.state in {"open", "in_progress"} and task.deadline is not None:
+    label = domain.STATE_LABELS[task.state]
+    if task.state in domain.OPEN_STATES and task.deadline is not None:
         word = status(task.deadline, now)
         if word in {"due", "overdue"}:
             return f"{label}, {word}"
@@ -132,13 +133,6 @@ _REFUSALS = {
 }
 
 _VERBS = {"start": "Started", "done": "Done", "cancel": "Cancelled", "reopen": "Reopened"}
-
-_LABELS = {
-    "open": "open",
-    "in_progress": "in progress",
-    "done": "done",
-    "cancelled": "cancelled",
-}
 
 
 def _local(at: datetime, zone: str) -> datetime:

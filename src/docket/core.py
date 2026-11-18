@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import cast
 
-from docket import clock, serialization
+from docket import clock, domain, serialization
 from docket.deadlines import Deadline, WorkTime
 from docket.references import LINK_MAX, MESSAGE_ID_MAX, valid_reference
 from docket.store import UNCHANGED, Link, Store, Task
@@ -20,14 +20,14 @@ INVALID_CLIENT = "invalid_client"
 INVALID_KEY = "invalid_key"
 KEY_REUSED = "key_reused"
 
-_SOURCES = {"email", "agent", "proposal", "owner"}
-_CLIENTS = {"email", "agent"}
-_ACTORS = {"owner", "agent", "email"}
-_ACTIONS = {"start", "done", "cancel", "reopen"}
-_PROVIDERS = {"gmail", "outlook", "yahoo"}
-_ACTOR_FOR_SOURCE = {"email": "email", "agent": "agent", "proposal": "owner", "owner": "owner"}
-_BAD_CATEGORIES = {"Cc", "Cf", "Zl", "Zp"}
-_OPEN = {"open", "in_progress"}
+_SOURCES = domain.SOURCES
+_CLIENTS = domain.CORE_CLIENTS
+_ACTORS = domain.ACTORS
+_ACTIONS = domain.STATE_ACTIONS
+_PROVIDERS = domain.PROVIDERS
+_ACTOR_FOR_SOURCE = domain.SOURCE_ACTORS
+_BAD_CATEGORIES = domain.FORBIDDEN_TEXT_CATEGORIES
+_OPEN = domain.OPEN_STATES
 
 
 class CoreError(Exception):
@@ -51,7 +51,7 @@ class LinkOutcome:
 def check_title(title: object) -> None:
     if (
         not isinstance(title, str)
-        or not 1 <= len(title) <= 100
+        or not 1 <= len(title) <= domain.TITLE_MAX
         or title != title.strip()
         or any(unicodedata.category(character) in _BAD_CATEGORIES for character in title)
     ):
@@ -315,7 +315,7 @@ def _insert_open_task(
 
 
 def _check_key(key: object) -> None:
-    if not isinstance(key, str) or not 1 <= len(key) <= 200:
+    if not isinstance(key, str) or not 1 <= len(key) <= domain.REQUEST_KEY_MAX:
         raise CoreError(INVALID_KEY)
 
 
@@ -343,7 +343,7 @@ def _work_after_deadline(deadline: object, work: object) -> bool:
 
 def _next_state(state: str, action: str) -> str | None:
     if action == "reopen":
-        if state in {"done", "cancelled"}:
+        if state in domain.ENDED_STATES:
             return "open"
         return None
     if action == "start":

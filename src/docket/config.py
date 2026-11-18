@@ -1,14 +1,23 @@
 from pathlib import Path
-from zoneinfo import available_timezones
 
 from pydantic import Field, ValidationError, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from docket import domain
 
 DATA_DIR_MESSAGE = "DOCKET_DATA_DIR must be an absolute path"
 TIME_ZONE_MESSAGE = "DOCKET_TIME_ZONE must be a time zone name"
 TIME_ZONE_UNSET_MESSAGE = "DOCKET_TIME_ZONE is not set"
 WORK_MINUTES_MESSAGE = "DOCKET_WORK_MINUTES must be 5 to 720"
 WEB_PORT_MESSAGE = "DOCKET_WEB_PORT must be 1024 to 65535"
+SETTINGS_MESSAGE = "Invalid docket settings."
+
+_FIELD_MESSAGES = (
+    ("data_dir", DATA_DIR_MESSAGE),
+    ("time_zone", TIME_ZONE_MESSAGE),
+    ("work_minutes", WORK_MINUTES_MESSAGE),
+    ("web_port", WEB_PORT_MESSAGE),
+)
 
 
 class ConfigError(Exception):
@@ -24,7 +33,7 @@ class Settings(BaseSettings):
 
     data_dir: Path = Field(default_factory=_default_data_dir)
     time_zone: str | None = None
-    work_minutes: int = Field(default=60, ge=5, le=720)
+    work_minutes: int = Field(default=60, ge=domain.WORK_MINUTES_MIN, le=domain.WORK_MINUTES_MAX)
     web_port: int = Field(default=8767, ge=1024, le=65535)
 
     @field_validator("data_dir", mode="before")
@@ -49,7 +58,7 @@ class Settings(BaseSettings):
     @field_validator("time_zone")
     @classmethod
     def _known_zone(cls, value: str | None) -> str | None:
-        if value is not None and value not in available_timezones():
+        if value is not None and value not in domain.zone_names():
             raise ValueError(TIME_ZONE_MESSAGE)
         return value
 
@@ -58,14 +67,11 @@ def get_settings() -> Settings:
     try:
         return Settings()
     except ValidationError as error:
-        failed = {item["loc"][0] for item in error.errors()}
-        if "data_dir" in failed:
-            raise ConfigError(DATA_DIR_MESSAGE) from None
-        if "time_zone" in failed:
-            raise ConfigError(TIME_ZONE_MESSAGE) from None
-        if "work_minutes" in failed:
-            raise ConfigError(WORK_MINUTES_MESSAGE) from None
-        raise ConfigError(WEB_PORT_MESSAGE) from None
+        found = [item["loc"][0] for item in error.errors() if item["loc"]]
+        for field, message in _FIELD_MESSAGES:
+            if field in found:
+                raise ConfigError(message) from None
+        raise ConfigError(SETTINGS_MESSAGE) from None
 
 
 def home_zone(settings: Settings) -> str:
