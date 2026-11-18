@@ -1,0 +1,906 @@
+{
+  "baseline": "c9fdbfd",
+  "families": {
+    "tests/unit/test_settings_port.py": {
+      "retired": "tests/unit/test_settings_port_more.py",
+      "bodies": [
+        "FunctionDef(name='test_a_bad_data_folder_is_reported_before_the_port', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setenv', ctx=Load()), args=[Constant(value='DOCKET_DATA_DIR'), Constant(value='relative')], keywords=[])), Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setenv', ctx=Load()), args=[Constant(value='DOCKET_WEB_PORT'), Constant(value='80')], keywords=[])), With(items=[withitem(context_expr=Call(func=Attribute(value=Name(id='pytest', ctx=Load()), attr='raises', ctx=Load()), args=[Name(id='ConfigError', ctx=Load())], keywords=[]), optional_vars=Name(id='raised', ctx=Store()))], body=[Expr(value=Call(func=Name(id='get_settings', ctx=Load()), args=[], keywords=[]))]), Assert(test=Compare(left=Call(func=Name(id='str', ctx=Load()), args=[Attribute(value=Name(id='raised', ctx=Load()), attr='value', ctx=Load())], keywords=[]), ops=[Eq()], comparators=[Name(id='DATA_DIR_MESSAGE', ctx=Load())]))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_a_bad_port_is_refused', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load())), arg(arg='value', annotation=Name(id='str', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setenv', ctx=Load()), args=[Constant(value='DOCKET_WEB_PORT'), Name(id='value', ctx=Load())], keywords=[])), With(items=[withitem(context_expr=Call(func=Attribute(value=Name(id='pytest', ctx=Load()), attr='raises', ctx=Load()), args=[Name(id='ConfigError', ctx=Load())], keywords=[]), optional_vars=Name(id='raised', ctx=Store()))], body=[Expr(value=Call(func=Name(id='get_settings', ctx=Load()), args=[], keywords=[]))]), Assert(test=Compare(left=Call(func=Name(id='str', ctx=Load()), args=[Attribute(value=Name(id='raised', ctx=Load()), attr='value', ctx=Load())], keywords=[]), ops=[Eq()], comparators=[Name(id='WEB_PORT_MESSAGE', ctx=Load())])), Assert(test=Compare(left=Attribute(value=Attribute(value=Name(id='raised', ctx=Load()), attr='value', ctx=Load()), attr='__cause__', ctx=Load()), ops=[Is()], comparators=[Constant(value=None)]))], decorator_list=[Call(func=Attribute(value=Attribute(value=Name(id='pytest', ctx=Load()), attr='mark', ctx=Load()), attr='parametrize', ctx=Load()), args=[Constant(value='value'), List(elts=[Constant(value='1023'), Constant(value='80'), Constant(value='65536'), Constant(value='0'), Constant(value='-1'), Constant(value='abc'), Constant(value='')], ctx=Load())], keywords=[keyword(arg='ids', value=List(elts=[Constant(value='1023'), Constant(value='privileged'), Constant(value='65536'), Constant(value='zero'), Constant(value='negative'), Constant(value='letters'), Constant(value='empty')], ctx=Load()))])], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_a_bad_time_zone_is_reported_before_the_port', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setenv', ctx=Load()), args=[Constant(value='DOCKET_TIME_ZONE'), Constant(value='Mars/Base')], keywords=[])), Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setenv', ctx=Load()), args=[Constant(value='DOCKET_WEB_PORT'), Constant(value='80')], keywords=[])), With(items=[withitem(context_expr=Call(func=Attribute(value=Name(id='pytest', ctx=Load()), attr='raises', ctx=Load()), args=[Name(id='ConfigError', ctx=Load())], keywords=[]), optional_vars=Name(id='raised', ctx=Store()))], body=[Expr(value=Call(func=Name(id='get_settings', ctx=Load()), args=[], keywords=[]))]), Assert(test=Compare(left=Call(func=Name(id='str', ctx=Load()), args=[Attribute(value=Name(id='raised', ctx=Load()), attr='value', ctx=Load())], keywords=[]), ops=[Eq()], comparators=[Name(id='TIME_ZONE_MESSAGE', ctx=Load())]))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_the_ends_of_the_range', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load())), arg(arg='value', annotation=Name(id='str', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setenv', ctx=Load()), args=[Constant(value='DOCKET_WEB_PORT'), Name(id='value', ctx=Load())], keywords=[])), Assert(test=Compare(left=Attribute(value=Call(func=Name(id='get_settings', ctx=Load()), args=[], keywords=[]), attr='web_port', ctx=Load()), ops=[Eq()], comparators=[Call(func=Name(id='int', ctx=Load()), args=[Name(id='value', ctx=Load())], keywords=[])]))], decorator_list=[Call(func=Attribute(value=Attribute(value=Name(id='pytest', ctx=Load()), attr='mark', ctx=Load()), attr='parametrize', ctx=Load()), args=[Constant(value='value'), List(elts=[Constant(value='1024'), Constant(value='65535')], ctx=Load())], keywords=[keyword(arg='ids', value=List(elts=[Constant(value='lowest'), Constant(value='highest')], ctx=Load()))])], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_the_port_is_reported_after_the_work_length', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setenv', ctx=Load()), args=[Constant(value='DOCKET_WORK_MINUTES'), Constant(value='4')], keywords=[])), Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setenv', ctx=Load()), args=[Constant(value='DOCKET_WEB_PORT'), Constant(value='80')], keywords=[])), With(items=[withitem(context_expr=Call(func=Attribute(value=Name(id='pytest', ctx=Load()), attr='raises', ctx=Load()), args=[Name(id='ConfigError', ctx=Load())], keywords=[]), optional_vars=Name(id='raised', ctx=Store()))], body=[Expr(value=Call(func=Name(id='get_settings', ctx=Load()), args=[], keywords=[]))]), Assert(test=Compare(left=Call(func=Name(id='str', ctx=Load()), args=[Attribute(value=Name(id='raised', ctx=Load()), attr='value', ctx=Load())], keywords=[]), ops=[Eq()], comparators=[Name(id='WORK_MINUTES_MESSAGE', ctx=Load())]))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_the_port_setting_and_its_message', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Assert(test=Compare(left=Name(id='WEB_PORT_MESSAGE', ctx=Load()), ops=[Eq()], comparators=[Constant(value='DOCKET_WEB_PORT must be 1024 to 65535')])), Assert(test=Compare(left=Attribute(value=Call(func=Name(id='get_settings', ctx=Load()), args=[], keywords=[]), attr='web_port', ctx=Load()), ops=[Eq()], comparators=[Constant(value=8767)])), Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setenv', ctx=Load()), args=[Constant(value='DOCKET_WEB_PORT'), Constant(value='9000')], keywords=[])), Assert(test=Compare(left=Attribute(value=Call(func=Name(id='get_settings', ctx=Load()), args=[], keywords=[]), attr='web_port', ctx=Load()), ops=[Eq()], comparators=[Constant(value=9000)]))], decorator_list=[], returns=Constant(value=None), type_params=[])"
+      ],
+      "imports": [
+        [
+          "from",
+          "docket.config",
+          "ConfigError",
+          null
+        ],
+        [
+          "from",
+          "docket.config",
+          "DATA_DIR_MESSAGE",
+          null
+        ],
+        [
+          "from",
+          "docket.config",
+          "TIME_ZONE_MESSAGE",
+          null
+        ],
+        [
+          "from",
+          "docket.config",
+          "WEB_PORT_MESSAGE",
+          null
+        ],
+        [
+          "from",
+          "docket.config",
+          "WORK_MINUTES_MESSAGE",
+          null
+        ],
+        [
+          "from",
+          "docket.config",
+          "get_settings",
+          null
+        ],
+        [
+          "import",
+          "pytest",
+          null
+        ]
+      ],
+      "mapping": {
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[1023]": "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[1023]",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[65536]": "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[65536]",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[empty]": "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[empty]",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[letters]": "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[letters]",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[negative]": "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[negative]",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[privileged]": "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[privileged]",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[zero]": "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[zero]",
+        "tests/unit/test_settings_port.py::test_the_ends_of_the_range[highest]": "tests/unit/test_settings_port.py::test_the_ends_of_the_range[highest]",
+        "tests/unit/test_settings_port.py::test_the_ends_of_the_range[lowest]": "tests/unit/test_settings_port.py::test_the_ends_of_the_range[lowest]",
+        "tests/unit/test_settings_port.py::test_the_port_is_reported_after_the_work_length": "tests/unit/test_settings_port.py::test_the_port_is_reported_after_the_work_length",
+        "tests/unit/test_settings_port.py::test_the_port_setting_and_its_message": "tests/unit/test_settings_port.py::test_the_port_setting_and_its_message",
+        "tests/unit/test_settings_port_more.py::test_a_bad_data_folder_is_reported_before_the_port": "tests/unit/test_settings_port.py::test_a_bad_data_folder_is_reported_before_the_port",
+        "tests/unit/test_settings_port_more.py::test_a_bad_time_zone_is_reported_before_the_port": "tests/unit/test_settings_port.py::test_a_bad_time_zone_is_reported_before_the_port"
+      },
+      "moved_functions": [
+        "test_a_bad_data_folder_is_reported_before_the_port",
+        "test_a_bad_time_zone_is_reported_before_the_port"
+      ]
+    },
+    "tests/integration/test_server.py": {
+      "retired": "tests/integration/test_server_more.py",
+      "bodies": [
+        "Assign(targets=[Name(id='BODY', ctx=Store())], value=Dict(keys=[Constant(value='source'), Constant(value='title'), Constant(value='deadline'), Constant(value='provider'), Constant(value='message_id'), Constant(value='link')], values=[Constant(value='email'), Constant(value='Pay rent'), Constant(value=None), Constant(value='gmail'), Constant(value='personal/1'), Constant(value='https://mail.example/1')]))",
+        "Assign(targets=[Name(id='NOW', ctx=Store())], value=Constant(value='2026-11-14T14:00:00+00:00'))",
+        "FunctionDef(name='free_port', args=arguments(posonlyargs=[], args=[], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[With(items=[withitem(context_expr=Call(func=Attribute(value=Name(id='socket', ctx=Load()), attr='socket', ctx=Load()), args=[], keywords=[]), optional_vars=Name(id='sock', ctx=Store()))], body=[Expr(value=Call(func=Attribute(value=Name(id='sock', ctx=Load()), attr='bind', ctx=Load()), args=[Tuple(elts=[Constant(value='127.0.0.1'), Constant(value=0)], ctx=Load())], keywords=[])), Return(value=Call(func=Name(id='int', ctx=Load()), args=[Subscript(value=Call(func=Attribute(value=Name(id='sock', ctx=Load()), attr='getsockname', ctx=Load()), args=[], keywords=[]), slice=Constant(value=1), ctx=Load())], keywords=[]))])], decorator_list=[], returns=Name(id='int', ctx=Load()), type_params=[])",
+        "FunctionDef(name='test_a_newer_store_stops_the_build', args=arguments(posonlyargs=[], args=[arg(arg='fake_keychain', annotation=Name(id='FakeKeychain', ctx=Load())), arg(arg='tmp_path', annotation=Name(id='Path', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Name(id='issue_token', ctx=Load()), args=[Constant(value='email')], keywords=[])), Expr(value=Call(func=Attribute(value=BinOp(left=Name(id='tmp_path', ctx=Load()), op=Div(), right=Constant(value='data')), attr='mkdir', ctx=Load()), args=[], keywords=[keyword(arg='mode', value=Constant(value=448))])), Assign(targets=[Name(id='connection', ctx=Store())], value=Call(func=Attribute(value=Name(id='sqlite3', ctx=Load()), attr='connect', ctx=Load()), args=[BinOp(left=BinOp(left=Name(id='tmp_path', ctx=Load()), op=Div(), right=Constant(value='data')), op=Div(), right=Constant(value='docket.sqlite3'))], keywords=[])), Expr(value=Call(func=Attribute(value=Name(id='connection', ctx=Load()), attr='execute', ctx=Load()), args=[Constant(value='PRAGMA user_version = 99')], keywords=[])), Expr(value=Call(func=Attribute(value=Name(id='connection', ctx=Load()), attr='close', ctx=Load()), args=[], keywords=[])), With(items=[withitem(context_expr=Call(func=Attribute(value=Name(id='pytest', ctx=Load()), attr='raises', ctx=Load()), args=[Name(id='StoreError', ctx=Load())], keywords=[]), optional_vars=Name(id='raised', ctx=Store()))], body=[Expr(value=Call(func=Name(id='build_app', ctx=Load()), args=[Call(func=Name(id='get_settings', ctx=Load()), args=[], keywords=[])], keywords=[]))]), Assert(test=Compare(left=Call(func=Name(id='str', ctx=Load()), args=[Attribute(value=Name(id='raised', ctx=Load()), attr='value', ctx=Load())], keywords=[]), ops=[Eq()], comparators=[Constant(value='unsupported schema version: 99')]))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_a_request_uses_the_settings_store', args=arguments(posonlyargs=[], args=[arg(arg='fake_keychain', annotation=Name(id='FakeKeychain', ctx=Load())), arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load())), arg(arg='tmp_path', annotation=Name(id='Path', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Assign(targets=[Name(id='folder', ctx=Store())], value=BinOp(left=Name(id='tmp_path', ctx=Load()), op=Div(), right=Constant(value='data'))), Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setenv', ctx=Load()), args=[Constant(value='DOCKET_DATA_DIR'), Call(func=Name(id='str', ctx=Load()), args=[Name(id='folder', ctx=Load())], keywords=[])], keywords=[])), Assign(targets=[Name(id='token', ctx=Store())], value=Call(func=Name(id='issue_token', ctx=Load()), args=[Constant(value='email')], keywords=[])), Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load()), Name(id='NOW', ctx=Load())], keywords=[])), Assign(targets=[Name(id='app', ctx=Store())], value=Call(func=Name(id='build_app', ctx=Load()), args=[Call(func=Name(id='get_settings', ctx=Load()), args=[], keywords=[])], keywords=[])), Assign(targets=[Name(id='client', ctx=Store())], value=Call(func=Name(id='TestClient', ctx=Load()), args=[Name(id='app', ctx=Load())], keywords=[keyword(arg='base_url', value=Constant(value='http://127.0.0.1:8767'))])), Assign(targets=[Name(id='answer', ctx=Store())], value=Call(func=Attribute(value=Name(id='client', ctx=Load()), attr='post', ctx=Load()), args=[Constant(value='/tasks')], keywords=[keyword(arg='json', value=Name(id='BODY', ctx=Load())), keyword(arg='headers', value=Dict(keys=[Constant(value='Authorization'), Constant(value='Idempotency-Key')], values=[JoinedStr(values=[Constant(value='Bearer '), FormattedValue(value=Name(id='token', ctx=Load()), conversion=-1)]), Constant(value='gmail:personal/1')]))])), Assert(test=Compare(left=Attribute(value=Name(id='answer', ctx=Load()), attr='status_code', ctx=Load()), ops=[Eq()], comparators=[Constant(value=201)])), Assign(targets=[Name(id='connection', ctx=Store())], value=Call(func=Attribute(value=Name(id='sqlite3', ctx=Load()), attr='connect', ctx=Load()), args=[BinOp(left=Name(id='folder', ctx=Load()), op=Div(), right=Constant(value='docket.sqlite3'))], keywords=[])), Assert(test=Compare(left=Call(func=Attribute(value=Call(func=Attribute(value=Name(id='connection', ctx=Load()), attr='execute', ctx=Load()), args=[Constant(value='SELECT title FROM tasks')], keywords=[]), attr='fetchall', ctx=Load()), args=[], keywords=[]), ops=[Eq()], comparators=[List(elts=[Tuple(elts=[Constant(value='Pay rent')], ctx=Load())], ctx=Load())]))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_building_the_app_opens_the_store_once_to_migrate_it', args=arguments(posonlyargs=[], args=[arg(arg='fake_keychain', annotation=Name(id='FakeKeychain', ctx=Load())), arg(arg='tmp_path', annotation=Name(id='Path', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Name(id='issue_token', ctx=Load()), args=[Constant(value='email')], keywords=[])), Expr(value=Call(func=Name(id='build_app', ctx=Load()), args=[Call(func=Name(id='get_settings', ctx=Load()), args=[], keywords=[])], keywords=[])), Assign(targets=[Name(id='connection', ctx=Store())], value=Call(func=Attribute(value=Name(id='sqlite3', ctx=Load()), attr='connect', ctx=Load()), args=[BinOp(left=BinOp(left=Name(id='tmp_path', ctx=Load()), op=Div(), right=Constant(value='data')), op=Div(), right=Constant(value='docket.sqlite3'))], keywords=[])), Assert(test=Compare(left=Call(func=Attribute(value=Call(func=Attribute(value=Name(id='connection', ctx=Load()), attr='execute', ctx=Load()), args=[Constant(value='PRAGMA user_version')], keywords=[]), attr='fetchone', ctx=Load()), args=[], keywords=[]), ops=[Eq()], comparators=[Tuple(elts=[Constant(value=3)], ctx=Load())]))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_run_app_serves_on_loopback_only_and_quietly', args=arguments(posonlyargs=[], args=[arg(arg='fake_keychain', annotation=Name(id='FakeKeychain', ctx=Load())), arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[AnnAssign(target=Name(id='calls', ctx=Store()), annotation=Subscript(value=Name(id='list', ctx=Load()), slice=Subscript(value=Name(id='tuple', ctx=Load()), slice=Tuple(elts=[Name(id='object', ctx=Load()), Subscript(value=Name(id='dict', ctx=Load()), slice=Tuple(elts=[Name(id='str', ctx=Load()), Name(id='object', ctx=Load())], ctx=Load()), ctx=Load())], ctx=Load()), ctx=Load()), ctx=Load()), value=List(elts=[], ctx=Load()), simple=1), Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setattr', ctx=Load()), args=[Name(id='uvicorn', ctx=Load()), Constant(value='run'), Lambda(args=arguments(posonlyargs=[], args=[arg(arg='app')], kwonlyargs=[], kw_defaults=[], kwarg=arg(arg='kwargs'), defaults=[]), body=Call(func=Attribute(value=Name(id='calls', ctx=Load()), attr='append', ctx=Load()), args=[Tuple(elts=[Name(id='app', ctx=Load()), Name(id='kwargs', ctx=Load())], ctx=Load())], keywords=[]))], keywords=[])), Expr(value=Call(func=Name(id='issue_token', ctx=Load()), args=[Constant(value='email')], keywords=[])), Assign(targets=[Name(id='app', ctx=Store())], value=Call(func=Name(id='build_app', ctx=Load()), args=[Call(func=Name(id='get_settings', ctx=Load()), args=[], keywords=[])], keywords=[])), Expr(value=Call(func=Name(id='run_app', ctx=Load()), args=[Name(id='app', ctx=Load()), Constant(value=8767)], keywords=[])), Assert(test=Compare(left=Name(id='calls', ctx=Load()), ops=[Eq()], comparators=[List(elts=[Tuple(elts=[Name(id='app', ctx=Load()), Dict(keys=[Constant(value='host'), Constant(value='port'), Constant(value='access_log'), Constant(value='server_header'), Constant(value='proxy_headers'), Constant(value='log_level')], values=[Constant(value='127.0.0.1'), Constant(value=8767), Constant(value=False), Constant(value=False), Constant(value=False), Constant(value='warning')])], ctx=Load())], ctx=Load())])), Assert(test=Compare(left=Attribute(value=Name(id='server', ctx=Load()), attr='uvicorn', ctx=Load()), ops=[Is()], comparators=[Name(id='uvicorn', ctx=Load())]))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_the_built_app_answers_over_real_loopback', args=arguments(posonlyargs=[], args=[arg(arg='fake_keychain', annotation=Name(id='FakeKeychain', ctx=Load())), arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load())), arg(arg='tmp_path', annotation=Name(id='Path', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Assign(targets=[Name(id='port', ctx=Store())], value=Call(func=Name(id='free_port', ctx=Load()), args=[], keywords=[])), Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setenv', ctx=Load()), args=[Constant(value='DOCKET_WEB_PORT'), Call(func=Name(id='str', ctx=Load()), args=[Name(id='port', ctx=Load())], keywords=[])], keywords=[])), Assign(targets=[Name(id='token', ctx=Store())], value=Call(func=Name(id='issue_token', ctx=Load()), args=[Constant(value='email')], keywords=[])), Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load()), Name(id='NOW', ctx=Load())], keywords=[])), Assign(targets=[Name(id='app', ctx=Store())], value=Call(func=Name(id='build_app', ctx=Load()), args=[Call(func=Name(id='get_settings', ctx=Load()), args=[], keywords=[])], keywords=[])), Assign(targets=[Name(id='running', ctx=Store())], value=Call(func=Attribute(value=Name(id='uvicorn', ctx=Load()), attr='Server', ctx=Load()), args=[Call(func=Attribute(value=Name(id='uvicorn', ctx=Load()), attr='Config', ctx=Load()), args=[Name(id='app', ctx=Load())], keywords=[keyword(arg='host', value=Constant(value='127.0.0.1')), keyword(arg='port', value=Name(id='port', ctx=Load())), keyword(arg='log_level', value=Constant(value='warning')), keyword(arg='access_log', value=Constant(value=False))])], keywords=[])), Assign(targets=[Name(id='thread', ctx=Store())], value=Call(func=Attribute(value=Name(id='threading', ctx=Load()), attr='Thread', ctx=Load()), args=[], keywords=[keyword(arg='target', value=Attribute(value=Name(id='running', ctx=Load()), attr='run', ctx=Load())), keyword(arg='daemon', value=Constant(value=True))])), Expr(value=Call(func=Attribute(value=Name(id='thread', ctx=Load()), attr='start', ctx=Load()), args=[], keywords=[])), Try(body=[For(target=Name(id='_', ctx=Store()), iter=Call(func=Name(id='range', ctx=Load()), args=[Constant(value=200)], keywords=[]), body=[If(test=Attribute(value=Name(id='running', ctx=Load()), attr='started', ctx=Load()), body=[Break()], orelse=[]), Expr(value=Call(func=Attribute(value=Name(id='time', ctx=Load()), attr='sleep', ctx=Load()), args=[Constant(value=0.02)], keywords=[]))], orelse=[]), Assign(targets=[Name(id='headers', ctx=Store())], value=Dict(keys=[Constant(value='Authorization'), Constant(value='Idempotency-Key')], values=[JoinedStr(values=[Constant(value='Bearer '), FormattedValue(value=Name(id='token', ctx=Load()), conversion=-1)]), Constant(value='gmail:personal/1')])), Assign(targets=[Name(id='answer', ctx=Store())], value=Call(func=Attribute(value=Name(id='httpx2', ctx=Load()), attr='post', ctx=Load()), args=[JoinedStr(values=[Constant(value='http://127.0.0.1:'), FormattedValue(value=Name(id='port', ctx=Load()), conversion=-1), Constant(value='/tasks')])], keywords=[keyword(arg='json', value=Name(id='BODY', ctx=Load())), keyword(arg='headers', value=Name(id='headers', ctx=Load()))])), Assert(test=Compare(left=Tuple(elts=[Attribute(value=Name(id='answer', ctx=Load()), attr='status_code', ctx=Load()), Call(func=Attribute(value=Name(id='answer', ctx=Load()), attr='json', ctx=Load()), args=[], keywords=[])], ctx=Load()), ops=[Eq()], comparators=[Tuple(elts=[Constant(value=201), Dict(keys=[Constant(value='id')], values=[Constant(value='t1')])], ctx=Load())])), Assign(targets=[Name(id='refused', ctx=Store())], value=Call(func=Attribute(value=Name(id='httpx2', ctx=Load()), attr='post', ctx=Load()), args=[JoinedStr(values=[Constant(value='http://127.0.0.1:'), FormattedValue(value=Name(id='port', ctx=Load()), conversion=-1), Constant(value='/tasks')])], keywords=[keyword(arg='json', value=Name(id='BODY', ctx=Load()))])), Assert(test=Compare(left=Tuple(elts=[Attribute(value=Name(id='refused', ctx=Load()), attr='status_code', ctx=Load()), Call(func=Attribute(value=Name(id='refused', ctx=Load()), attr='json', ctx=Load()), args=[], keywords=[])], ctx=Load()), ops=[Eq()], comparators=[Tuple(elts=[Constant(value=401), Dict(keys=[Constant(value='error')], values=[Constant(value='unauthorized')])], ctx=Load())]))], handlers=[], orelse=[], finalbody=[Assign(targets=[Attribute(value=Name(id='running', ctx=Load()), attr='should_exit', ctx=Store())], value=Constant(value=True)), Expr(value=Call(func=Attribute(value=Name(id='thread', ctx=Load()), attr='join', ctx=Load()), args=[], keywords=[keyword(arg='timeout', value=Constant(value=10))]))]), Assert(test=UnaryOp(op=Not(), operand=Call(func=Attribute(value=Name(id='thread', ctx=Load()), attr='is_alive', ctx=Load()), args=[], keywords=[]))), Assign(targets=[Name(id='connection', ctx=Store())], value=Call(func=Attribute(value=Name(id='sqlite3', ctx=Load()), attr='connect', ctx=Load()), args=[BinOp(left=BinOp(left=Name(id='tmp_path', ctx=Load()), op=Div(), right=Constant(value='data')), op=Div(), right=Constant(value='docket.sqlite3'))], keywords=[])), Assert(test=Compare(left=Call(func=Attribute(value=Call(func=Attribute(value=Name(id='connection', ctx=Load()), attr='execute', ctx=Load()), args=[Constant(value='SELECT title FROM tasks')], keywords=[]), attr='fetchall', ctx=Load()), args=[], keywords=[]), ops=[Eq()], comparators=[List(elts=[Tuple(elts=[Constant(value='Pay rent')], ctx=Load())], ctx=Load())]))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_the_message', args=arguments(posonlyargs=[], args=[], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Assert(test=Compare(left=Name(id='NO_CLIENTS_MESSAGE', ctx=Load()), ops=[Eq()], comparators=[Constant(value='No clients yet: run docket clients add email.')]))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_with_no_client_the_app_is_not_built', args=arguments(posonlyargs=[], args=[arg(arg='fake_keychain', annotation=Name(id='FakeKeychain', ctx=Load())), arg(arg='tmp_path', annotation=Name(id='Path', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[With(items=[withitem(context_expr=Call(func=Attribute(value=Name(id='pytest', ctx=Load()), attr='raises', ctx=Load()), args=[Name(id='ServeError', ctx=Load())], keywords=[]), optional_vars=Name(id='raised', ctx=Store()))], body=[Expr(value=Call(func=Name(id='build_app', ctx=Load()), args=[Call(func=Name(id='get_settings', ctx=Load()), args=[], keywords=[])], keywords=[]))]), Assert(test=Compare(left=Call(func=Name(id='str', ctx=Load()), args=[Attribute(value=Name(id='raised', ctx=Load()), attr='value', ctx=Load())], keywords=[]), ops=[Eq()], comparators=[Name(id='NO_CLIENTS_MESSAGE', ctx=Load())])), Assert(test=UnaryOp(op=Not(), operand=Call(func=Attribute(value=BinOp(left=BinOp(left=Name(id='tmp_path', ctx=Load()), op=Div(), right=Constant(value='data')), op=Div(), right=Constant(value='docket.sqlite3')), attr='exists', ctx=Load()), args=[], keywords=[])))], decorator_list=[], returns=Constant(value=None), type_params=[])"
+      ],
+      "imports": [
+        [
+          "from",
+          "docket",
+          "server",
+          null
+        ],
+        [
+          "from",
+          "docket.clients",
+          "issue_token",
+          null
+        ],
+        [
+          "from",
+          "docket.config",
+          "get_settings",
+          null
+        ],
+        [
+          "from",
+          "docket.server",
+          "NO_CLIENTS_MESSAGE",
+          null
+        ],
+        [
+          "from",
+          "docket.server",
+          "ServeError",
+          null
+        ],
+        [
+          "from",
+          "docket.server",
+          "build_app",
+          null
+        ],
+        [
+          "from",
+          "docket.server",
+          "run_app",
+          null
+        ],
+        [
+          "from",
+          "docket.store",
+          "StoreError",
+          null
+        ],
+        [
+          "from",
+          "fastapi.testclient",
+          "TestClient",
+          null
+        ],
+        [
+          "from",
+          "pathlib",
+          "Path",
+          null
+        ],
+        [
+          "from",
+          "tests.fakes",
+          "FakeKeychain",
+          null
+        ],
+        [
+          "from",
+          "tests.support",
+          "fixed_times",
+          null
+        ],
+        [
+          "import",
+          "httpx2",
+          null
+        ],
+        [
+          "import",
+          "pytest",
+          null
+        ],
+        [
+          "import",
+          "socket",
+          null
+        ],
+        [
+          "import",
+          "sqlite3",
+          null
+        ],
+        [
+          "import",
+          "threading",
+          null
+        ],
+        [
+          "import",
+          "time",
+          null
+        ],
+        [
+          "import",
+          "uvicorn",
+          null
+        ]
+      ],
+      "mapping": {
+        "tests/integration/test_server.py::test_a_newer_store_stops_the_build": "tests/integration/test_server.py::test_a_newer_store_stops_the_build",
+        "tests/integration/test_server.py::test_building_the_app_opens_the_store_once_to_migrate_it": "tests/integration/test_server.py::test_building_the_app_opens_the_store_once_to_migrate_it",
+        "tests/integration/test_server.py::test_run_app_serves_on_loopback_only_and_quietly": "tests/integration/test_server.py::test_run_app_serves_on_loopback_only_and_quietly",
+        "tests/integration/test_server.py::test_the_built_app_answers_over_real_loopback": "tests/integration/test_server.py::test_the_built_app_answers_over_real_loopback",
+        "tests/integration/test_server.py::test_the_message": "tests/integration/test_server.py::test_the_message",
+        "tests/integration/test_server.py::test_with_no_client_the_app_is_not_built": "tests/integration/test_server.py::test_with_no_client_the_app_is_not_built",
+        "tests/integration/test_server_more.py::test_a_request_uses_the_settings_store": "tests/integration/test_server.py::test_a_request_uses_the_settings_store"
+      },
+      "moved_functions": [
+        "test_a_request_uses_the_settings_store"
+      ]
+    },
+    "tests/e2e/test_cli_serve.py": {
+      "retired": "tests/e2e/test_cli_serve_more.py",
+      "bodies": [
+        "FunctionDef(name='ran', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[AnnAssign(target=Name(id='calls', ctx=Store()), annotation=Subscript(value=Name(id='list', ctx=Load()), slice=Subscript(value=Name(id='dict', ctx=Load()), slice=Tuple(elts=[Name(id='str', ctx=Load()), Name(id='object', ctx=Load())], ctx=Load()), ctx=Load()), ctx=Load()), value=List(elts=[], ctx=Load()), simple=1), Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setattr', ctx=Load()), args=[Name(id='uvicorn', ctx=Load()), Constant(value='run'), Lambda(args=arguments(posonlyargs=[], args=[arg(arg='app')], kwonlyargs=[], kw_defaults=[], kwarg=arg(arg='kwargs'), defaults=[]), body=Call(func=Attribute(value=Name(id='calls', ctx=Load()), attr='append', ctx=Load()), args=[Name(id='kwargs', ctx=Load())], keywords=[]))], keywords=[])), Return(value=Name(id='calls', ctx=Load()))], decorator_list=[Attribute(value=Name(id='pytest', ctx=Load()), attr='fixture', ctx=Load())], returns=Subscript(value=Name(id='list', ctx=Load()), slice=Subscript(value=Name(id='dict', ctx=Load()), slice=Tuple(elts=[Name(id='str', ctx=Load()), Name(id='object', ctx=Load())], ctx=Load()), ctx=Load()), ctx=Load()), type_params=[])",
+        "FunctionDef(name='test_a_bad_port_leaves_no_data_folder', args=arguments(posonlyargs=[], args=[arg(arg='fake_keychain', annotation=Name(id='FakeKeychain', ctx=Load())), arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load())), arg(arg='tmp_path', annotation=Name(id='Path', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setenv', ctx=Load()), args=[Constant(value='DOCKET_WEB_PORT'), Constant(value='80')], keywords=[])), Assign(targets=[Name(id='result', ctx=Store())], value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='serve')], keywords=[])), Assert(test=Compare(left=Tuple(elts=[Attribute(value=Name(id='result', ctx=Load()), attr='exit_code', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stderr', ctx=Load())], ctx=Load()), ops=[Eq()], comparators=[Tuple(elts=[Constant(value=1), Constant(value='DOCKET_WEB_PORT must be 1024 to 65535\\n')], ctx=Load())])), Assert(test=UnaryOp(op=Not(), operand=Call(func=Attribute(value=BinOp(left=Name(id='tmp_path', ctx=Load()), op=Div(), right=Constant(value='data')), attr='exists', ctx=Load()), args=[], keywords=[])))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_a_down_keychain_leaves_no_data_folder', args=arguments(posonlyargs=[], args=[arg(arg='fake_keychain', annotation=Name(id='FakeKeychain', ctx=Load())), arg(arg='tmp_path', annotation=Name(id='Path', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Assign(targets=[Attribute(value=Name(id='fake_keychain', ctx=Load()), attr='error', ctx=Store())], value=Call(func=Name(id='KeyringError', ctx=Load()), args=[Constant(value='backend detail')], keywords=[])), Assign(targets=[Name(id='result', ctx=Store())], value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='serve')], keywords=[])), Assert(test=Compare(left=Tuple(elts=[Attribute(value=Name(id='result', ctx=Load()), attr='exit_code', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stderr', ctx=Load())], ctx=Load()), ops=[Eq()], comparators=[Tuple(elts=[Constant(value=1), Constant(value='keychain unavailable: client.email\\n')], ctx=Load())])), Assert(test=UnaryOp(op=Not(), operand=Call(func=Attribute(value=BinOp(left=Name(id='tmp_path', ctx=Load()), op=Div(), right=Constant(value='data')), attr='exists', ctx=Load()), args=[], keywords=[])))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_serve_needs_no_time_zone', args=arguments(posonlyargs=[], args=[arg(arg='fake_keychain', annotation=Name(id='FakeKeychain', ctx=Load())), arg(arg='ran', annotation=Name(id='list', ctx=Load())), arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='delenv', ctx=Load()), args=[Constant(value='DOCKET_TIME_ZONE')], keywords=[keyword(arg='raising', value=Constant(value=False))])), Expr(value=Call(func=Name(id='issue_token', ctx=Load()), args=[Constant(value='email')], keywords=[])), Assert(test=Compare(left=Attribute(value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='serve')], keywords=[]), attr='exit_code', ctx=Load()), ops=[Eq()], comparators=[Constant(value=0)]))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_serve_refuses_to_start', args=arguments(posonlyargs=[], args=[arg(arg='fake_keychain', annotation=Name(id='FakeKeychain', ctx=Load())), arg(arg='ran', annotation=Name(id='list', ctx=Load())), arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load())), arg(arg='tmp_path', annotation=Name(id='Path', ctx=Load())), arg(arg='setup', annotation=Name(id='str', ctx=Load())), arg(arg='message', annotation=Name(id='str', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[If(test=Compare(left=Name(id='setup', ctx=Load()), ops=[NotEq()], comparators=[Constant(value='none')]), body=[Expr(value=Call(func=Name(id='issue_token', ctx=Load()), args=[Constant(value='email')], keywords=[]))], orelse=[]), If(test=Compare(left=Name(id='setup', ctx=Load()), ops=[Eq()], comparators=[Constant(value='keychain')]), body=[Assign(targets=[Attribute(value=Name(id='fake_keychain', ctx=Load()), attr='error', ctx=Store())], value=Call(func=Name(id='KeyringError', ctx=Load()), args=[Constant(value='backend detail')], keywords=[]))], orelse=[]), If(test=Compare(left=Name(id='setup', ctx=Load()), ops=[Eq()], comparators=[Constant(value='port')]), body=[Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setenv', ctx=Load()), args=[Constant(value='DOCKET_WEB_PORT'), Constant(value='80')], keywords=[]))], orelse=[]), If(test=Compare(left=Name(id='setup', ctx=Load()), ops=[Eq()], comparators=[Constant(value='schema')]), body=[Expr(value=Call(func=Attribute(value=BinOp(left=Name(id='tmp_path', ctx=Load()), op=Div(), right=Constant(value='data')), attr='mkdir', ctx=Load()), args=[], keywords=[keyword(arg='mode', value=Constant(value=448))])), Assign(targets=[Name(id='connection', ctx=Store())], value=Call(func=Attribute(value=Name(id='sqlite3', ctx=Load()), attr='connect', ctx=Load()), args=[BinOp(left=BinOp(left=Name(id='tmp_path', ctx=Load()), op=Div(), right=Constant(value='data')), op=Div(), right=Constant(value='docket.sqlite3'))], keywords=[])), Expr(value=Call(func=Attribute(value=Name(id='connection', ctx=Load()), attr='execute', ctx=Load()), args=[Constant(value='PRAGMA user_version = 99')], keywords=[])), Expr(value=Call(func=Attribute(value=Name(id='connection', ctx=Load()), attr='close', ctx=Load()), args=[], keywords=[]))], orelse=[]), Assign(targets=[Name(id='result', ctx=Store())], value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='serve')], keywords=[])), Assert(test=Compare(left=Tuple(elts=[Attribute(value=Name(id='result', ctx=Load()), attr='exit_code', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stdout', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stderr', ctx=Load())], ctx=Load()), ops=[Eq()], comparators=[Tuple(elts=[Constant(value=1), Constant(value=''), BinOp(left=Name(id='message', ctx=Load()), op=Add(), right=Constant(value='\\n'))], ctx=Load())])), Assert(test=Compare(left=Name(id='ran', ctx=Load()), ops=[Eq()], comparators=[List(elts=[], ctx=Load())]))], decorator_list=[Call(func=Attribute(value=Attribute(value=Name(id='pytest', ctx=Load()), attr='mark', ctx=Load()), attr='parametrize', ctx=Load()), args=[Tuple(elts=[Constant(value='setup'), Constant(value='message')], ctx=Load()), List(elts=[Tuple(elts=[Constant(value='none'), Constant(value='No clients yet: run docket clients add email.')], ctx=Load()), Tuple(elts=[Constant(value='keychain'), Constant(value='keychain unavailable: client.email')], ctx=Load()), Tuple(elts=[Constant(value='port'), Constant(value='DOCKET_WEB_PORT must be 1024 to 65535')], ctx=Load()), Tuple(elts=[Constant(value='schema'), Constant(value='unsupported schema version: 99')], ctx=Load())], ctx=Load())], keywords=[keyword(arg='ids', value=List(elts=[Constant(value='no-clients'), Constant(value='keychain-down'), Constant(value='bad-port'), Constant(value='newer-store')], ctx=Load()))])], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_serve_says_where_and_runs', args=arguments(posonlyargs=[], args=[arg(arg='fake_keychain', annotation=Name(id='FakeKeychain', ctx=Load())), arg(arg='ran', annotation=Name(id='list', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Name(id='issue_token', ctx=Load()), args=[Constant(value='email')], keywords=[])), Assign(targets=[Name(id='result', ctx=Store())], value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='serve')], keywords=[])), Assert(test=Compare(left=Tuple(elts=[Attribute(value=Name(id='result', ctx=Load()), attr='exit_code', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stdout', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stderr', ctx=Load())], ctx=Load()), ops=[Eq()], comparators=[Tuple(elts=[Constant(value=0), Constant(value='Serving on http://127.0.0.1:8767\\n'), Constant(value='')], ctx=Load())])), Assert(test=Compare(left=ListComp(elt=Tuple(elts=[Subscript(value=Name(id='call', ctx=Load()), slice=Constant(value='host'), ctx=Load()), Subscript(value=Name(id='call', ctx=Load()), slice=Constant(value='port'), ctx=Load())], ctx=Load()), generators=[comprehension(target=Name(id='call', ctx=Store()), iter=Name(id='ran', ctx=Load()), ifs=[], is_async=0)]), ops=[Eq()], comparators=[List(elts=[Tuple(elts=[Constant(value='127.0.0.1'), Constant(value=8767)], ctx=Load())], ctx=Load())]))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_serve_uses_the_port_setting', args=arguments(posonlyargs=[], args=[arg(arg='fake_keychain', annotation=Name(id='FakeKeychain', ctx=Load())), arg(arg='ran', annotation=Name(id='list', ctx=Load())), arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setenv', ctx=Load()), args=[Constant(value='DOCKET_WEB_PORT'), Constant(value='9123')], keywords=[])), Expr(value=Call(func=Name(id='issue_token', ctx=Load()), args=[Constant(value='email')], keywords=[])), Assert(test=Compare(left=Attribute(value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='serve')], keywords=[]), attr='stdout', ctx=Load()), ops=[Eq()], comparators=[Constant(value='Serving on http://127.0.0.1:9123\\n')])), Assert(test=Compare(left=ListComp(elt=Subscript(value=Name(id='call', ctx=Load()), slice=Constant(value='port'), ctx=Load()), generators=[comprehension(target=Name(id='call', ctx=Store()), iter=Name(id='ran', ctx=Load()), ifs=[], is_async=0)]), ops=[Eq()], comparators=[List(elts=[Constant(value=9123)], ctx=Load())]))], decorator_list=[], returns=Constant(value=None), type_params=[])"
+      ],
+      "imports": [
+        [
+          "from",
+          "docket.clients",
+          "issue_token",
+          null
+        ],
+        [
+          "from",
+          "keyring.errors",
+          "KeyringError",
+          null
+        ],
+        [
+          "from",
+          "pathlib",
+          "Path",
+          null
+        ],
+        [
+          "from",
+          "tests.fakes",
+          "FakeKeychain",
+          null
+        ],
+        [
+          "from",
+          "tests.support",
+          "run",
+          null
+        ],
+        [
+          "import",
+          "pytest",
+          null
+        ],
+        [
+          "import",
+          "sqlite3",
+          null
+        ],
+        [
+          "import",
+          "uvicorn",
+          null
+        ]
+      ],
+      "mapping": {
+        "tests/e2e/test_cli_serve.py::test_serve_needs_no_time_zone": "tests/e2e/test_cli_serve.py::test_serve_needs_no_time_zone",
+        "tests/e2e/test_cli_serve.py::test_serve_refuses_to_start[bad-port]": "tests/e2e/test_cli_serve.py::test_serve_refuses_to_start[bad-port]",
+        "tests/e2e/test_cli_serve.py::test_serve_refuses_to_start[keychain-down]": "tests/e2e/test_cli_serve.py::test_serve_refuses_to_start[keychain-down]",
+        "tests/e2e/test_cli_serve.py::test_serve_refuses_to_start[newer-store]": "tests/e2e/test_cli_serve.py::test_serve_refuses_to_start[newer-store]",
+        "tests/e2e/test_cli_serve.py::test_serve_refuses_to_start[no-clients]": "tests/e2e/test_cli_serve.py::test_serve_refuses_to_start[no-clients]",
+        "tests/e2e/test_cli_serve.py::test_serve_says_where_and_runs": "tests/e2e/test_cli_serve.py::test_serve_says_where_and_runs",
+        "tests/e2e/test_cli_serve.py::test_serve_uses_the_port_setting": "tests/e2e/test_cli_serve.py::test_serve_uses_the_port_setting",
+        "tests/e2e/test_cli_serve_more.py::test_a_bad_port_leaves_no_data_folder": "tests/e2e/test_cli_serve.py::test_a_bad_port_leaves_no_data_folder",
+        "tests/e2e/test_cli_serve_more.py::test_a_down_keychain_leaves_no_data_folder": "tests/e2e/test_cli_serve.py::test_a_down_keychain_leaves_no_data_folder"
+      },
+      "moved_functions": [
+        "test_a_bad_port_leaves_no_data_folder",
+        "test_a_down_keychain_leaves_no_data_folder"
+      ]
+    },
+    "tests/e2e/test_cli_tasks.py": {
+      "retired": "tests/e2e/test_cli_tasks_more.py",
+      "bodies": [
+        "Assign(targets=[Name(id='CREATED', ctx=Store())], value=Constant(value='2026-11-13T13:00:00+00:00'))",
+        "Assign(targets=[Name(id='NOW', ctx=Store())], value=Constant(value='2026-11-14T14:00:00+00:00'))",
+        "Assign(targets=[Name(id='NY', ctx=Store())], value=Constant(value='America/New_York'))",
+        "Assign(targets=[Name(id='UPDATED', ctx=Store())], value=Constant(value='2026-11-13T14:00:00+00:00'))",
+        "FunctionDef(name='home', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setenv', ctx=Load()), args=[Constant(value='DOCKET_TIME_ZONE'), Name(id='NY', ctx=Load())], keywords=[]))], decorator_list=[Call(func=Attribute(value=Name(id='pytest', ctx=Load()), attr='fixture', ctx=Load()), args=[], keywords=[keyword(arg='autouse', value=Constant(value=True))])], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='seed', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Constant(value='Six tasks a person reaches: created, one started, one done, one cancelled.')), Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load()), Starred(value=BinOp(left=BinOp(left=List(elts=[Name(id='CREATED', ctx=Load())], ctx=Load()), op=Mult(), right=Constant(value=6)), op=Add(), right=BinOp(left=List(elts=[Name(id='UPDATED', ctx=Load())], ctx=Load()), op=Mult(), right=Constant(value=3))), ctx=Load())], keywords=[])), With(items=[withitem(context_expr=Call(func=Name(id='open_store', ctx=Load()), args=[Call(func=Name(id='get_settings', ctx=Load()), args=[], keywords=[])], keywords=[]), optional_vars=Name(id='store', ctx=Store()))], body=[For(target=Tuple(elts=[Name(id='title', ctx=Store()), Name(id='deadline', ctx=Store())], ctx=Store()), iter=List(elts=[Tuple(elts=[Constant(value='Call the dentist'), Constant(value=None)], ctx=Load()), Tuple(elts=[Constant(value='Book flights'), Call(func=Name(id='make_deadline', ctx=Load()), args=[Call(func=Name(id='date', ctx=Load()), args=[Constant(value=2026), Constant(value=11), Constant(value=20)], keywords=[]), Constant(value=None), Name(id='NY', ctx=Load())], keywords=[])], ctx=Load()), Tuple(elts=[Constant(value='Pay rent'), Call(func=Name(id='make_deadline', ctx=Load()), args=[Call(func=Name(id='date', ctx=Load()), args=[Constant(value=2026), Constant(value=11), Constant(value=12)], keywords=[]), Call(func=Name(id='time', ctx=Load()), args=[Constant(value=17), Constant(value=0)], keywords=[]), Name(id='NY', ctx=Load())], keywords=[])], ctx=Load()), Tuple(elts=[Constant(value='Renew passport'), Call(func=Name(id='make_deadline', ctx=Load()), args=[Call(func=Name(id='date', ctx=Load()), args=[Constant(value=2026), Constant(value=11), Constant(value=9)], keywords=[]), Call(func=Name(id='time', ctx=Load()), args=[Constant(value=17), Constant(value=0)], keywords=[]), Name(id='NY', ctx=Load())], keywords=[])], ctx=Load()), Tuple(elts=[Constant(value='Water plants'), Call(func=Name(id='make_deadline', ctx=Load()), args=[Call(func=Name(id='date', ctx=Load()), args=[Constant(value=2026), Constant(value=11), Constant(value=14)], keywords=[]), Call(func=Name(id='time', ctx=Load()), args=[Constant(value=9), Constant(value=10)], keywords=[]), Name(id='NY', ctx=Load())], keywords=[])], ctx=Load()), Tuple(elts=[Constant(value='Old idea'), Constant(value=None)], ctx=Load())], ctx=Load()), body=[Expr(value=Call(func=Attribute(value=Name(id='core', ctx=Load()), attr='create_task', ctx=Load()), args=[Name(id='store', ctx=Load())], keywords=[keyword(arg='title', value=Name(id='title', ctx=Load())), keyword(arg='source', value=Constant(value='owner')), keyword(arg='deadline', value=Name(id='deadline', ctx=Load()))]))], orelse=[]), Expr(value=Call(func=Attribute(value=Name(id='core', ctx=Load()), attr='change_state', ctx=Load()), args=[Name(id='store', ctx=Load()), Constant(value='t2'), Constant(value='start')], keywords=[keyword(arg='actor', value=Constant(value='owner'))])), Expr(value=Call(func=Attribute(value=Name(id='core', ctx=Load()), attr='change_state', ctx=Load()), args=[Name(id='store', ctx=Load()), Constant(value='t4'), Constant(value='done')], keywords=[keyword(arg='actor', value=Constant(value='owner'))])), Expr(value=Call(func=Attribute(value=Name(id='core', ctx=Load()), attr='change_state', ctx=Load()), args=[Name(id='store', ctx=Load()), Constant(value='t6'), Constant(value='cancel')], keywords=[keyword(arg='actor', value=Constant(value='owner'))]))])], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='stored', args=arguments(posonlyargs=[], args=[], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[With(items=[withitem(context_expr=Call(func=Name(id='open_store', ctx=Load()), args=[Call(func=Name(id='get_settings', ctx=Load()), args=[], keywords=[])], keywords=[]), optional_vars=Name(id='store', ctx=Store()))], body=[Return(value=Tuple(elts=[Call(func=Attribute(value=Name(id='store', ctx=Load()), attr='tasks', ctx=Load()), args=[], keywords=[]), ListComp(elt=Call(func=Attribute(value=Name(id='store', ctx=Load()), attr='audit', ctx=Load()), args=[Attribute(value=Name(id='task', ctx=Load()), attr='id', ctx=Load())], keywords=[]), generators=[comprehension(target=Name(id='task', ctx=Store()), iter=Call(func=Attribute(value=Name(id='store', ctx=Load()), attr='tasks', ctx=Load()), args=[], keywords=[]), ifs=[], is_async=0)])], ctx=Load()))])], decorator_list=[], type_params=[])",
+        "FunctionDef(name='test_a_newer_schema_is_refused', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load())), arg(arg='args', annotation=Subscript(value=Name(id='list', ctx=Load()), slice=Name(id='str', ctx=Load()), ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setenv', ctx=Load()), args=[Constant(value='DOCKET_TIME_ZONE'), Constant(value='America/New_York')], keywords=[])), Assign(targets=[Name(id='folder', ctx=Store())], value=Call(func=Name(id='prepare_data_dir', ctx=Load()), args=[Call(func=Name(id='get_settings', ctx=Load()), args=[], keywords=[])], keywords=[])), Assign(targets=[Name(id='connection', ctx=Store())], value=Call(func=Attribute(value=Name(id='sqlite3', ctx=Load()), attr='connect', ctx=Load()), args=[BinOp(left=Name(id='folder', ctx=Load()), op=Div(), right=Name(id='DB_FILENAME', ctx=Load()))], keywords=[])), Expr(value=Call(func=Attribute(value=Name(id='connection', ctx=Load()), attr='execute', ctx=Load()), args=[Constant(value='PRAGMA user_version = 99')], keywords=[])), Expr(value=Call(func=Attribute(value=Name(id='connection', ctx=Load()), attr='close', ctx=Load()), args=[], keywords=[])), Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load())], keywords=[])), Assign(targets=[Name(id='result', ctx=Store())], value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='tasks'), Starred(value=Name(id='args', ctx=Load()), ctx=Load())], keywords=[])), Assert(test=Compare(left=Tuple(elts=[Attribute(value=Name(id='result', ctx=Load()), attr='exit_code', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stdout', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stderr', ctx=Load())], ctx=Load()), ops=[Eq()], comparators=[Tuple(elts=[Constant(value=1), Constant(value=''), Constant(value='unsupported schema version: 99\\n')], ctx=Load())]))], decorator_list=[Call(func=Attribute(value=Attribute(value=Name(id='pytest', ctx=Load()), attr='mark', ctx=Load()), attr='parametrize', ctx=Load()), args=[Constant(value='args'), List(elts=[List(elts=[Constant(value='add'), Constant(value='Pay rent')], ctx=Load()), List(elts=[Constant(value='list')], ctx=Load()), List(elts=[Constant(value='show'), Constant(value='t1')], ctx=Load())], ctx=Load())], keywords=[keyword(arg='ids', value=List(elts=[Constant(value='add'), Constant(value='list'), Constant(value='show')], ctx=Load()))])], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_a_refused_add_writes_nothing', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load())), arg(arg='args', annotation=Subscript(value=Name(id='list', ctx=Load()), slice=Name(id='str', ctx=Load()), ctx=Load())), arg(arg='message', annotation=Name(id='str', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load()), Name(id='NOW', ctx=Load())], keywords=[])), Assign(targets=[Name(id='result', ctx=Store())], value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='tasks'), Constant(value='add'), Starred(value=Name(id='args', ctx=Load()), ctx=Load())], keywords=[])), Assert(test=Compare(left=Tuple(elts=[Attribute(value=Name(id='result', ctx=Load()), attr='exit_code', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stdout', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stderr', ctx=Load())], ctx=Load()), ops=[Eq()], comparators=[Tuple(elts=[Constant(value=1), Constant(value=''), BinOp(left=Name(id='message', ctx=Load()), op=Add(), right=Constant(value='\\n'))], ctx=Load())])), Assert(test=Compare(left=Call(func=Name(id='stored', ctx=Load()), args=[], keywords=[]), ops=[Eq()], comparators=[Tuple(elts=[List(elts=[], ctx=Load()), List(elts=[], ctx=Load())], ctx=Load())]))], decorator_list=[Call(func=Attribute(value=Attribute(value=Name(id='pytest', ctx=Load()), attr='mark', ctx=Load()), attr='parametrize', ctx=Load()), args=[Tuple(elts=[Constant(value='args'), Constant(value='message')], ctx=Load()), List(elts=[Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--at'), Constant(value='17:00')], ctx=Load()), Name(id='AT_WITHOUT_DUE_MESSAGE', ctx=Load())], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--due'), Constant(value='20261120')], ctx=Load()), Name(id='DUE_MESSAGE', ctx=Load())], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--due'), Constant(value='2026-W47-1')], ctx=Load()), Name(id='DUE_MESSAGE', ctx=Load())], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--due'), Constant(value='2026-11-31')], ctx=Load()), Name(id='DUE_MESSAGE', ctx=Load())], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--due'), Constant(value='2026-1-5')], ctx=Load()), Name(id='DUE_MESSAGE', ctx=Load())], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--due'), Constant(value='\uff12\uff10\uff12\uff16-11-20')], ctx=Load()), Name(id='DUE_MESSAGE', ctx=Load())], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--due'), Constant(value='')], ctx=Load()), Name(id='DUE_MESSAGE', ctx=Load())], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--due'), Constant(value='2026-11-20'), Constant(value='--at'), Constant(value='1700')], ctx=Load()), Name(id='AT_MESSAGE', ctx=Load())], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--due'), Constant(value='2026-11-20'), Constant(value='--at'), Constant(value='17')], ctx=Load()), Name(id='AT_MESSAGE', ctx=Load())], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--due'), Constant(value='2026-11-20'), Constant(value='--at'), Constant(value='T17:00')], ctx=Load()), Name(id='AT_MESSAGE', ctx=Load())], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--due'), Constant(value='2026-11-20'), Constant(value='--at'), Constant(value='17:00Z')], ctx=Load()), Name(id='AT_MESSAGE', ctx=Load())], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--due'), Constant(value='2026-11-20'), Constant(value='--at'), Constant(value='17:00:30')], ctx=Load()), Name(id='AT_MESSAGE', ctx=Load())], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--due'), Constant(value='2026-11-20'), Constant(value='--at'), Constant(value='24:00')], ctx=Load()), Name(id='AT_MESSAGE', ctx=Load())], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--due'), Constant(value='2026-11-20'), Constant(value='--at'), Constant(value='7:00')], ctx=Load()), Name(id='AT_MESSAGE', ctx=Load())], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--due'), Constant(value='20261120'), Constant(value='--at'), Constant(value='1700')], ctx=Load()), Name(id='DUE_MESSAGE', ctx=Load())], ctx=Load()), Tuple(elts=[List(elts=[Constant(value=' Pay rent')], ctx=Load()), Constant(value='A title is 1 to 100 characters on one line, with no space at either end.')], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay\\trent'), Constant(value='--due'), Constant(value='2026-11-20')], ctx=Load()), Constant(value='A title is 1 to 100 characters on one line, with no space at either end.')], ctx=Load())], ctx=Load())], keywords=[keyword(arg='ids', value=List(elts=[Constant(value='at-without-due'), Constant(value='compact-date'), Constant(value='week-date'), Constant(value='no-such-day'), Constant(value='unpadded-date'), Constant(value='fullwidth-digits'), Constant(value='empty-date'), Constant(value='compact-time'), Constant(value='hour-only'), Constant(value='t-prefix'), Constant(value='with-zone'), Constant(value='with-seconds'), Constant(value='hour-24'), Constant(value='unpadded-time'), Constant(value='date-checked-before-time'), Constant(value='title'), Constant(value='title-with-a-tab')], ctx=Load()))])], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_a_title_may_start_with_a_dash', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load()), Name(id='NOW', ctx=Load())], keywords=[])), Assign(targets=[Name(id='result', ctx=Store())], value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='tasks'), Constant(value='add'), Constant(value='--'), Constant(value='-call back')], keywords=[])), Assert(test=Compare(left=Tuple(elts=[Attribute(value=Name(id='result', ctx=Load()), attr='exit_code', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stdout', ctx=Load())], ctx=Load()), ops=[Eq()], comparators=[Tuple(elts=[Constant(value=0), Constant(value='Added t1: -call back\\n')], ctx=Load())]))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_a_usage_mistake_exits_2_and_writes_nothing', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load())), arg(arg='args', annotation=Subscript(value=Name(id='list', ctx=Load()), slice=Name(id='str', ctx=Load()), ctx=Load())), arg(arg='complaint', annotation=Name(id='str', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load())], keywords=[])), Assign(targets=[Name(id='result', ctx=Store())], value=Call(func=Name(id='run', ctx=Load()), args=[Starred(value=Name(id='args', ctx=Load()), ctx=Load())], keywords=[])), Assert(test=Compare(left=Tuple(elts=[Attribute(value=Name(id='result', ctx=Load()), attr='exit_code', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stdout', ctx=Load())], ctx=Load()), ops=[Eq()], comparators=[Tuple(elts=[Constant(value=2), Constant(value='')], ctx=Load())])), Assert(test=Compare(left=Name(id='complaint', ctx=Load()), ops=[In()], comparators=[Attribute(value=Name(id='result', ctx=Load()), attr='stderr', ctx=Load())])), Assert(test=UnaryOp(op=Not(), operand=Call(func=Attribute(value=BinOp(left=Attribute(value=Call(func=Name(id='get_settings', ctx=Load()), args=[], keywords=[]), attr='data_dir', ctx=Load()), op=Div(), right=Constant(value='docket.sqlite3')), attr='exists', ctx=Load()), args=[], keywords=[])))], decorator_list=[Call(func=Attribute(value=Attribute(value=Name(id='pytest', ctx=Load()), attr='mark', ctx=Load()), attr='parametrize', ctx=Load()), args=[Tuple(elts=[Constant(value='args'), Constant(value='complaint')], ctx=Load()), List(elts=[Tuple(elts=[List(elts=[Constant(value='tasks'), Constant(value='add')], ctx=Load()), Constant(value=\"Missing argument 'title'.\")], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='tasks'), Constant(value='show')], ctx=Load()), Constant(value=\"Missing argument 'task_id'.\")], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='tasks'), Constant(value='list'), Constant(value='extra')], ctx=Load()), Constant(value='Got unexpected extra argument(s) (extra)')], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='tasks'), Constant(value='nope')], ctx=Load()), Constant(value=\"No such command 'nope'.\")], ctx=Load())], ctx=Load())], keywords=[keyword(arg='ids', value=List(elts=[Constant(value='add-without-title'), Constant(value='show-without-id'), Constant(value='list-with-an-argument'), Constant(value='unknown-command')], ctx=Load()))])], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_adding_a_task', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load())), arg(arg='args', annotation=Subscript(value=Name(id='list', ctx=Load()), slice=Name(id='str', ctx=Load()), ctx=Load())), arg(arg='printed', annotation=Name(id='str', ctx=Load())), arg(arg='deadline', annotation=BinOp(left=Name(id='Deadline', ctx=Load()), op=BitOr(), right=Constant(value=None)))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load()), Name(id='NOW', ctx=Load())], keywords=[])), Assign(targets=[Name(id='result', ctx=Store())], value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='tasks'), Constant(value='add'), Starred(value=Name(id='args', ctx=Load()), ctx=Load())], keywords=[])), Assert(test=Compare(left=Tuple(elts=[Attribute(value=Name(id='result', ctx=Load()), attr='exit_code', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stdout', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stderr', ctx=Load())], ctx=Load()), ops=[Eq()], comparators=[Tuple(elts=[Constant(value=0), Name(id='printed', ctx=Load()), Constant(value='')], ctx=Load())])), Assign(targets=[Tuple(elts=[Name(id='tasks', ctx=Store()), Name(id='audits', ctx=Store())], ctx=Store())], value=Call(func=Name(id='stored', ctx=Load()), args=[], keywords=[])), Assert(test=Compare(left=ListComp(elt=Tuple(elts=[Attribute(value=Name(id='task', ctx=Load()), attr='id', ctx=Load()), Attribute(value=Name(id='task', ctx=Load()), attr='title', ctx=Load()), Attribute(value=Name(id='task', ctx=Load()), attr='state', ctx=Load()), Attribute(value=Name(id='task', ctx=Load()), attr='deadline', ctx=Load()), Attribute(value=Name(id='task', ctx=Load()), attr='source', ctx=Load())], ctx=Load()), generators=[comprehension(target=Name(id='task', ctx=Store()), iter=Name(id='tasks', ctx=Load()), ifs=[], is_async=0)]), ops=[Eq()], comparators=[List(elts=[Tuple(elts=[Constant(value='t1'), Constant(value='Pay rent'), Constant(value='open'), Name(id='deadline', ctx=Load()), Constant(value='owner')], ctx=Load())], ctx=Load())])), Assert(test=Compare(left=ListComp(elt=ListComp(elt=Tuple(elts=[Attribute(value=Name(id='entry', ctx=Load()), attr='action', ctx=Load()), Attribute(value=Name(id='entry', ctx=Load()), attr='actor', ctx=Load())], ctx=Load()), generators=[comprehension(target=Name(id='entry', ctx=Store()), iter=Name(id='audit', ctx=Load()), ifs=[], is_async=0)]), generators=[comprehension(target=Name(id='audit', ctx=Store()), iter=Name(id='audits', ctx=Load()), ifs=[], is_async=0)]), ops=[Eq()], comparators=[List(elts=[List(elts=[Tuple(elts=[Constant(value='create'), Constant(value='owner')], ctx=Load())], ctx=Load())], ctx=Load())]))], decorator_list=[Call(func=Attribute(value=Attribute(value=Name(id='pytest', ctx=Load()), attr='mark', ctx=Load()), attr='parametrize', ctx=Load()), args=[Tuple(elts=[Constant(value='args'), Constant(value='printed'), Constant(value='deadline')], ctx=Load()), List(elts=[Tuple(elts=[List(elts=[Constant(value='Pay rent')], ctx=Load()), Constant(value='Added t1: Pay rent\\n'), Constant(value=None)], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--due'), Constant(value='2026-11-20'), Constant(value='--at'), Constant(value='17:00')], ctx=Load()), Constant(value='Added t1: Pay rent, due Fri Nov 20 17:00 EST\\n'), Call(func=Name(id='Deadline', ctx=Load()), args=[Call(func=Name(id='datetime', ctx=Load()), args=[Constant(value=2026), Constant(value=11), Constant(value=20), Constant(value=22), Constant(value=0)], keywords=[keyword(arg='tzinfo', value=Name(id='UTC', ctx=Load()))]), Name(id='NY', ctx=Load()), Constant(value=True)], keywords=[])], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--due'), Constant(value='2026-11-20')], ctx=Load()), Constant(value='Added t1: Pay rent, due Fri Nov 20 17:00 EST, no time given\\n'), Call(func=Name(id='Deadline', ctx=Load()), args=[Call(func=Name(id='datetime', ctx=Load()), args=[Constant(value=2026), Constant(value=11), Constant(value=20), Constant(value=22), Constant(value=0)], keywords=[keyword(arg='tzinfo', value=Name(id='UTC', ctx=Load()))]), Name(id='NY', ctx=Load()), Constant(value=False)], keywords=[])], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--due'), Constant(value='2027-03-14'), Constant(value='--at'), Constant(value='02:30')], ctx=Load()), Constant(value='Added t1: Pay rent, due Sun Mar 14 2027 03:30 EDT\\n'), Call(func=Name(id='Deadline', ctx=Load()), args=[Call(func=Name(id='datetime', ctx=Load()), args=[Constant(value=2027), Constant(value=3), Constant(value=14), Constant(value=7), Constant(value=30)], keywords=[keyword(arg='tzinfo', value=Name(id='UTC', ctx=Load()))]), Name(id='NY', ctx=Load()), Constant(value=True)], keywords=[])], ctx=Load()), Tuple(elts=[List(elts=[Constant(value='Pay rent'), Constant(value='--due'), Constant(value='2026-11-01'), Constant(value='--at'), Constant(value='09:00')], ctx=Load()), Constant(value='Added t1: Pay rent, due Sun Nov 1 09:00 EST\\n'), Call(func=Name(id='Deadline', ctx=Load()), args=[Call(func=Name(id='datetime', ctx=Load()), args=[Constant(value=2026), Constant(value=11), Constant(value=1), Constant(value=14), Constant(value=0)], keywords=[keyword(arg='tzinfo', value=Name(id='UTC', ctx=Load()))]), Name(id='NY', ctx=Load()), Constant(value=True)], keywords=[])], ctx=Load())], ctx=Load())], keywords=[keyword(arg='ids', value=List(elts=[Constant(value='no-deadline'), Constant(value='date-and-time'), Constant(value='date-only'), Constant(value='missing-time-moves-forward'), Constant(value='past-date')], ctx=Load()))])], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_an_empty_list_says_so', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load()), Name(id='NOW', ctx=Load())], keywords=[])), Assign(targets=[Name(id='result', ctx=Store())], value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='tasks'), Constant(value='list')], keywords=[])), Assert(test=Compare(left=Tuple(elts=[Attribute(value=Name(id='result', ctx=Load()), attr='exit_code', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stdout', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stderr', ctx=Load())], ctx=Load()), ops=[Eq()], comparators=[Tuple(elts=[Constant(value=0), Constant(value='No tasks.\\n'), Constant(value='')], ctx=Load())])), Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load()), Name(id='NOW', ctx=Load())], keywords=[])), Assert(test=Compare(left=Attribute(value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='tasks'), Constant(value='list'), Constant(value='--all')], keywords=[]), attr='stdout', ctx=Load()), ops=[Eq()], comparators=[Constant(value='No tasks.\\n')]))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_every_task_command_needs_your_time_zone', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load())), arg(arg='tmp_path', annotation=Name(id='Path', ctx=Load())), arg(arg='args', annotation=Subscript(value=Name(id='list', ctx=Load()), slice=Name(id='str', ctx=Load()), ctx=Load())), arg(arg='zone', annotation=BinOp(left=Name(id='str', ctx=Load()), op=BitOr(), right=Constant(value=None))), arg(arg='message', annotation=Name(id='str', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[If(test=Compare(left=Name(id='zone', ctx=Load()), ops=[Is()], comparators=[Constant(value=None)]), body=[Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='delenv', ctx=Load()), args=[Constant(value='DOCKET_TIME_ZONE')], keywords=[]))], orelse=[Expr(value=Call(func=Attribute(value=Name(id='monkeypatch', ctx=Load()), attr='setenv', ctx=Load()), args=[Constant(value='DOCKET_TIME_ZONE'), Name(id='zone', ctx=Load())], keywords=[]))]), Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load())], keywords=[])), Assign(targets=[Name(id='result', ctx=Store())], value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='tasks'), Starred(value=Name(id='args', ctx=Load()), ctx=Load())], keywords=[])), Assert(test=Compare(left=Tuple(elts=[Attribute(value=Name(id='result', ctx=Load()), attr='exit_code', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stdout', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stderr', ctx=Load())], ctx=Load()), ops=[Eq()], comparators=[Tuple(elts=[Constant(value=1), Constant(value=''), BinOp(left=Name(id='message', ctx=Load()), op=Add(), right=Constant(value='\\n'))], ctx=Load())])), Assert(test=UnaryOp(op=Not(), operand=Call(func=Attribute(value=BinOp(left=BinOp(left=Name(id='tmp_path', ctx=Load()), op=Div(), right=Constant(value='data')), op=Div(), right=Constant(value='docket.sqlite3')), attr='exists', ctx=Load()), args=[], keywords=[])))], decorator_list=[Call(func=Attribute(value=Attribute(value=Name(id='pytest', ctx=Load()), attr='mark', ctx=Load()), attr='parametrize', ctx=Load()), args=[Constant(value='args'), List(elts=[List(elts=[Constant(value='add'), Constant(value='Pay rent')], ctx=Load()), List(elts=[Constant(value='list')], ctx=Load()), List(elts=[Constant(value='show'), Constant(value='t1')], ctx=Load())], ctx=Load())], keywords=[keyword(arg='ids', value=List(elts=[Constant(value='add'), Constant(value='list'), Constant(value='show')], ctx=Load()))]), Call(func=Attribute(value=Attribute(value=Name(id='pytest', ctx=Load()), attr='mark', ctx=Load()), attr='parametrize', ctx=Load()), args=[Tuple(elts=[Constant(value='zone'), Constant(value='message')], ctx=Load()), List(elts=[Tuple(elts=[Constant(value=None), Constant(value='DOCKET_TIME_ZONE is not set')], ctx=Load()), Tuple(elts=[Constant(value=''), Constant(value='DOCKET_TIME_ZONE is not set')], ctx=Load()), Tuple(elts=[Constant(value='america/new_york'), Constant(value='DOCKET_TIME_ZONE must be a time zone name')], ctx=Load())], ctx=Load())], keywords=[keyword(arg='ids', value=List(elts=[Constant(value='unset'), Constant(value='empty'), Constant(value='wrong-case')], ctx=Load()))])], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_listing_and_showing_read_the_clock_once', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Name(id='seed', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load())], keywords=[])), Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load()), Name(id='NOW', ctx=Load())], keywords=[])), Assert(test=Compare(left=Attribute(value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='tasks'), Constant(value='list')], keywords=[]), attr='exit_code', ctx=Load()), ops=[Eq()], comparators=[Constant(value=0)])), Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load()), Name(id='NOW', ctx=Load())], keywords=[])), Assert(test=Compare(left=Attribute(value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='tasks'), Constant(value='show'), Constant(value='t3')], keywords=[]), attr='exit_code', ctx=Load()), ops=[Eq()], comparators=[Constant(value=0)])), Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load()), Name(id='NOW', ctx=Load())], keywords=[])), Assert(test=Compare(left=Attribute(value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='tasks'), Constant(value='add'), Constant(value='One more')], keywords=[]), attr='stdout', ctx=Load()), ops=[Eq()], comparators=[Constant(value='Added t7: One more\\n')]))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_showing_a_task', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Name(id='seed', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load())], keywords=[])), Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load()), Name(id='NOW', ctx=Load())], keywords=[])), Assign(targets=[Name(id='result', ctx=Store())], value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='tasks'), Constant(value='show'), Constant(value='t2')], keywords=[])), Assert(test=Compare(left=Tuple(elts=[Attribute(value=Name(id='result', ctx=Load()), attr='exit_code', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stderr', ctx=Load())], ctx=Load()), ops=[Eq()], comparators=[Tuple(elts=[Constant(value=0), Constant(value='')], ctx=Load())])), Assert(test=Compare(left=Call(func=Attribute(value=Attribute(value=Name(id='result', ctx=Load()), attr='stdout', ctx=Load()), attr='splitlines', ctx=Load()), args=[], keywords=[]), ops=[Eq()], comparators=[List(elts=[Constant(value='t2  Book flights'), Constant(value='State: in progress'), Constant(value='Due: Fri Nov 20 17:00 EST, no time given'), Constant(value='Work: none'), Constant(value='Source: owner'), Constant(value='Created: Fri Nov 13 08:00 EST'), Constant(value='Updated: Fri Nov 13 09:00 EST')], ctx=Load())]))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_showing_an_unknown_task_is_refused', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load())), arg(arg='task_id', annotation=Name(id='str', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Name(id='seed', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load())], keywords=[])), Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load()), Name(id='NOW', ctx=Load())], keywords=[])), Assign(targets=[Name(id='result', ctx=Store())], value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='tasks'), Constant(value='show'), Name(id='task_id', ctx=Load())], keywords=[])), Assert(test=Compare(left=Tuple(elts=[Attribute(value=Name(id='result', ctx=Load()), attr='exit_code', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stdout', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stderr', ctx=Load())], ctx=Load()), ops=[Eq()], comparators=[Tuple(elts=[Constant(value=1), Constant(value=''), JoinedStr(values=[Constant(value='There is no task '), FormattedValue(value=Name(id='task_id', ctx=Load()), conversion=-1), Constant(value='.\\n')])], ctx=Load())]))], decorator_list=[Call(func=Attribute(value=Attribute(value=Name(id='pytest', ctx=Load()), attr='mark', ctx=Load()), attr='parametrize', ctx=Load()), args=[Constant(value='task_id'), List(elts=[Constant(value='t9'), Constant(value='x'), Constant(value='T1')], ctx=Load())], keywords=[keyword(arg='ids', value=List(elts=[Constant(value='missing'), Constant(value='malformed'), Constant(value='capital')], ctx=Load()))])], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_tasks_with_one_deadline_keep_their_id_order', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load()), Name(id='CREATED', ctx=Load()), Name(id='CREATED', ctx=Load()), Name(id='CREATED', ctx=Load()), Name(id='NOW', ctx=Load())], keywords=[])), Assign(targets=[Name(id='friday', ctx=Store())], value=Call(func=Name(id='make_deadline', ctx=Load()), args=[Call(func=Name(id='date', ctx=Load()), args=[Constant(value=2026), Constant(value=11), Constant(value=20)], keywords=[]), Constant(value=None), Name(id='NY', ctx=Load())], keywords=[])), With(items=[withitem(context_expr=Call(func=Name(id='open_store', ctx=Load()), args=[Call(func=Name(id='get_settings', ctx=Load()), args=[], keywords=[])], keywords=[]), optional_vars=Name(id='store', ctx=Store()))], body=[For(target=Name(id='title', ctx=Store()), iter=Tuple(elts=[Constant(value='Third'), Constant(value='First'), Constant(value='Second')], ctx=Load()), body=[Expr(value=Call(func=Attribute(value=Name(id='core', ctx=Load()), attr='create_task', ctx=Load()), args=[Name(id='store', ctx=Load())], keywords=[keyword(arg='title', value=Name(id='title', ctx=Load())), keyword(arg='source', value=Constant(value='owner')), keyword(arg='deadline', value=Name(id='friday', ctx=Load()))]))], orelse=[])]), Assign(targets=[Name(id='result', ctx=Store())], value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='tasks'), Constant(value='list')], keywords=[])), Assert(test=Compare(left=ListComp(elt=Subscript(value=Call(func=Attribute(value=Name(id='line', ctx=Load()), attr='split', ctx=Load()), args=[], keywords=[]), slice=Constant(value=0), ctx=Load()), generators=[comprehension(target=Name(id='line', ctx=Store()), iter=Call(func=Attribute(value=Attribute(value=Name(id='result', ctx=Load()), attr='stdout', ctx=Load()), attr='splitlines', ctx=Load()), args=[], keywords=[]), ifs=[], is_async=0)]), ops=[Eq()], comparators=[List(elts=[Constant(value='t1'), Constant(value='t2'), Constant(value='t3')], ctx=Load())]))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_the_full_list_adds_ended_tasks_in_the_same_order', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Name(id='seed', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load())], keywords=[])), Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load()), Name(id='NOW', ctx=Load())], keywords=[])), Assign(targets=[Name(id='result', ctx=Store())], value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='tasks'), Constant(value='list'), Constant(value='--all')], keywords=[])), Assert(test=Compare(left=Call(func=Attribute(value=Attribute(value=Name(id='result', ctx=Load()), attr='stdout', ctx=Load()), attr='splitlines', ctx=Load()), args=[], keywords=[]), ops=[Eq()], comparators=[List(elts=[Constant(value='t4    done                  Renew passport  due Mon Nov 9 17:00 EST'), Constant(value='t3    open, overdue         Pay rent  due Thu Nov 12 17:00 EST'), Constant(value='t5    open                  Water plants  due Sat Nov 14 09:10 EST'), Constant(value='t2    in progress           Book flights  due Fri Nov 20 17:00 EST, no time given'), Constant(value='t1    open                  Call the dentist'), Constant(value='t6    cancelled             Old idea')], ctx=Load())]))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_the_list_shows_open_work_soonest_first', args=arguments(posonlyargs=[], args=[arg(arg='monkeypatch', annotation=Attribute(value=Name(id='pytest', ctx=Load()), attr='MonkeyPatch', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Expr(value=Call(func=Name(id='seed', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load())], keywords=[])), Expr(value=Call(func=Name(id='fixed_times', ctx=Load()), args=[Name(id='monkeypatch', ctx=Load()), Name(id='NOW', ctx=Load())], keywords=[])), Assign(targets=[Name(id='result', ctx=Store())], value=Call(func=Name(id='run', ctx=Load()), args=[Constant(value='tasks'), Constant(value='list')], keywords=[])), Assert(test=Compare(left=Tuple(elts=[Attribute(value=Name(id='result', ctx=Load()), attr='exit_code', ctx=Load()), Attribute(value=Name(id='result', ctx=Load()), attr='stderr', ctx=Load())], ctx=Load()), ops=[Eq()], comparators=[Tuple(elts=[Constant(value=0), Constant(value='')], ctx=Load())])), Assert(test=Compare(left=Call(func=Attribute(value=Attribute(value=Name(id='result', ctx=Load()), attr='stdout', ctx=Load()), attr='splitlines', ctx=Load()), args=[], keywords=[]), ops=[Eq()], comparators=[List(elts=[Constant(value='t3    open, overdue         Pay rent  due Thu Nov 12 17:00 EST'), Constant(value='t5    open                  Water plants  due Sat Nov 14 09:10 EST'), Constant(value='t2    in progress           Book flights  due Fri Nov 20 17:00 EST, no time given'), Constant(value='t1    open                  Call the dentist')], ctx=Load())]))], decorator_list=[], returns=Constant(value=None), type_params=[])",
+        "FunctionDef(name='test_the_messages', args=arguments(posonlyargs=[], args=[], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Assert(test=Compare(left=Name(id='DUE_MESSAGE', ctx=Load()), ops=[Eq()], comparators=[Constant(value='--due must be a date like 2026-11-20.')])), Assert(test=Compare(left=Name(id='AT_MESSAGE', ctx=Load()), ops=[Eq()], comparators=[Constant(value='--at must be a time like 17:00.')])), Assert(test=Compare(left=Name(id='AT_WITHOUT_DUE_MESSAGE', ctx=Load()), ops=[Eq()], comparators=[Constant(value='--at needs --due.')])), Assert(test=Compare(left=Name(id='NO_TASKS_MESSAGE', ctx=Load()), ops=[Eq()], comparators=[Constant(value='No tasks.')]))], decorator_list=[], returns=Constant(value=None), type_params=[])"
+      ],
+      "imports": [
+        [
+          "from",
+          "datetime",
+          "UTC",
+          null
+        ],
+        [
+          "from",
+          "datetime",
+          "date",
+          null
+        ],
+        [
+          "from",
+          "datetime",
+          "datetime",
+          null
+        ],
+        [
+          "from",
+          "datetime",
+          "time",
+          null
+        ],
+        [
+          "from",
+          "docket",
+          "core",
+          null
+        ],
+        [
+          "from",
+          "docket.cli",
+          "AT_MESSAGE",
+          null
+        ],
+        [
+          "from",
+          "docket.cli",
+          "AT_WITHOUT_DUE_MESSAGE",
+          null
+        ],
+        [
+          "from",
+          "docket.cli",
+          "DUE_MESSAGE",
+          null
+        ],
+        [
+          "from",
+          "docket.cli",
+          "NO_TASKS_MESSAGE",
+          null
+        ],
+        [
+          "from",
+          "docket.config",
+          "get_settings",
+          null
+        ],
+        [
+          "from",
+          "docket.config",
+          "prepare_data_dir",
+          null
+        ],
+        [
+          "from",
+          "docket.deadlines",
+          "Deadline",
+          null
+        ],
+        [
+          "from",
+          "docket.deadlines",
+          "make_deadline",
+          null
+        ],
+        [
+          "from",
+          "docket.store",
+          "DB_FILENAME",
+          null
+        ],
+        [
+          "from",
+          "docket.store",
+          "open_store",
+          null
+        ],
+        [
+          "from",
+          "pathlib",
+          "Path",
+          null
+        ],
+        [
+          "from",
+          "tests.support",
+          "fixed_times",
+          null
+        ],
+        [
+          "from",
+          "tests.support",
+          "run",
+          null
+        ],
+        [
+          "import",
+          "pytest",
+          null
+        ],
+        [
+          "import",
+          "sqlite3",
+          null
+        ]
+      ],
+      "mapping": {
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[at-without-due]": "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[at-without-due]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[compact-date]": "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[compact-date]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[compact-time]": "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[compact-time]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[date-checked-before-time]": "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[date-checked-before-time]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[empty-date]": "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[empty-date]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[fullwidth-digits]": "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[fullwidth-digits]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[hour-24]": "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[hour-24]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[hour-only]": "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[hour-only]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[no-such-day]": "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[no-such-day]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[t-prefix]": "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[t-prefix]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[title-with-a-tab]": "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[title-with-a-tab]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[title]": "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[title]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[unpadded-date]": "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[unpadded-date]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[unpadded-time]": "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[unpadded-time]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[week-date]": "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[week-date]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[with-seconds]": "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[with-seconds]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[with-zone]": "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[with-zone]",
+        "tests/e2e/test_cli_tasks.py::test_a_title_may_start_with_a_dash": "tests/e2e/test_cli_tasks.py::test_a_title_may_start_with_a_dash",
+        "tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing[add-without-title]": "tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing[add-without-title]",
+        "tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing[list-with-an-argument]": "tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing[list-with-an-argument]",
+        "tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing[show-without-id]": "tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing[show-without-id]",
+        "tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing[unknown-command]": "tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing[unknown-command]",
+        "tests/e2e/test_cli_tasks.py::test_adding_a_task[date-and-time]": "tests/e2e/test_cli_tasks.py::test_adding_a_task[date-and-time]",
+        "tests/e2e/test_cli_tasks.py::test_adding_a_task[date-only]": "tests/e2e/test_cli_tasks.py::test_adding_a_task[date-only]",
+        "tests/e2e/test_cli_tasks.py::test_adding_a_task[missing-time-moves-forward]": "tests/e2e/test_cli_tasks.py::test_adding_a_task[missing-time-moves-forward]",
+        "tests/e2e/test_cli_tasks.py::test_adding_a_task[no-deadline]": "tests/e2e/test_cli_tasks.py::test_adding_a_task[no-deadline]",
+        "tests/e2e/test_cli_tasks.py::test_adding_a_task[past-date]": "tests/e2e/test_cli_tasks.py::test_adding_a_task[past-date]",
+        "tests/e2e/test_cli_tasks.py::test_an_empty_list_says_so": "tests/e2e/test_cli_tasks.py::test_an_empty_list_says_so",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[empty-add]": "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[empty-add]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[empty-list]": "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[empty-list]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[empty-show]": "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[empty-show]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[unset-add]": "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[unset-add]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[unset-list]": "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[unset-list]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[unset-show]": "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[unset-show]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[wrong-case-add]": "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[wrong-case-add]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[wrong-case-list]": "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[wrong-case-list]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[wrong-case-show]": "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[wrong-case-show]",
+        "tests/e2e/test_cli_tasks.py::test_listing_and_showing_read_the_clock_once": "tests/e2e/test_cli_tasks.py::test_listing_and_showing_read_the_clock_once",
+        "tests/e2e/test_cli_tasks.py::test_showing_a_task": "tests/e2e/test_cli_tasks.py::test_showing_a_task",
+        "tests/e2e/test_cli_tasks.py::test_showing_an_unknown_task_is_refused[capital]": "tests/e2e/test_cli_tasks.py::test_showing_an_unknown_task_is_refused[capital]",
+        "tests/e2e/test_cli_tasks.py::test_showing_an_unknown_task_is_refused[malformed]": "tests/e2e/test_cli_tasks.py::test_showing_an_unknown_task_is_refused[malformed]",
+        "tests/e2e/test_cli_tasks.py::test_showing_an_unknown_task_is_refused[missing]": "tests/e2e/test_cli_tasks.py::test_showing_an_unknown_task_is_refused[missing]",
+        "tests/e2e/test_cli_tasks.py::test_tasks_with_one_deadline_keep_their_id_order": "tests/e2e/test_cli_tasks.py::test_tasks_with_one_deadline_keep_their_id_order",
+        "tests/e2e/test_cli_tasks.py::test_the_full_list_adds_ended_tasks_in_the_same_order": "tests/e2e/test_cli_tasks.py::test_the_full_list_adds_ended_tasks_in_the_same_order",
+        "tests/e2e/test_cli_tasks.py::test_the_list_shows_open_work_soonest_first": "tests/e2e/test_cli_tasks.py::test_the_list_shows_open_work_soonest_first",
+        "tests/e2e/test_cli_tasks.py::test_the_messages": "tests/e2e/test_cli_tasks.py::test_the_messages",
+        "tests/e2e/test_cli_tasks_more.py::test_a_newer_schema_is_refused[add]": "tests/e2e/test_cli_tasks.py::test_a_newer_schema_is_refused[add]",
+        "tests/e2e/test_cli_tasks_more.py::test_a_newer_schema_is_refused[list]": "tests/e2e/test_cli_tasks.py::test_a_newer_schema_is_refused[list]",
+        "tests/e2e/test_cli_tasks_more.py::test_a_newer_schema_is_refused[show]": "tests/e2e/test_cli_tasks.py::test_a_newer_schema_is_refused[show]"
+      },
+      "moved_functions": [
+        "test_a_newer_schema_is_refused"
+      ]
+    }
+  },
+  "documents": {
+    "docs/phases/phase-01e-adding-and-listing.md": {
+      "before_sha256": "9ac30958737214c09e8296212cd29e5a5501a2b2672a9c85cc369167ad75f5a3",
+      "after_sha256": "d1ac38251e1f8f9a0e7d3f83ddb9b1823490cd5bd861330d4288600198f64854",
+      "replacements": [
+        [
+          ".venv/bin/python -m pytest --no-cov -q --ignore=tests/e2e/test_cli_tasks.py --ignore=tests/unit/test_views_tasks.py",
+          ".venv/bin/python -m pytest --no-cov -q --deselect=tests/e2e/test_cli_tasks.py::test_the_messages --deselect=tests/e2e/test_cli_tasks.py::test_adding_a_task --deselect=tests/e2e/test_cli_tasks.py::test_a_title_may_start_with_a_dash --deselect=tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing --deselect=tests/e2e/test_cli_tasks.py::test_the_list_shows_open_work_soonest_first --deselect=tests/e2e/test_cli_tasks.py::test_the_full_list_adds_ended_tasks_in_the_same_order --deselect=tests/e2e/test_cli_tasks.py::test_tasks_with_one_deadline_keep_their_id_order --deselect=tests/e2e/test_cli_tasks.py::test_an_empty_list_says_so --deselect=tests/e2e/test_cli_tasks.py::test_showing_a_task --deselect=tests/e2e/test_cli_tasks.py::test_showing_an_unknown_task_is_refused --deselect=tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone --deselect=tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing --deselect=tests/e2e/test_cli_tasks.py::test_listing_and_showing_read_the_clock_once --ignore=tests/unit/test_views_tasks.py"
+        ],
+        [
+          ".venv/bin/python -m pytest tests/unit/test_views_tasks.py tests/e2e/test_cli_tasks.py --no-cov -q",
+          ".venv/bin/python -m pytest tests/unit/test_views_tasks.py tests/e2e/test_cli_tasks.py --no-cov -q --deselect=tests/e2e/test_cli_tasks.py::test_a_newer_schema_is_refused"
+        ]
+      ],
+      "append": "\n## Selector migration (Phase 2p, 2026-11-18)\n\nThe port-setting, server, CLI-serve and CLI-task continuation cases now live in their canonical modules. Executable selectors above preserve the original case sets: positive file selections deselect later cases; former file ignores deselect only their original functions. Counts and implementation history describe the original phase. Retired continuation paths in historical prose are historical names, not runnable selectors. This migration authorizes only the literal replacements recorded in tests/product_consolidation_manifest.json; earlier test bodies, spot-check decisions and review reports are unchanged.\n"
+    },
+    "docs/verification/phase-01e-adding-and-listing.md": {
+      "before_sha256": "d349c05df9b89da8c092eba534b437ef482c312a5f5a9bc707a2565f65b5f485",
+      "after_sha256": "01a3eff46b6ba924e5482c6d2909cede7ced33215cc2f4235c9eeb823ce3425b",
+      "replacements": [
+        [
+          ".venv/bin/python -m pytest --no-cov -q --ignore=tests/e2e/test_cli_tasks.py --ignore=tests/unit/test_views_tasks.py",
+          ".venv/bin/python -m pytest --no-cov -q --deselect=tests/e2e/test_cli_tasks.py::test_the_messages --deselect=tests/e2e/test_cli_tasks.py::test_adding_a_task --deselect=tests/e2e/test_cli_tasks.py::test_a_title_may_start_with_a_dash --deselect=tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing --deselect=tests/e2e/test_cli_tasks.py::test_the_list_shows_open_work_soonest_first --deselect=tests/e2e/test_cli_tasks.py::test_the_full_list_adds_ended_tasks_in_the_same_order --deselect=tests/e2e/test_cli_tasks.py::test_tasks_with_one_deadline_keep_their_id_order --deselect=tests/e2e/test_cli_tasks.py::test_an_empty_list_says_so --deselect=tests/e2e/test_cli_tasks.py::test_showing_a_task --deselect=tests/e2e/test_cli_tasks.py::test_showing_an_unknown_task_is_refused --deselect=tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone --deselect=tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing --deselect=tests/e2e/test_cli_tasks.py::test_listing_and_showing_read_the_clock_once --ignore=tests/unit/test_views_tasks.py"
+        ],
+        [
+          ".venv/bin/python -m pytest tests/unit/test_views_tasks.py tests/e2e/test_cli_tasks.py --no-cov -q",
+          ".venv/bin/python -m pytest tests/unit/test_views_tasks.py tests/e2e/test_cli_tasks.py --no-cov -q --deselect=tests/e2e/test_cli_tasks.py::test_a_newer_schema_is_refused"
+        ]
+      ],
+      "append": "\n## Selector migration (Phase 2p, 2026-11-18)\n\nThe port-setting, server, CLI-serve and CLI-task continuation cases now live in their canonical modules. Executable selectors above preserve the original case sets: positive file selections deselect later cases; former file ignores deselect only their original functions. Counts and implementation history describe the original phase. Retired continuation paths in historical prose are historical names, not runnable selectors. This migration authorizes only the literal replacements recorded in tests/product_consolidation_manifest.json; earlier test bodies, spot-check decisions and review reports are unchanged.\n"
+    },
+    "docs/phases/phase-02a-keyed-intake.md": {
+      "before_sha256": "9a1673b893a115a6fd26a4b1acaa1164cbf119f710f5c89cd3d7433732505a33",
+      "after_sha256": "53fc42436dcf484b0129fcd9c69f4d0789d6239b35585a54652df56e4f5a6e3f",
+      "replacements": [
+        [
+          "git diff HEAD --stat -- tests/integration/test_store_links.py tests/integration/test_core_keyed.py src/docket/schema.py tests/integration/test_store.py tests/e2e/test_cli_tasks_more.py docs/verification/probe-02a.py",
+          "git diff HEAD --stat -- tests/integration/test_store_links.py tests/integration/test_core_keyed.py src/docket/schema.py tests/integration/test_store.py tests/e2e/test_cli_tasks.py docs/verification/probe-02a.py"
+        ],
+        [
+          "| `tests/e2e/test_cli_tasks_more.py` |",
+          "| `tests/e2e/test_cli_tasks.py` |"
+        ]
+      ],
+      "append": "\n## Selector migration (Phase 2p, 2026-11-18)\n\nThe port-setting, server, CLI-serve and CLI-task continuation cases now live in their canonical modules. Executable selectors above preserve the original case sets: positive file selections deselect later cases; former file ignores deselect only their original functions. Counts and implementation history describe the original phase. Retired continuation paths in historical prose are historical names, not runnable selectors. This migration authorizes only the literal replacements recorded in tests/product_consolidation_manifest.json; earlier test bodies, spot-check decisions and review reports are unchanged.\n"
+    },
+    "docs/verification/phase-02a-keyed-intake.md": {
+      "before_sha256": "9203fdcb20f9d0eaff8c786c29b3eab2d5dcfbd334a110e6c7f4964993e82c2f",
+      "after_sha256": "61cf2a212a589650757f4a9d37a148f9133aaaf78a5d8fea190fe907cba9b7d7",
+      "replacements": [
+        [
+          "git ls-files --error-unmatch docs/phases/phase-02a-keyed-intake.md tests/integration/test_store_links.py tests/integration/test_core_keyed.py src/docket/schema.py tests/integration/test_store.py tests/e2e/test_cli_tasks_more.py docs/verification/probe-02a.py",
+          "git ls-files --error-unmatch docs/phases/phase-02a-keyed-intake.md tests/integration/test_store_links.py tests/integration/test_core_keyed.py src/docket/schema.py tests/integration/test_store.py tests/e2e/test_cli_tasks.py docs/verification/probe-02a.py"
+        ],
+        [
+          "git diff HEAD --stat -- tests/integration/test_store_links.py tests/integration/test_core_keyed.py src/docket/schema.py tests/integration/test_store.py tests/e2e/test_cli_tasks_more.py docs/verification/probe-02a.py",
+          "git diff HEAD --stat -- tests/integration/test_store_links.py tests/integration/test_core_keyed.py src/docket/schema.py tests/integration/test_store.py tests/e2e/test_cli_tasks.py docs/verification/probe-02a.py"
+        ]
+      ],
+      "append": "\n## Selector migration (Phase 2p, 2026-11-18)\n\nThe port-setting, server, CLI-serve and CLI-task continuation cases now live in their canonical modules. Executable selectors above preserve the original case sets: positive file selections deselect later cases; former file ignores deselect only their original functions. Counts and implementation history describe the original phase. Retired continuation paths in historical prose are historical names, not runnable selectors. This migration authorizes only the literal replacements recorded in tests/product_consolidation_manifest.json; earlier test bodies, spot-check decisions and review reports are unchanged.\n"
+    },
+    "docs/phases/phase-02d-serve.md": {
+      "before_sha256": "61d7a4cfa8d24f3066a2c8dd16eec7da1390391f5bf672b1a69f8caa8a179f57",
+      "after_sha256": "d96e5dd0d32845cb199a22f256de04135952defcf4dac78ca99ea0a69933b253",
+      "replacements": [
+        [
+          ".venv/bin/python -m pytest --no-cov -q --ignore=tests/unit/test_settings_port.py --ignore=tests/integration/test_server.py --ignore=tests/e2e/test_cli_serve.py",
+          ".venv/bin/python -m pytest --no-cov -q --deselect=tests/unit/test_settings_port.py::test_the_port_setting_and_its_message --deselect=tests/unit/test_settings_port.py::test_the_ends_of_the_range --deselect=tests/unit/test_settings_port.py::test_a_bad_port_is_refused --deselect=tests/unit/test_settings_port.py::test_the_port_is_reported_after_the_work_length --deselect=tests/integration/test_server.py::test_the_message --deselect=tests/integration/test_server.py::test_with_no_client_the_app_is_not_built --deselect=tests/integration/test_server.py::test_building_the_app_opens_the_store_once_to_migrate_it --deselect=tests/integration/test_server.py::test_a_newer_store_stops_the_build --deselect=tests/integration/test_server.py::test_run_app_serves_on_loopback_only_and_quietly --deselect=tests/integration/test_server.py::test_the_built_app_answers_over_real_loopback --deselect=tests/e2e/test_cli_serve.py::test_serve_says_where_and_runs --deselect=tests/e2e/test_cli_serve.py::test_serve_uses_the_port_setting --deselect=tests/e2e/test_cli_serve.py::test_serve_needs_no_time_zone --deselect=tests/e2e/test_cli_serve.py::test_serve_refuses_to_start"
+        ],
+        [
+          ".venv/bin/python -m pytest tests/unit/test_settings_port.py tests/integration/test_server.py tests/e2e/test_cli_serve.py --no-cov -q",
+          ".venv/bin/python -m pytest tests/unit/test_settings_port.py tests/integration/test_server.py tests/e2e/test_cli_serve.py --no-cov -q --deselect=tests/unit/test_settings_port.py::test_a_bad_data_folder_is_reported_before_the_port --deselect=tests/unit/test_settings_port.py::test_a_bad_time_zone_is_reported_before_the_port --deselect=tests/integration/test_server.py::test_a_request_uses_the_settings_store --deselect=tests/e2e/test_cli_serve.py::test_a_bad_port_leaves_no_data_folder --deselect=tests/e2e/test_cli_serve.py::test_a_down_keychain_leaves_no_data_folder"
+        ]
+      ],
+      "append": "\n## Selector migration (Phase 2p, 2026-11-18)\n\nThe port-setting, server, CLI-serve and CLI-task continuation cases now live in their canonical modules. Executable selectors above preserve the original case sets: positive file selections deselect later cases; former file ignores deselect only their original functions. Counts and implementation history describe the original phase. Retired continuation paths in historical prose are historical names, not runnable selectors. This migration authorizes only the literal replacements recorded in tests/product_consolidation_manifest.json; earlier test bodies, spot-check decisions and review reports are unchanged.\n"
+    },
+    "docs/verification/phase-02d-serve.md": {
+      "before_sha256": "9d4dc0e21e129e6f3c6a207be478b387c408fb26577a470011a0eee839a8e161",
+      "after_sha256": "bca22b492ceed27a77985b08651b0905faf6da29f42398913e58141f96d4e830",
+      "replacements": [
+        [
+          ".venv/bin/python -m pytest --no-cov -q --ignore=tests/unit/test_settings_port.py --ignore=tests/integration/test_server.py --ignore=tests/e2e/test_cli_serve.py",
+          ".venv/bin/python -m pytest --no-cov -q --deselect=tests/unit/test_settings_port.py::test_the_port_setting_and_its_message --deselect=tests/unit/test_settings_port.py::test_the_ends_of_the_range --deselect=tests/unit/test_settings_port.py::test_a_bad_port_is_refused --deselect=tests/unit/test_settings_port.py::test_the_port_is_reported_after_the_work_length --deselect=tests/integration/test_server.py::test_the_message --deselect=tests/integration/test_server.py::test_with_no_client_the_app_is_not_built --deselect=tests/integration/test_server.py::test_building_the_app_opens_the_store_once_to_migrate_it --deselect=tests/integration/test_server.py::test_a_newer_store_stops_the_build --deselect=tests/integration/test_server.py::test_run_app_serves_on_loopback_only_and_quietly --deselect=tests/integration/test_server.py::test_the_built_app_answers_over_real_loopback --deselect=tests/e2e/test_cli_serve.py::test_serve_says_where_and_runs --deselect=tests/e2e/test_cli_serve.py::test_serve_uses_the_port_setting --deselect=tests/e2e/test_cli_serve.py::test_serve_needs_no_time_zone --deselect=tests/e2e/test_cli_serve.py::test_serve_refuses_to_start"
+        ],
+        [
+          ".venv/bin/python -m pytest tests/unit/test_settings_port.py tests/integration/test_server.py tests/e2e/test_cli_serve.py --no-cov -q",
+          ".venv/bin/python -m pytest tests/unit/test_settings_port.py tests/integration/test_server.py tests/e2e/test_cli_serve.py --no-cov -q --deselect=tests/unit/test_settings_port.py::test_a_bad_data_folder_is_reported_before_the_port --deselect=tests/unit/test_settings_port.py::test_a_bad_time_zone_is_reported_before_the_port --deselect=tests/integration/test_server.py::test_a_request_uses_the_settings_store --deselect=tests/e2e/test_cli_serve.py::test_a_bad_port_leaves_no_data_folder --deselect=tests/e2e/test_cli_serve.py::test_a_down_keychain_leaves_no_data_folder"
+        ]
+      ],
+      "append": "\n## Selector migration (Phase 2p, 2026-11-18)\n\nThe port-setting, server, CLI-serve and CLI-task continuation cases now live in their canonical modules. Executable selectors above preserve the original case sets: positive file selections deselect later cases; former file ignores deselect only their original functions. Counts and implementation history describe the original phase. Retired continuation paths in historical prose are historical names, not runnable selectors. This migration authorizes only the literal replacements recorded in tests/product_consolidation_manifest.json; earlier test bodies, spot-check decisions and review reports are unchanged.\n"
+    }
+  },
+  "selections": [
+    {
+      "before": ".venv/bin/python -m pytest --no-cov -q --ignore=tests/e2e/test_cli_tasks.py --ignore=tests/unit/test_views_tasks.py",
+      "after": ".venv/bin/python -m pytest --no-cov -q --deselect=tests/e2e/test_cli_tasks.py::test_the_messages --deselect=tests/e2e/test_cli_tasks.py::test_adding_a_task --deselect=tests/e2e/test_cli_tasks.py::test_a_title_may_start_with_a_dash --deselect=tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing --deselect=tests/e2e/test_cli_tasks.py::test_the_list_shows_open_work_soonest_first --deselect=tests/e2e/test_cli_tasks.py::test_the_full_list_adds_ended_tasks_in_the_same_order --deselect=tests/e2e/test_cli_tasks.py::test_tasks_with_one_deadline_keep_their_id_order --deselect=tests/e2e/test_cli_tasks.py::test_an_empty_list_says_so --deselect=tests/e2e/test_cli_tasks.py::test_showing_a_task --deselect=tests/e2e/test_cli_tasks.py::test_showing_an_unknown_task_is_refused --deselect=tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone --deselect=tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing --deselect=tests/e2e/test_cli_tasks.py::test_listing_and_showing_read_the_clock_once --ignore=tests/unit/test_views_tasks.py",
+      "expected_family_cases": [
+        "tests/e2e/test_cli_serve.py::test_a_bad_port_leaves_no_data_folder",
+        "tests/e2e/test_cli_serve.py::test_a_down_keychain_leaves_no_data_folder",
+        "tests/e2e/test_cli_serve.py::test_serve_needs_no_time_zone",
+        "tests/e2e/test_cli_serve.py::test_serve_refuses_to_start[bad-port]",
+        "tests/e2e/test_cli_serve.py::test_serve_refuses_to_start[keychain-down]",
+        "tests/e2e/test_cli_serve.py::test_serve_refuses_to_start[newer-store]",
+        "tests/e2e/test_cli_serve.py::test_serve_refuses_to_start[no-clients]",
+        "tests/e2e/test_cli_serve.py::test_serve_says_where_and_runs",
+        "tests/e2e/test_cli_serve.py::test_serve_uses_the_port_setting",
+        "tests/e2e/test_cli_tasks.py::test_a_newer_schema_is_refused[add]",
+        "tests/e2e/test_cli_tasks.py::test_a_newer_schema_is_refused[list]",
+        "tests/e2e/test_cli_tasks.py::test_a_newer_schema_is_refused[show]",
+        "tests/integration/test_server.py::test_a_newer_store_stops_the_build",
+        "tests/integration/test_server.py::test_a_request_uses_the_settings_store",
+        "tests/integration/test_server.py::test_building_the_app_opens_the_store_once_to_migrate_it",
+        "tests/integration/test_server.py::test_run_app_serves_on_loopback_only_and_quietly",
+        "tests/integration/test_server.py::test_the_built_app_answers_over_real_loopback",
+        "tests/integration/test_server.py::test_the_message",
+        "tests/integration/test_server.py::test_with_no_client_the_app_is_not_built",
+        "tests/unit/test_settings_port.py::test_a_bad_data_folder_is_reported_before_the_port",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[1023]",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[65536]",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[empty]",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[letters]",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[negative]",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[privileged]",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[zero]",
+        "tests/unit/test_settings_port.py::test_a_bad_time_zone_is_reported_before_the_port",
+        "tests/unit/test_settings_port.py::test_the_ends_of_the_range[highest]",
+        "tests/unit/test_settings_port.py::test_the_ends_of_the_range[lowest]",
+        "tests/unit/test_settings_port.py::test_the_port_is_reported_after_the_work_length",
+        "tests/unit/test_settings_port.py::test_the_port_setting_and_its_message"
+      ]
+    },
+    {
+      "before": ".venv/bin/python -m pytest tests/unit/test_views_tasks.py tests/e2e/test_cli_tasks.py --no-cov -q",
+      "after": ".venv/bin/python -m pytest tests/unit/test_views_tasks.py tests/e2e/test_cli_tasks.py --no-cov -q --deselect=tests/e2e/test_cli_tasks.py::test_a_newer_schema_is_refused",
+      "expected_family_cases": [
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[at-without-due]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[compact-date]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[compact-time]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[date-checked-before-time]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[empty-date]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[fullwidth-digits]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[hour-24]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[hour-only]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[no-such-day]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[t-prefix]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[title-with-a-tab]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[title]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[unpadded-date]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[unpadded-time]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[week-date]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[with-seconds]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[with-zone]",
+        "tests/e2e/test_cli_tasks.py::test_a_title_may_start_with_a_dash",
+        "tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing[add-without-title]",
+        "tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing[list-with-an-argument]",
+        "tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing[show-without-id]",
+        "tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing[unknown-command]",
+        "tests/e2e/test_cli_tasks.py::test_adding_a_task[date-and-time]",
+        "tests/e2e/test_cli_tasks.py::test_adding_a_task[date-only]",
+        "tests/e2e/test_cli_tasks.py::test_adding_a_task[missing-time-moves-forward]",
+        "tests/e2e/test_cli_tasks.py::test_adding_a_task[no-deadline]",
+        "tests/e2e/test_cli_tasks.py::test_adding_a_task[past-date]",
+        "tests/e2e/test_cli_tasks.py::test_an_empty_list_says_so",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[empty-add]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[empty-list]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[empty-show]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[unset-add]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[unset-list]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[unset-show]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[wrong-case-add]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[wrong-case-list]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[wrong-case-show]",
+        "tests/e2e/test_cli_tasks.py::test_listing_and_showing_read_the_clock_once",
+        "tests/e2e/test_cli_tasks.py::test_showing_a_task",
+        "tests/e2e/test_cli_tasks.py::test_showing_an_unknown_task_is_refused[capital]",
+        "tests/e2e/test_cli_tasks.py::test_showing_an_unknown_task_is_refused[malformed]",
+        "tests/e2e/test_cli_tasks.py::test_showing_an_unknown_task_is_refused[missing]",
+        "tests/e2e/test_cli_tasks.py::test_tasks_with_one_deadline_keep_their_id_order",
+        "tests/e2e/test_cli_tasks.py::test_the_full_list_adds_ended_tasks_in_the_same_order",
+        "tests/e2e/test_cli_tasks.py::test_the_list_shows_open_work_soonest_first",
+        "tests/e2e/test_cli_tasks.py::test_the_messages"
+      ]
+    },
+    {
+      "before": ".venv/bin/python -m pytest --no-cov -q --ignore=tests/unit/test_settings_port.py --ignore=tests/integration/test_server.py --ignore=tests/e2e/test_cli_serve.py",
+      "after": ".venv/bin/python -m pytest --no-cov -q --deselect=tests/unit/test_settings_port.py::test_the_port_setting_and_its_message --deselect=tests/unit/test_settings_port.py::test_the_ends_of_the_range --deselect=tests/unit/test_settings_port.py::test_a_bad_port_is_refused --deselect=tests/unit/test_settings_port.py::test_the_port_is_reported_after_the_work_length --deselect=tests/integration/test_server.py::test_the_message --deselect=tests/integration/test_server.py::test_with_no_client_the_app_is_not_built --deselect=tests/integration/test_server.py::test_building_the_app_opens_the_store_once_to_migrate_it --deselect=tests/integration/test_server.py::test_a_newer_store_stops_the_build --deselect=tests/integration/test_server.py::test_run_app_serves_on_loopback_only_and_quietly --deselect=tests/integration/test_server.py::test_the_built_app_answers_over_real_loopback --deselect=tests/e2e/test_cli_serve.py::test_serve_says_where_and_runs --deselect=tests/e2e/test_cli_serve.py::test_serve_uses_the_port_setting --deselect=tests/e2e/test_cli_serve.py::test_serve_needs_no_time_zone --deselect=tests/e2e/test_cli_serve.py::test_serve_refuses_to_start",
+      "expected_family_cases": [
+        "tests/e2e/test_cli_serve.py::test_a_bad_port_leaves_no_data_folder",
+        "tests/e2e/test_cli_serve.py::test_a_down_keychain_leaves_no_data_folder",
+        "tests/e2e/test_cli_tasks.py::test_a_newer_schema_is_refused[add]",
+        "tests/e2e/test_cli_tasks.py::test_a_newer_schema_is_refused[list]",
+        "tests/e2e/test_cli_tasks.py::test_a_newer_schema_is_refused[show]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[at-without-due]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[compact-date]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[compact-time]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[date-checked-before-time]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[empty-date]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[fullwidth-digits]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[hour-24]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[hour-only]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[no-such-day]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[t-prefix]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[title-with-a-tab]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[title]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[unpadded-date]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[unpadded-time]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[week-date]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[with-seconds]",
+        "tests/e2e/test_cli_tasks.py::test_a_refused_add_writes_nothing[with-zone]",
+        "tests/e2e/test_cli_tasks.py::test_a_title_may_start_with_a_dash",
+        "tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing[add-without-title]",
+        "tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing[list-with-an-argument]",
+        "tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing[show-without-id]",
+        "tests/e2e/test_cli_tasks.py::test_a_usage_mistake_exits_2_and_writes_nothing[unknown-command]",
+        "tests/e2e/test_cli_tasks.py::test_adding_a_task[date-and-time]",
+        "tests/e2e/test_cli_tasks.py::test_adding_a_task[date-only]",
+        "tests/e2e/test_cli_tasks.py::test_adding_a_task[missing-time-moves-forward]",
+        "tests/e2e/test_cli_tasks.py::test_adding_a_task[no-deadline]",
+        "tests/e2e/test_cli_tasks.py::test_adding_a_task[past-date]",
+        "tests/e2e/test_cli_tasks.py::test_an_empty_list_says_so",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[empty-add]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[empty-list]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[empty-show]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[unset-add]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[unset-list]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[unset-show]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[wrong-case-add]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[wrong-case-list]",
+        "tests/e2e/test_cli_tasks.py::test_every_task_command_needs_your_time_zone[wrong-case-show]",
+        "tests/e2e/test_cli_tasks.py::test_listing_and_showing_read_the_clock_once",
+        "tests/e2e/test_cli_tasks.py::test_showing_a_task",
+        "tests/e2e/test_cli_tasks.py::test_showing_an_unknown_task_is_refused[capital]",
+        "tests/e2e/test_cli_tasks.py::test_showing_an_unknown_task_is_refused[malformed]",
+        "tests/e2e/test_cli_tasks.py::test_showing_an_unknown_task_is_refused[missing]",
+        "tests/e2e/test_cli_tasks.py::test_tasks_with_one_deadline_keep_their_id_order",
+        "tests/e2e/test_cli_tasks.py::test_the_full_list_adds_ended_tasks_in_the_same_order",
+        "tests/e2e/test_cli_tasks.py::test_the_list_shows_open_work_soonest_first",
+        "tests/e2e/test_cli_tasks.py::test_the_messages",
+        "tests/integration/test_server.py::test_a_request_uses_the_settings_store",
+        "tests/unit/test_settings_port.py::test_a_bad_data_folder_is_reported_before_the_port",
+        "tests/unit/test_settings_port.py::test_a_bad_time_zone_is_reported_before_the_port"
+      ]
+    },
+    {
+      "before": ".venv/bin/python -m pytest tests/unit/test_settings_port.py tests/integration/test_server.py tests/e2e/test_cli_serve.py --no-cov -q",
+      "after": ".venv/bin/python -m pytest tests/unit/test_settings_port.py tests/integration/test_server.py tests/e2e/test_cli_serve.py --no-cov -q --deselect=tests/unit/test_settings_port.py::test_a_bad_data_folder_is_reported_before_the_port --deselect=tests/unit/test_settings_port.py::test_a_bad_time_zone_is_reported_before_the_port --deselect=tests/integration/test_server.py::test_a_request_uses_the_settings_store --deselect=tests/e2e/test_cli_serve.py::test_a_bad_port_leaves_no_data_folder --deselect=tests/e2e/test_cli_serve.py::test_a_down_keychain_leaves_no_data_folder",
+      "expected_family_cases": [
+        "tests/e2e/test_cli_serve.py::test_serve_needs_no_time_zone",
+        "tests/e2e/test_cli_serve.py::test_serve_refuses_to_start[bad-port]",
+        "tests/e2e/test_cli_serve.py::test_serve_refuses_to_start[keychain-down]",
+        "tests/e2e/test_cli_serve.py::test_serve_refuses_to_start[newer-store]",
+        "tests/e2e/test_cli_serve.py::test_serve_refuses_to_start[no-clients]",
+        "tests/e2e/test_cli_serve.py::test_serve_says_where_and_runs",
+        "tests/e2e/test_cli_serve.py::test_serve_uses_the_port_setting",
+        "tests/integration/test_server.py::test_a_newer_store_stops_the_build",
+        "tests/integration/test_server.py::test_building_the_app_opens_the_store_once_to_migrate_it",
+        "tests/integration/test_server.py::test_run_app_serves_on_loopback_only_and_quietly",
+        "tests/integration/test_server.py::test_the_built_app_answers_over_real_loopback",
+        "tests/integration/test_server.py::test_the_message",
+        "tests/integration/test_server.py::test_with_no_client_the_app_is_not_built",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[1023]",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[65536]",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[empty]",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[letters]",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[negative]",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[privileged]",
+        "tests/unit/test_settings_port.py::test_a_bad_port_is_refused[zero]",
+        "tests/unit/test_settings_port.py::test_the_ends_of_the_range[highest]",
+        "tests/unit/test_settings_port.py::test_the_ends_of_the_range[lowest]",
+        "tests/unit/test_settings_port.py::test_the_port_is_reported_after_the_work_length",
+        "tests/unit/test_settings_port.py::test_the_port_setting_and_its_message"
+      ]
+    }
+  ],
+  "frozen": {
+    "AGENTS.md": "751cd465262aa3b95d28d6b631a784ef8b1e032a27bb3598f2784155422696fb",
+    "docket_tools/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docket_tools/acceptance.py": "e950fa43208fb78c32f69716af76a2bcf031455c8e80c79bda03dc177e981a55",
+    "docket_tools/reports.py": "50f6f5678eef980fe0c1d01d4d0c7046e4a9316dd7b5e3f8f6f5d93d9a5ec783",
+    "docket_tools/spotcheck.py": "59f3ace7270f65e5f655da9b137d66cf64c081cf35679cd38757cd03ac79b5e1",
+    "docs/reviews/phase-00-skeleton.md": "518daf45b5c887cdc22702bd2cb756b3ca9a6869f7e0c988b38a40d18f0bf597",
+    "docs/reviews/phase-01a-time-rules.md": "7d690ed72350f8237c4ef4919f21d5f88e2da547aec23be5f4a172eeb89cecd2",
+    "docs/reviews/phase-01b-task-store.md": "e8f3358f0f1bac4966e53967975adb01c332b6da7e42ff3e3e410aa04da57c5b",
+    "docs/reviews/phase-01c-task-rules.md": "c5befcdf3b0d8ce785adccfca5a1b0aeaffe61e2882c11bed49d4d0857fe31d9",
+    "docs/reviews/phase-01d-settings-and-display.md": "a95a3a5a5f3c8dece706892230890380d07b00f3c520b5fae3ecead5b4da7ea7",
+    "docs/reviews/phase-01e-adding-and-listing.md": "33cb2c25387403fda4ba398c4bdea349c338cb5185d7c643d6ceb5377b78face",
+    "docs/reviews/phase-01f-state-commands.md": "add42bea687987a188d648a016e8200d71e397512a6f0994e1788d71227077e7",
+    "docs/reviews/phase-01g-edit-and-plan.md": "b199f39e2e7cf0ef44456b6625f6b67476b0439bdd7caf36f44114fab71ce210",
+    "docs/reviews/phase-02a-keyed-intake.md": "f650d662afde73be7c260cf8aa4511c592c5dd45c73563839b6553393967b360",
+    "docs/reviews/phase-02b-intake-rules.md": "a98fba159cdd1ab4697a788ef3e66343c299b18fae58acaaa82a66c2db477a10",
+    "docs/reviews/phase-02c-http-routes.md": "77cea0fc9efbf18a9889fbfd03d327d05fa6e3eb6a1bf28caf04ebc27d11bc7d",
+    "docs/reviews/phase-02d-serve.md": "6901aac67f340abc5812c324949313cd62bebb8157f55560af6dedf95bf5f3bd",
+    "docs/reviews/phase-02e-phase-tooling.md": "2c75fc1a86f8f10d646b6710c9ca456dae8536dda60832f9be071da45158a3a2",
+    "docs/reviews/phase-02f-authenticated-client-identity.md": "133059eeae276e3d22700b4a7f30feff2f5863fee12cdcdba1f7ba30ea5ad258",
+    "docs/reviews/phase-02g-safe-email-references.md": "6695e266fba6c046fcb70713815eaff1a7c48b1f470f6c9cb4d5daf5d4d11c25",
+    "docs/reviews/phase-02h-nonblocking-http.md": "8f2a406de09a8dad8a19bc8f38547150d9855df449e66b8ea40090182ec492d7",
+    "docs/reviews/phase-02i-safe-store-startup-and-reads.md": "5cbcd003eeba1025c8717e0f957031d9ee78c7e9b3b6ddf40a10b8750b519ae8",
+    "docs/reviews/phase-02j-shared-creation-and-serialization.md": "8540f4bf9cbba309548ddcfb82e119c23d369d72b7491acb786633ea9c34b312",
+    "docs/reviews/phase-02k-shared-domain-rules-and-parsing.md": "446111c83b4d8aa03c91663d95f9c8bd30615fa5d6b68f8e3449824545631061",
+    "docs/reviews/phase-02l-audit-link-and-key-boundaries.md": "bd263b1a382c72bf70a867d7d3d841aebffc14ab17601c454b121bcfa1d46ab6",
+    "docs/reviews/phase-02m-task-table-boundary.md": "f9396e45143e6c14b9401269306ab07bec365b72ddfbb7b6814e864fb6f71819",
+    "docs/reviews/phase-02n-repository-phase-tooling.md": "81dc1559c7d1b47f0b89657734b5e63179dcb563eca2c037c686141e232a08df",
+    "docs/reviews/phase-02o-shared-product-test-support.md": "797cc1795cd82ec00c1c34399fbf6d5861c5e84366b69329906dd0805a4694d2",
+    "pyproject.toml": "4d825190ea4d69d34c8da23635801485151a82f35ec5d741fa934bdd22426cbb",
+    "scripts/accept.py": "d6f23be839cd68c7c966dc2a685e2e5f55b250e317c7e33552693e8a5b4d025e",
+    "scripts/check.py": "b733105a12829a82ff38ee7762bf06cd09bbd49123411bb6183820ac4937ee48",
+    "scripts/check_reports.py": "b2c37e0fad26699c3f4c829f231bd297ba6c2eaa759b665613535fbc820f7308",
+    "scripts/critical_modules.txt": "03ce976820899b655fa96d679e08b515d22afb75163a83fc955dd3a2e871f0bd",
+    "scripts/progress.py": "46c5c186ad344e6b0f182e98cb33b2c92e35eb2e5eb21f3dbcd3188d8f6381b0",
+    "scripts/spot_check.py": "45ffc864367c5fd26d6bacb93ed2940ecfc6f521e62f2c1282f670e3c8c1150a",
+    "scripts/tooling_modules.txt": "e275ba62b06fb92c7f05e5650a1915c23e481c89dc2bde3e6d719885bd775097",
+    "src/docket/__init__.py": "91447944015cec709e8aa7655f7e9d64e1e4508e7023a57fe3746911c0fc6fed",
+    "src/docket/_store_audit.py": "388b2fa63938d1d8557170a8889a2d6af2f2e3c890f61c1e944fbdb63202f658",
+    "src/docket/_store_keys.py": "27b24eaf16e14bbfed686e5778073bf911192c91bb82f8bc80c4f103f40ea220",
+    "src/docket/_store_links.py": "598b692e7a54870c48cd208111091d07c48c340e2d9b6f63e887036e3a5be0de",
+    "src/docket/_store_tasks.py": "1e5380ac701d794434bf457e5b97244e6d59f7060ab2e1001076062a07059b12",
+    "src/docket/cli.py": "4b92ce079d175c611e0033741fb96584a48cf2dfe2d163468cf8e31e70e9ba39",
+    "src/docket/clients.py": "fc918d6fc93c1a94af57525e24f0cf85423c11e717d8465b0f5a335b5b9c2180",
+    "src/docket/clock.py": "6b1fec99c6afcebbdd8b775b37520da2dd29004baea288cd296faf54c5c69b8f",
+    "src/docket/config.py": "22b9c7f7df977b6cb1804a5c72d46beb3a37509bab41802322195309fb579ed3",
+    "src/docket/core.py": "dec60420c3c1861396aa4331fd525562f2a50c0b721f31df0d9002260c48c0dd",
+    "src/docket/deadlines.py": "cbcd6ae83389ef7e4f3e617d1fa5311f8ab3a3a161bedf6509da6d1d9ac962ad",
+    "src/docket/domain.py": "3e6bbb479133a01125689ec5b5a286cf6a208c9d5d43a2b8350725ac3e3acd82",
+    "src/docket/ids.py": "55f2b8577fbba29b3b9157361be8a9424db24db15d5c76ded7c1d1c90da2ff0e",
+    "src/docket/intake.py": "64b9ab6d3ce1bb5836330358112ba78de79fe7cfce544a74762dc1d25c22fa0e",
+    "src/docket/keychain.py": "319534a85eee773a10b33294fc98cb3695311326ad50dde3ebbbbc754a6bc44e",
+    "src/docket/parsing.py": "960328fb81fa804cf2a11624123e72dd113a6e3430ad3880e151603158afa691",
+    "src/docket/references.py": "d38b411efd3593d013df5d8ebba423ba4a684741669d71c9c9b62a31612cfdd9",
+    "src/docket/schema.py": "29ee3866e32991d32e1acdec3893b44b29fd0bde2f42c0c90b1092f61721a2cf",
+    "src/docket/serialization.py": "324c49f404bc36c31acbf00df0005411ac4e2d01eb937fb9f6e249163ca05191",
+    "src/docket/server.py": "851023ba44cb11e76e418a7c79f5382cc0e0a4dbe1cc53529d25d54e076ec523",
+    "src/docket/store.py": "50f56a7ecdf0f162ecdc02f3beaebef7203221919ad6751c9361f14b4f141889",
+    "src/docket/views.py": "b9375662812e8561dbb2a4c56539ed020d62325b21d7b9bfda54c06d48b87799",
+    "src/docket/web.py": "f3318cfb3b1f342921e3b21460fd4fc514ef8ed0ba7eadc619917ec6e81ffb0d",
+    "tests/conftest.py": "a9be18f993269440758b50efaf78556b09e3110984fd46c711e35909b74a9c85",
+    "tests/e2e/test_cli_clients.py": "caed2d031714289c686cd068bfd17882df34897954caa6df6b79cee25c453088",
+    "tests/e2e/test_cli_edits.py": "9a29f779a9dfdf430648ba869449d84679b749dffbabc65232fe81a13aedf4aa",
+    "tests/e2e/test_cli_states.py": "921a659f49786cbe3161d8313fb52e2d4aaf9e83d976012565b9f8a7e0bc78e4",
+    "tests/e2e/test_reference_intake.py": "c29b75a739154707f2cca66eab7ab8d07cd9490559500c49ce97e461ea464544",
+    "tests/e2e/test_shared_parse_refusals.py": "2447feaab2eef290ba729fae7cdb351440e03483e4988e291b270e8dcf7a8037",
+    "tests/e2e/test_stored_time_refusals.py": "c0de7475ae5d4c0769c4908cdbc114cb94b67da6c321c2792430c2538d52e81d",
+    "tests/fakes.py": "b18241d68c0de50e7b9537448e90250199cd166131dd2b0ae77049cade1189f7",
+    "tests/http_cases.py": "88580fd27f5f7f675c441291a2bd9fbc46d2eaa7400a325a77041754be5b0280",
+    "tests/integration/test_core.py": "c70c1a62ea5612617d793c96eaa2ccadbd6a4863be7271adc5cefbdf1888253b",
+    "tests/integration/test_core_identity.py": "adec0a9f7d70505ddde480f456083b98ffdd455872f6c316500665c977ed87ca",
+    "tests/integration/test_core_keyed.py": "bffccb67a02dcfb6bf18b4a026ad1f081c5b831e0dcc9b954476bc7c4bf6c255",
+    "tests/integration/test_core_references.py": "413d13591c54ad9055eabbd899fdeb0641dae067c1beb44e50a3f9ba317b953c",
+    "tests/integration/test_domain_schema.py": "974a6bda1c24d58212a8a6fe8d77a5987956c97c76d35911f5c4daf37f7bc294",
+    "tests/integration/test_http_coverage.py": "2568ceec2580465356d8ce14e17087baa2ad43de9a7e611a29a41c445ff5e7fb",
+    "tests/integration/test_identity_coverage.py": "fddf17395e7efafa09d3809298ac955109b9e1ba7fe9162a207d7f296a1cd4a2",
+    "tests/integration/test_intake.py": "ed5a90352ed35a9753d56e5dd7ed86cd3839ff535274e4ed4ac08dfcc0b9b4e8",
+    "tests/integration/test_intake_identity.py": "bcfe00bf57b9c114c97c2aa721b0bd503e9a25ac11b1d63c71181a0125bcf020",
+    "tests/integration/test_reference_coverage.py": "d15271644b3bab7e207f18f893434aeb78268a45c3665480ea34bc1be48ab578",
+    "tests/integration/test_reference_migration.py": "60e64d6c1ea5d3d3fdabdf18d588384cd4aa3eacc031742acd07f11e2a3bb1ba",
+    "tests/integration/test_shared_creation.py": "ce6083ec2aa30d03b27674f6a41e707c2cd6140f7733b6758eb79e634defa115",
+    "tests/integration/test_shared_creation_more.py": "bd32de18989e251e24e6da03c758d5e92a69c16ae0c1ddec99f7e2df7badecbf",
+    "tests/integration/test_shared_parser_adapters.py": "8afd07ad6946ba144d106b68b78a4cb44ed5dc4d0d3571733129f721bc2a9a02",
+    "tests/integration/test_shared_rules_more.py": "6c39e20ba9e202816da408a5da58313630ec7c1dd574c0f79a58f055fa4c5ab3",
+    "tests/integration/test_store.py": "d0aa4cab5c524cece572ca5f7d84402364a7e00c3f8ffa683eb9d8187b9feab1",
+    "tests/integration/test_store_boundaries_more.py": "025c7a18ecb763d63b292778dd064fe240b2c3b44eddcba1c88e6e0b820a0028",
+    "tests/integration/test_store_coordination.py": "a4c1330aba03024c70d1709ba8cb24a26731e0145a2628e4635dc276a56d0678",
+    "tests/integration/test_store_links.py": "ff3211352e07b152c9036054ea0540ef104ae004e2d4b8ac1a1fe32ed0ff2214",
+    "tests/integration/test_store_safety_coverage.py": "55593ed77d3ebf821aa38ccd14e1ef3e9b70e0788e94e919ceabca8e913e6b82",
+    "tests/integration/test_store_startup.py": "e21754a51b627c49fbd7bf4d3ec7db71e5118beeac4afb92399836c124c01273",
+    "tests/integration/test_store_table_boundaries.py": "5fe2e00a29dbb7fb2a9dd2187b5580e664966d2b113411e76f60b5e0eaed3ee9",
+    "tests/integration/test_stored_task_times.py": "69853c824fc2bb27dc3964006958175637c337d6d939e980e4bc3433f51c35e9",
+    "tests/integration/test_task_boundary_more.py": "8f2b20b6f1373dabdbd9ea99e0eef427aa04235859d7b229ca2116be294682e5",
+    "tests/integration/test_task_table_boundary.py": "1454e49011fb3098f26f5d0c1b76d5f4688653c29afac42b2fef8d9fd28918e9",
+    "tests/integration/test_web.py": "8e4823e0735dc2a23468d32629aeecae7d62cdf6c7b6aab663bd61aa3e07453e",
+    "tests/integration/test_web_identity.py": "2a402d12b7e8cab8e2f6bc60e72e868ac10c339f9f5fce7912bfba0173ed711f",
+    "tests/integration/test_web_streaming.py": "d8da076c7c0ccc670ea2d81bff28f801d614d08780d2233793bf5a332a08b048",
+    "tests/integration/test_web_workers.py": "8f1982d419370503f64757fef8e03016481187f7b07402aa2fcc431492315381",
+    "tests/product_support_cases.py": "4376eb55aae021b1ee02df37574471d812548c2946e6a6c3c959d88af7212428",
+    "tests/product_support_manifest.json": "2c84aa600e992d8ddf105ee1b90b868c8afaad69726d56df58ff6baf8a9736bf",
+    "tests/reference_cases.py": "42a6c7bfed0ee2246e4eacd0050d9469d22b2c9659870eba472d9563980da108",
+    "tests/sections.toml": "e4a5455db255d4cf28f0374a2d3c8f708809252167986595d7c022bfa3c611c0",
+    "tests/startup_cases.py": "43364dcebb132d80fe3bd70c55f2918108dcfe107e1dbecc6a093b726b1e8a04",
+    "tests/store_boundary_cases.py": "59b50e6847b707cc429c0fd1bf8e7df2fee2f1c748b458279d46d2043b480c00",
+    "tests/support.py": "f0addbde48f9b4572375eb93209c6f94afb9a0f25686a7b031a9bcb91e50729a",
+    "tests/task_boundary_cases.py": "5a1d4b698727b4c20c52aab75aca9addd6abf672939961eb8aa870be8e65d659",
+    "tests/tooling_boundary_cases.py": "118dd25fddbf63f6a243c76cdefe7be97f2d7920bdfd6d16fae87d54c3cc8d85",
+    "tests/tooling_boundary_manifest.json": "c7209c59bbaa799715c8ff38fdbfe7c6084cd6b6a6fc3f967e76a6eecead4ced",
+    "tests/unit/test_acceptance.py": "99168933518c302016141603038e0b12c24b92540a2d9128a0fc727f2fb97f02",
+    "tests/unit/test_acceptance_more.py": "8b635131b5f0afd066fac94651b7b82b323be51f1445691f8db4d0e6820c9a8b",
+    "tests/unit/test_acceptance_script.py": "1d671a9d083a594ec9d2100088f8efd59eb06f691151564d95bbb7895e5edc8c",
+    "tests/unit/test_canonical_json.py": "0e2973f861f592894bf5329ef91265c29533fb62acfe0a1a615c964b8f236c63",
+    "tests/unit/test_check_quiet.py": "eb09d79f1622069ab4ea19134368ff20341d7b5af430f7478338b74c381d8053",
+    "tests/unit/test_cli.py": "4c4a412216a267e38628aec488c834be2bab7a3796819cb37240dc511fac3873",
+    "tests/unit/test_clients.py": "4a6e3158023dd863b3e511ddbe508a46fde5f633418b55e59758e390dd64c291",
+    "tests/unit/test_clock_ids.py": "ba65dae8d4f812fac4d74a9e8e361a8d16952448aa06c091c83f86d500712b31",
+    "tests/unit/test_config.py": "b3d0d466c19bb46a23e739c3477b57f0766562c728d63c7a5fdb811179a18c82",
+    "tests/unit/test_deadlines.py": "5c31331ec5640c45d767ccd1da9e7912e56087e0514fdf8f0f83104b73492362",
+    "tests/unit/test_domain_rules.py": "90cc1490307a830859d713fee9b5fb4192306428c15aaaefe7af47e7a9359a6f",
+    "tests/unit/test_keychain.py": "04c84ff8303b821175e4b3bed98a0c6f4c157d1561364d455d3d7d77622cb2ce",
+    "tests/unit/test_keychain_write.py": "09190488aa55cbc3099d8f47925e01784ff9fc5abbd2ea62d623e6d19ff70d27",
+    "tests/unit/test_product_test_support.py": "8620d141e4b1aedec06d6afed33b51c3792b9afe3f88a7a08484342ee7475fba",
+    "tests/unit/test_product_test_support_more.py": "45177fee71f49b8424ea562a84c2572ab62dfd7ca278662caba891255e3ee90c",
+    "tests/unit/test_progress_script.py": "e330503873a7501453907e54796a38a0df6939061b7e14e01989567bb3f13466",
+    "tests/unit/test_references.py": "752fe2d0a3424ab1257bbccbef02dda7b62067f16d64d779c7aa4ff1b2ad467c",
+    "tests/unit/test_reports.py": "1d40596b816068dc93a7a5e1907e6368de3e2af71d1f93e684d426564ccebb67",
+    "tests/unit/test_reports_more.py": "766ac173d4b91b5c61a8ca15fa63c5031685719bec81162295a7a061353ef727",
+    "tests/unit/test_reports_phase.py": "74f156b295d6002d16e5f0f68f4bdd181547d5f239a1c187359fe12e5d160d26",
+    "tests/unit/test_reports_phase_more.py": "d709a21ac96a6ce37bf0d01ac919980e51794ae562f9f56bd6c813b6307a0baa",
+    "tests/unit/test_reports_put.py": "072c0b6d2c4ff5aae685398fbb2f1b22496934c08c02fe9ba3d81cf13c60650d",
+    "tests/unit/test_reports_put_more.py": "fc52194d6eaff08bd8446f4148e50899716a1d0f1137163ec43a07f6368d0a0d",
+    "tests/unit/test_settings.py": "91c89c4dec20e80fc36173c160188be902d43a024b20d9b8420f2442a1d73017",
+    "tests/unit/test_settings_error_mapping.py": "f6f9c693e6ed2837c7d5aff4cbb4cf9c81cf9c4100d83c2415e4417b3b2dc848",
+    "tests/unit/test_shared_parsing.py": "9712d76a1e9a889290a03248eff3847fcd94f1dae3afec6aac10bf06c41a167f",
+    "tests/unit/test_spotcheck.py": "ede0e037562687ea626cd8c8f3a2bb55edaa2f086b08943307e910a0fdbda77a",
+    "tests/unit/test_spotcheck_more.py": "1707fc4dcbb517fe43b62b988c58c057d0892e402da6a516b0d53f1bdcca999e",
+    "tests/unit/test_spotcheck_script.py": "babbab61d91741a53da8c1652eff2c058b073cb6203f863f9d64b0fdeb8c53fc",
+    "tests/unit/test_tooling_boundary.py": "0de6b632a2ab9c142571bf289af5b6a13a0bc7d2534c5b4023b68e248225e3dd",
+    "tests/unit/test_tooling_boundary_more.py": "c053759605dcaf80ffd95b920f30ee3ea914b0590de28520218bb0a2fd475828",
+    "tests/unit/test_views.py": "c96741eaf8893a00ec9c6c14d2a55cd1e157f8112808ac6e811e70423bb6b265",
+    "tests/unit/test_views_changes.py": "bfe9ef3e7829afe823c534fa074a9cf3d6ccb0402fe5a6e2d818a64651d4492a",
+    "tests/unit/test_views_edits.py": "82d104d9a6629f84c562e1c8a1f17e961d3b9dd2823db1b8463c9e5c2e227b75",
+    "tests/unit/test_views_tasks.py": "382162361b93a46a2b5a3a716f92195dcd9f6cbff071e5192a8cacb5f492f7d1"
+  }
+}
