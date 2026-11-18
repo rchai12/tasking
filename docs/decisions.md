@@ -109,3 +109,9 @@ No new owner policy choice. Put current domain collections and repeated limits i
 `docket.parsing` supplies strict ASCII date/time readers and a typed ParseError with fixed text `invalid date or time`. CLI/intake call through that module and retain their optional-value handling, refusal order and existing public messages. Settings and deadlines use the same cached exact `domain.zone_names()` set; there is no normalization or time-policy change.
 
 Explicit settings error priority remains data_dir, time_zone, work_minutes, web_port, independent of error-list order. A recognized field wins over unknown fields; when none is recognized, including root/empty errors, use the new constant `Invalid docket settings.` without a library-error chain. This prevents future validation errors from being mislabeled as web-port failures without adding a setting.
+
+## Store table boundary decisions (architect, Nov 17, Phase 2l)
+
+Split the planned store refactor into two implementation phases to keep each within the phase budget. Phase 2l extracts ordinary audit/link/request-key SQL; Phase 2m extracts ordinary task SQL. Only unshipped later rows are shifted; the roadmap records the new order. No owner product choice is required.
+
+The private SQL modules receive the existing SQLite connection and bound values and return SQLite data for Store to convert. Store keeps the public records/sentinel/errors, validation, ID checks, canonical JSON and time policy, one transaction owner, task SQL until 2m, startup and migrations. Migration reference preflight remains with startup. Helpers do not import product modules, open/close connections, own transactions or change SQLite settings. No generic repository or shared records module is introduced.
