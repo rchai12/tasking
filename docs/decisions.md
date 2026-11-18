@@ -95,3 +95,9 @@ Await one synchronous operation in the installed framework's worker pool for the
 - **Architect: gate artifact.** Derive `<database filename>.startup.lock` beside the database, empty and mode 0600. Acquire before SQLite opens and release after initialization/cleanup. Keep its inode across opens; no PID, age check, stale-file deletion or new setting. Gate acquisition OSError becomes `store startup unavailable` with no library-error chain.
 - **Architect: migrations.** Recheck schema versions under immediate write transactions, keeping each migration atomic and foreign-key relaxation scoped to migration 3. Close every failed constructor's created connection once; preserve other original initialization failures.
 - **Architect: corrupt task times.** Refuse non-UTC/unparseable task instants and invalid zones with `invalid stored task time: <task id>`, no chained library text, no automatic repair and no partial list. Extend the private CLI context guard so these errors use its existing plain refusal style. No new owner time policy is introduced.
+
+## Creation and serialization decisions (architect, Nov 17, Phase 2j)
+
+No new owner choice changes product behaviour. Both public create functions call one private insertion/create-audit helper; public callers retain validation, clock reads, their transaction and request-key handling. The helper receives the timestamp and validated values and returns the task.
+
+`docket.serialization.canonical_json(value: dict[str, object]) -> str` is the single writer for audit snapshots, request-key bodies and retry comparisons. Core and store call it through the module. Preserve sorted keys, unescaped Unicode, compact separators and every other existing standard-library default, including numeric and failure behaviour. No stricter JSON policy or historic-row rewrite is introduced. Add the shared writer to the 100% critical coverage gate because retry safety depends on it.

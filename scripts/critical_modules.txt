@@ -15,3 +15,4 @@ server.py
 acceptance.py
 spotcheck.py
 references.py
+serialization.py
