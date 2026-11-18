@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import cast
 
-from docket import _store_audit, _store_keys, _store_links, serialization
+from docket import _store_audit, _store_keys, _store_links, _store_tasks, serialization
 from docket.config import Settings, prepare_data_dir
 from docket.deadlines import INSTANT_MESSAGE, Deadline, DeadlineError, WorkTime
 from docket.references import LINK_MAX, MESSAGE_ID_MAX, valid_reference
@@ -25,11 +25,6 @@ UNKNOWN_LINK_MESSAGE = "unknown link"
 
 _TASK_ID = re.compile(r"t[1-9][0-9]*")
 _LINK_ID = re.compile(r"l[1-9][0-9]*")
-_COLUMNS = (
-    "number, title, state, deadline_at, deadline_zone, deadline_time_given, "
-    "work_start, work_minutes, work_zone, source, provider, message_id, link, "
-    "created_at, updated_at"
-)
 
 
 class _Unchanged:
@@ -195,12 +190,8 @@ class Store:
         deadline_at, deadline_zone, deadline_time_given = _deadline_values(deadline)
         work_start, work_minutes, work_zone = _work_values(work)
         instant = _instant(at)
-        cursor = self._connection.execute(
-            "INSERT INTO tasks ("
-            "title, state, deadline_at, deadline_zone, deadline_time_given, "
-            "work_start, work_minutes, work_zone, source, provider, message_id, link, "
-            "created_at, updated_at"
-            ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        cursor = _store_tasks.insert_task(
+            self._connection,
             (
                 title,
                 state,
@@ -232,27 +223,22 @@ class Store:
     ) -> Task:
         self._require_write(at)
         number = self._require_task(task_id)
-        assignments = ["updated_at = ?"]
-        parameters: list[object] = [_instant(at)]
+        fields: dict[str, object] = {}
         if title is not UNCHANGED:
-            assignments.append("title = ?")
-            parameters.append(title)
+            fields["title"] = title
         if state is not UNCHANGED:
-            assignments.append("state = ?")
-            parameters.append(state)
+            fields["state"] = state
         if deadline is not UNCHANGED:
             deadline_at, deadline_zone, deadline_time_given = _deadline_values(deadline)
-            assignments.extend(["deadline_at = ?", "deadline_zone = ?", "deadline_time_given = ?"])
-            parameters.extend([deadline_at, deadline_zone, deadline_time_given])
+            fields["deadline_at"] = deadline_at
+            fields["deadline_zone"] = deadline_zone
+            fields["deadline_time_given"] = deadline_time_given
         if work is not UNCHANGED:
             work_start, work_minutes, work_zone = _work_values(work)
-            assignments.extend(["work_start = ?", "work_minutes = ?", "work_zone = ?"])
-            parameters.extend([work_start, work_minutes, work_zone])
-        parameters.append(number)
-        self._connection.execute(
-            "UPDATE tasks SET " + ", ".join(assignments) + " WHERE number = ?",
-            parameters,
-        )
+            fields["work_start"] = work_start
+            fields["work_minutes"] = work_minutes
+            fields["work_zone"] = work_zone
+        _store_tasks.update_task(self._connection, number, _instant(at), fields)
         return self._read_task(number)
 
     def append_audit(
@@ -289,27 +275,18 @@ class Store:
         number = _number(task_id)
         if number is None:
             return None
-        rows = self._connection.execute(
-            f"SELECT {_COLUMNS} FROM tasks WHERE number = ?",
-            (number,),
-        ).fetchall()
+        rows = _store_tasks.select_task(self._connection, number)
         if not rows:
             return None
         return self._task_from(rows[0])
 
     def tasks(self, states: Collection[str] | None = None) -> list[Task]:
         if states is None:
-            rows = self._connection.execute(
-                f"SELECT {_COLUMNS} FROM tasks ORDER BY number"
-            ).fetchall()
+            rows = _store_tasks.select_tasks(self._connection)
         elif len(states) == 0:
             return []
         else:
-            marks = ", ".join("?" for _ in states)
-            rows = self._connection.execute(
-                f"SELECT {_COLUMNS} FROM tasks WHERE state IN ({marks}) ORDER BY number",
-                tuple(states),
-            ).fetchall()
+            rows = _store_tasks.select_tasks_in_states(self._connection, tuple(states))
         return [self._task_from(row) for row in rows]
 
     def audit(self, task_id: str) -> list[AuditEntry]:
@@ -469,11 +446,7 @@ class Store:
         return number
 
     def _exists(self, number: int) -> bool:
-        row = self._connection.execute(
-            "SELECT 1 FROM tasks WHERE number = ?",
-            (number,),
-        ).fetchone()
-        return row is not None
+        return _store_tasks.select_existence(self._connection, number) is not None
 
     def _require_link(self, link_id: str) -> int:
         number = _link_number(link_id)
@@ -499,10 +472,7 @@ class Store:
         )
 
     def _read_task(self, number: int) -> Task:
-        rows = self._connection.execute(
-            f"SELECT {_COLUMNS} FROM tasks WHERE number = ?",
-            (number,),
-        ).fetchall()
+        rows = _store_tasks.select_task(self._connection, number)
         return self._task_from(rows[0])
 
     def _task_from(self, row: sqlite3.Row) -> Task:

@@ -193,3 +193,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - Private SQL entry points are insert_audit/select_audit, insert_link/select_links/select_existence/select_link, and insert_request_key/select_request_key.
 - Follow-ups:
   - None
+
+## Phase 2m: Task table boundary (2026-11-17)
+- Tests: 1193 -> 1223 (given 26)
+- New public names: None
+- Changed files: 4
+- Deviations:
+  - Private task SQL entry points are insert_task, update_task, select_task, select_tasks, select_tasks_in_states, and select_existence.
+- Follow-ups:
+  - None
