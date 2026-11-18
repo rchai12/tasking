@@ -157,3 +157,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 2i: Safe store startup and reads (2026-11-17)
+- Tests: 960 -> 1042 (given 76)
+- New public names: None
+- Changed files: 4
+- Deviations:
+  - None
+- Follow-ups:
+  - None

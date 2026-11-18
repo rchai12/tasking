@@ -1,4 +1,6 @@
+import fcntl
 import json
+import os
 import re
 import sqlite3
 from collections.abc import Collection, Iterator
@@ -9,7 +11,7 @@ from pathlib import Path
 from typing import cast
 
 from docket.config import Settings, prepare_data_dir
-from docket.deadlines import INSTANT_MESSAGE, Deadline, WorkTime
+from docket.deadlines import INSTANT_MESSAGE, Deadline, DeadlineError, WorkTime
 from docket.references import LINK_MAX, MESSAGE_ID_MAX, valid_reference
 from docket.schema import MIGRATIONS, SCHEMA_VERSION
 
@@ -130,19 +132,25 @@ def _link_number(link_id: str) -> int | None:
 
 class Store:
     def __init__(self, path: Path) -> None:
-        self._in_transaction = False
-        self._connection = sqlite3.connect(path, isolation_level=None)
-        self._connection.row_factory = sqlite3.Row
-        path.chmod(0o600)
-        self._connection.execute("PRAGMA busy_timeout = 5000")
-        self._connection.execute("PRAGMA foreign_keys = ON")
-        found = cast(sqlite3.Row, self._connection.execute("PRAGMA user_version").fetchone())
-        version = int(found[0])
-        if version > SCHEMA_VERSION:
-            self.close()
-            raise StoreError(f"{SCHEMA_MESSAGE}: {version}")
-        self._connection.execute("PRAGMA journal_mode = WAL")
-        self._migrate(version)
+        gate = _startup_gate(path)
+        try:
+            self._in_transaction = False
+            opened = False
+            try:
+                self._connection = sqlite3.connect(path, isolation_level=None)
+                opened = True
+                self._connection.row_factory = sqlite3.Row
+                path.chmod(0o600)
+                self._connection.execute("PRAGMA busy_timeout = 5000")
+                self._connection.execute("PRAGMA foreign_keys = ON")
+                self._connection.execute("PRAGMA journal_mode = WAL")
+                self._migrate()
+            except BaseException:
+                if opened:
+                    self.close()
+                raise
+        finally:
+            _release_gate(gate)
 
     def close(self) -> None:
         self._connection.close()
@@ -392,32 +400,47 @@ class Store:
             created_at=datetime.fromisoformat(row["created_at"]),
         )
 
-    def _migrate(self, version: int) -> None:
-        while version < SCHEMA_VERSION:
-            if version == 2:
+    def _migrate(self) -> None:
+        while True:
+            rebuild = False
+            with self.transaction():
+                version = self._user_version()
+                if version > SCHEMA_VERSION:
+                    raise StoreError(f"{SCHEMA_MESSAGE}: {version}")
+                if version == SCHEMA_VERSION:
+                    return
+                if version == 2:
+                    rebuild = True
+                else:
+                    self._apply_migration(version)
+            if rebuild:
                 self._migrate_references()
-            else:
-                with self.transaction():
-                    for statement in _statements(MIGRATIONS[version]):
-                        self._connection.execute(statement)
-                    self._connection.execute(f"PRAGMA user_version = {version + 1}")
-            version += 1
+
+    def _apply_migration(self, version: int) -> None:
+        for statement in _statements(MIGRATIONS[version]):
+            self._connection.execute(statement)
+        self._connection.execute(f"PRAGMA user_version = {version + 1}")
+
+    def _user_version(self) -> int:
+        found = cast(sqlite3.Row, self._connection.execute("PRAGMA user_version").fetchone())
+        return int(found[0])
 
     def _migrate_references(self) -> None:
         self._connection.execute("PRAGMA foreign_keys = OFF")
         try:
             with self.transaction():
-                self._refuse_invalid_references()
-                for statement in _statements(MIGRATIONS[2]):
-                    self._connection.execute(statement)
-                if self._connection.execute("PRAGMA foreign_key_check").fetchall():
-                    raise StoreError("invalid reference migration")
-                self._connection.execute("PRAGMA user_version = 3")
-        except BaseException:
+                version = self._user_version()
+                if version > SCHEMA_VERSION:
+                    raise StoreError(f"{SCHEMA_MESSAGE}: {version}")
+                if version == 2:
+                    self._refuse_invalid_references()
+                    for statement in _statements(MIGRATIONS[2]):
+                        self._connection.execute(statement)
+                    if self._connection.execute("PRAGMA foreign_key_check").fetchall():
+                        raise StoreError("invalid reference migration")
+                    self._connection.execute("PRAGMA user_version = 3")
+        finally:
             self._connection.execute("PRAGMA foreign_keys = ON")
-            self.close()
-            raise
-        self._connection.execute("PRAGMA foreign_keys = ON")
 
     def _refuse_invalid_references(self) -> None:
         tasks = self._connection.execute(
@@ -495,22 +518,30 @@ class Store:
         return self._task_from(rows[0])
 
     def _task_from(self, row: sqlite3.Row) -> Task:
-        deadline = None
-        if row["deadline_at"] is not None:
-            deadline = Deadline(
-                datetime.fromisoformat(row["deadline_at"]),
-                row["deadline_zone"],
-                bool(row["deadline_time_given"]),
-            )
-        work = None
-        if row["work_start"] is not None:
-            work = WorkTime(
-                datetime.fromisoformat(row["work_start"]),
-                row["work_minutes"],
-                row["work_zone"],
-            )
+        task_id = f"t{row['number']}"
+        try:
+            deadline = None
+            if row["deadline_at"] is not None:
+                deadline = Deadline(
+                    datetime.fromisoformat(row["deadline_at"]),
+                    row["deadline_zone"],
+                    bool(row["deadline_time_given"]),
+                )
+            work = None
+            if row["work_start"] is not None:
+                work = WorkTime(
+                    datetime.fromisoformat(row["work_start"]),
+                    row["work_minutes"],
+                    row["work_zone"],
+                )
+            created_at = datetime.fromisoformat(row["created_at"])
+            updated_at = datetime.fromisoformat(row["updated_at"])
+            if created_at.tzinfo is not UTC or updated_at.tzinfo is not UTC:
+                raise DeadlineError(INSTANT_MESSAGE)
+        except (ValueError, DeadlineError):
+            raise StoreError(f"invalid stored task time: {task_id}") from None
         return Task(
-            id=f"t{row['number']}",
+            id=task_id,
             title=row["title"],
             state=row["state"],
             deadline=deadline,
@@ -519,9 +550,29 @@ class Store:
             provider=row["provider"],
             message_id=row["message_id"],
             link=row["link"],
-            created_at=datetime.fromisoformat(row["created_at"]),
-            updated_at=datetime.fromisoformat(row["updated_at"]),
+            created_at=created_at,
+            updated_at=updated_at,
         )
+
+
+def _startup_gate(path: Path) -> int:
+    lock = path.with_name(path.name + ".startup.lock")
+    try:
+        descriptor = os.open(lock, os.O_CREAT | os.O_RDWR, 0o600)
+    except OSError:
+        raise StoreError("store startup unavailable") from None
+    try:
+        os.chmod(lock, 0o600)
+        fcntl.flock(descriptor, fcntl.LOCK_EX)
+    except OSError:
+        os.close(descriptor)
+        raise StoreError("store startup unavailable") from None
+    return descriptor
+
+
+def _release_gate(descriptor: int) -> None:
+    fcntl.flock(descriptor, fcntl.LOCK_UN)
+    os.close(descriptor)
 
 
 def open_store(settings: Settings) -> Store:

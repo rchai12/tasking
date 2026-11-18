@@ -1,6 +1,7 @@
 import re
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from datetime import UTC, date, datetime, time
 from typing import NoReturn
 
@@ -239,9 +240,11 @@ def _home() -> tuple[Settings, str]:
         _fail(str(error))
 
 
-def _store(settings: Settings) -> Store:
+@contextmanager
+def _store(settings: Settings) -> Iterator[Store]:
     try:
-        return open_store(settings)
+        with open_store(settings) as store:
+            yield store
     except StoreError as error:
         _fail(str(error))
 
