@@ -850,7 +850,7 @@ def main() -> int:
     given = commands.add_parser("promote")
     given.add_argument("clone", type=Path)
     given.add_argument("files", nargs="+")
-    given.add_argument("--ignore", nargs="+", default=[])
+    given.add_argument("--ignore", nargs="+", action="extend", default=[])
     new = commands.add_parser("new")
     new.add_argument("--id", required=True)
     new.add_argument("--slug", required=True)

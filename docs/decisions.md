@@ -168,3 +168,9 @@ Owner chose: a morning with nothing overdue sends nothing and stores nothing (no
 
 Architect: migration 6 adds `digests` (one per home day, unique key) and `digest_tasks`; contents are immutable and rows never removed, as for posts. A task is in the digest when it is open or in progress and its deadline plus the last late offset (720 minutes) is at or before the slot. The engine takes the zone and time as arguments rather than reading settings, so Stage 5 wires `DOCKET_TIME_ZONE` and `DOCKET_DIGEST_TIME`. The digest goes through `Notifier.send_digest` with the same once-per-key contract as `send`. Proposals are added in Stage 10.
 
+## Reminder loop (2026-11-18, Phase 3e)
+
+Owner chose: an unexpected error in a pass, such as a bug or a database locked by another writer, never stops the loop; it waits 30 seconds and tries again, and Stage 5 turns repeated failures into an alert (not ending the loop for launchd to restart, not ending it after 10 failures in a row). The reminder half and the digest half of a pass fail alone (not ending the pass at the first failure).
+
+Architect: `run_pass` catches `Exception` once per half and records only the half's name, never the exception's text; `BaseException` passes through. `run_loop` pauses only on the caller's `Stop.wait(30)`, which a `threading.Event` satisfies, so Stage 5 stops it on shutdown without a sleep. The pause follows each pass. The loop reads no settings and starts nothing; Stage 5 wires it into `docket run`.
+
