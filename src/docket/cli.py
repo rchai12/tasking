@@ -47,8 +47,10 @@ MIDNIGHT_MESSAGE = "A work time must end by midnight."
 app = typer.Typer()
 tasks_app = typer.Typer()
 clients_app = typer.Typer()
+mcp_app = typer.Typer()
 app.add_typer(tasks_app, name="tasks")
 app.add_typer(clients_app, name="clients")
+app.add_typer(mcp_app, name="mcp")
 
 
 @app.callback()
@@ -70,6 +72,18 @@ def serve() -> None:
         _fail(str(error))
     print(f"Serving on http://127.0.0.1:{settings.web_port}")
     run_app(built, settings.web_port)
+
+
+@mcp_app.command("serve")
+def mcp_serve() -> None:
+    """Serve the read tools to Conductor over stdio."""
+    from docket.mcp_server import server
+
+    try:
+        built = server.build_server(get_settings())
+    except (ConfigError, StoreError) as error:
+        _fail(str(error))
+    server.serve(built)
 
 
 @clients_app.command("add")

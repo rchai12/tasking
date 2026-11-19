@@ -201,7 +201,7 @@
     "docs/reviews/phase-02n-repository-phase-tooling.md": "81dc1559c7d1b47f0b89657734b5e63179dcb563eca2c037c686141e232a08df",
     "docs/reviews/phase-02o-shared-product-test-support.md": "797cc1795cd82ec00c1c34399fbf6d5861c5e84366b69329906dd0805a4694d2",
     "docs/reviews/phase-02p-product-test-consolidation.md": "d1a0f60b23d92bb2c84f2857cfe4f4a063304d5f662b2f1d38439fcf83638bfe",
-    "pyproject.toml": "4d825190ea4d69d34c8da23635801485151a82f35ec5d741fa934bdd22426cbb",
+    "pyproject.toml": "124dd373967955a9f13ee4fb4300923b08ebade950d085a3ec8a5fb1619ae86e",
     "scripts/accept.py": "d6f23be839cd68c7c966dc2a685e2e5f55b250e317c7e33552693e8a5b4d025e",
     "scripts/check.py": "b733105a12829a82ff38ee7762bf06cd09bbd49123411bb6183820ac4937ee48",
     "scripts/check_reports.py": "b2c37e0fad26699c3f4c829f231bd297ba6c2eaa759b665613535fbc820f7308",
@@ -214,7 +214,7 @@
     "src/docket/_store_keys.py": "27b24eaf16e14bbfed686e5778073bf911192c91bb82f8bc80c4f103f40ea220",
     "src/docket/_store_links.py": "598b692e7a54870c48cd208111091d07c48c340e2d9b6f63e887036e3a5be0de",
     "src/docket/_store_tasks.py": "1e5380ac701d794434bf457e5b97244e6d59f7060ab2e1001076062a07059b12",
-    "src/docket/cli.py": "4b92ce079d175c611e0033741fb96584a48cf2dfe2d163468cf8e31e70e9ba39",
+    "src/docket/cli.py": "3cec1ccbd0fa775813ef6792a4e6817eaa41ae6b49f55b4725439f5b85a35349",
     "src/docket/clients.py": "fc918d6fc93c1a94af57525e24f0cf85423c11e717d8465b0f5a335b5b9c2180",
     "src/docket/clock.py": "6b1fec99c6afcebbdd8b775b37520da2dd29004baea288cd296faf54c5c69b8f",
     "src/docket/config.py": "22b9c7f7df977b6cb1804a5c72d46beb3a37509bab41802322195309fb579ed3",
@@ -677,7 +677,7 @@
     "tests/integration/test_web_workers.py": "8f1982d419370503f64757fef8e03016481187f7b07402aa2fcc431492315381",
     "tests/product_consolidation_cases.py": "95b8febb3be2528673080cf7e4e100e0837f8323ce7078ff5d9b0f607978e447",
     "tests/product_support_cases.py": "4376eb55aae021b1ee02df37574471d812548c2946e6a6c3c959d88af7212428",
-    "tests/product_support_manifest.json": "7e4169e5d9b36a68e88b40233ca3bacd2d3ec76e587f54e85a79c7e1bb2bb525",
+    "tests/product_support_manifest.json": "e3992d5a150452032330b75f882b36a713a97cf83445ca6655d9b515cca741af",
     "tests/reference_cases.py": "42a6c7bfed0ee2246e4eacd0050d9469d22b2c9659870eba472d9563980da108",
     "tests/sections.toml": "e4a5455db255d4cf28f0374a2d3c8f708809252167986595d7c022bfa3c611c0",
     "tests/startup_cases.py": "57d068e714dc0a34290e1ee037cfc315a621beaeb37eaec65e8605ea5f5c16c1",
@@ -727,6 +727,6 @@
   "manifest": {
     "path": "tests/product_consolidation_manifest.json",
     "before_sha256": "e645d1d69999b7cf653cab59f7b5e6a7ee07f8ed6038d2e960a10e5022a16abe",
-    "after_sha256": "b36703798158ae6d6f02fd1f73c85a9fb249c7103dc48e629290f8f174d579b9"
+    "after_sha256": "ad853fc4227dd75300abd6a2df23425ee4fcb7e27f99d20a2acb5814cd2e0947"
   }
 }

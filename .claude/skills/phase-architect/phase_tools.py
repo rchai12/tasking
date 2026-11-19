@@ -177,7 +177,10 @@ def outline(path: Path) -> list[str]:
 
 
 def clone_env() -> dict[str, str]:
-    return {**os.environ, "PYTHONPATH": "src:.", "PYTHONDONTWRITEBYTECODE": "1"}
+    """The clone's src and root first; a caller's PYTHONPATH (a borrowed library) after them."""
+    extra = os.environ.get("PYTHONPATH")
+    path = "src:." if not extra else f"src:.:{extra}"
+    return {**os.environ, "PYTHONPATH": path, "PYTHONDONTWRITEBYTECODE": "1"}
 
 
 def make_clone(phase: str, scratch: Path) -> int:
@@ -276,6 +279,7 @@ def stub_check(clone: Path, stubs: list[str], tests: list[str]) -> int:
                     handle.write("\n\n" + stub_text(names))
         for pair in stubs:
             path, _, stub = pair.partition("=")
+            (copy / path).parent.mkdir(parents=True, exist_ok=True)
             with (copy / path).open("a", encoding="utf-8") as handle:
                 handle.write("\n" + Path(stub).read_text(encoding="utf-8"))
         for test in tests:

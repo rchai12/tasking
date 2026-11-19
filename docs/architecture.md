@@ -234,10 +234,12 @@ The shared Discord service (a separate project, planned) owns the bot token and 
 
 `docket mcp serve` on stdio. Read tools carry `readOnlyHint: true`; every tool declares an output schema, as Conductor's tool check requires. Results are plain data: ISO times, ids, titles.
 
+Phase 6a builds the server and the first two read tools. Each tool returns a typed pydantic model, so its output schema names every field. Parameters are plain strings that docket checks itself, refusing with a constant code, so the SDK never echoes a bad value in an enum message. The decisions (status rules, cursor, paging) live in `docket.reads`; `docket.mcp_server.server` only builds results from them. Each tool call opens and closes its own store, because the SDK runs a plain tool on a worker thread and a SQLite connection belongs to the thread that opened it. The server runs with `log_level="CRITICAL"`, so no exception text, title or path reaches stderr, and stdout carries only the protocol. `docket mcp serve` needs `DOCKET_TIME_ZONE` and reads no secret.
+
 | Tool | Conductor effect | Notes |
 | --- | --- | --- |
-| `list_tasks(status)` | read | open, in progress, due, overdue, done, cancelled; capped with paging |
-| `get_task(id)` | read | With reminder history and the linked event |
+| `list_tasks(status, after)` | read | `open`, `in_progress`, `done`, `cancelled` by state; `due` is open or in progress with a deadline later today in `DOCKET_TIME_ZONE`, `overdue` one whose deadline has passed. 50 a page in id order; `next_after` is the next call's `after` (Phase 6a) |
+| `get_task(id)` | read | The task with its sent and pending reminders (kind, fire time, sent time), never voided ones (Phase 6a). The linked event joins it in Stage 7 |
 | `list_proposals` | read | Pending proposals with their source and evidence |
 | `list_events(range)` | read | Across every connected calendar |
 | `check_availability(range)` | read | Free and busy across every calendar |
@@ -248,7 +250,9 @@ The shared Discord service (a separate project, planned) owns the bot token and 
 | `complete_task(id, request_key)` | write | Same path as the Done button |
 | `cancel_task(id, request_key)` | write | Same path as Cancel |
 
-No tool approves or declines a proposal. A tool returns refusals as a constant code (`unknown_task`, `already_done`, `invalid_deadline`), never echoing its input.
+No tool approves or declines a proposal. A tool returns refusals as a constant code (`unknown_task`, `already_done`, `invalid_deadline`, and for reads `invalid_status` and `invalid_cursor`), never echoing its input. The one exception is a wrong JSON type, such as a number for `status`: the SDK's own validation message answers it and may quote the value back to the caller, never to a log.
+
+Each deadline in a result carries its UTC instant (`at`) and its `date`, `time` (null when none was given) and `time_zone` in its own zone, the shape the write tools take, so an agent never converts zones. The tools come in stages: the reads in 6a, `create_task`, `complete_task` and `cancel_task` in 6b, `change_deadline` and `plan_work_time` in 6c, then `snooze_task` with Stage 4, `list_events` and `check_availability` with Stage 8, and `list_proposals` with Stage 10.
 
 **Trust boundary.** The app cannot tell whether a stdio caller asked you first; it relies on Conductor's approval policy, as `finances` does for its proposal tools. Every write through MCP is recorded with source `agent` and the request key, and `docket audit` lists them.
 
@@ -289,7 +293,8 @@ docket/
     reminders.py        planning and the send loop (critical)
     discord_client.py   the shared Discord service's client
     calendar/           google.py, eventkit.py, graph.py, sync.py, reconcile.py
-    mcp_server/         thin tools over core
+    reads.py            what the read tools answer: status rules, cursor, paging (Phase 6a)
+    mcp_server/         thin tools over reads and core: server.py (Phase 6a)
     service.py          docket run
     cli/                thin Typer commands
   helpers/eventkit/     the read-only EventKit helper
@@ -299,7 +304,7 @@ docket/
 ## Privacy and security boundary
 
 - **No model, no email text.** The app holds titles, times, ids and links. A title that came from an email is plain text of at most 100 characters, treated as data: shown in code blocks on Discord, never as markdown or a link.
-- **Network.** The app connects only to the shared Discord service on 127.0.0.1, Google's OAuth and Calendar endpoints, and (from its phase) Microsoft's sign-in and Graph. It listens only on 127.0.0.1. The EventKit helper runs as a child process. No telemetry.
+- **Network.** The app connects only to the shared Discord service on 127.0.0.1, Google's OAuth and Calendar endpoints, and (from its phase) Microsoft's sign-in and Graph. It listens only on 127.0.0.1. The EventKit helper runs as a child process. No telemetry: the `mcp` SDK's OpenTelemetry API is a no-op because no OpenTelemetry SDK or exporter is installed, and a given test keeps it that way.
 - **Calendar data out.** Only the approved title and the deadline reach the Tasks calendar. Reads bring other events' titles and times into memory for one answer; they are not stored.
 - **Least access.** Google: `calendar.app.created` writes only to the calendar the app made; `calendar.calendarlist.readonly` and `calendar.events.readonly` read. Microsoft Graph: `Calendars.ReadBasic`, personal accounts only, which leaves out event bodies. Both are to be confirmed in a spike before their phase.
 - **Sign-in.** Every API client has its own Keychain token, and the token fixes which source it may claim. Presses are checked against your Discord user id.
