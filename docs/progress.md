@@ -274,3 +274,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 3e: Reminder loop (2026-11-18)
+- Tests: 1650 -> 1670 (given 17)
+- New public names: docket.reminders: LOOP_SECONDS, PassResult, Stop, run_pass, run_loop
+- Changed files: 3
+- Deviations:
+  - None
+- Follow-ups:
+  - None

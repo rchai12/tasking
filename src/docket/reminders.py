@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
-from typing import Literal
+from typing import Literal, Protocol
 from zoneinfo import ZoneInfo
 
 from docket import clock, ids
@@ -157,3 +157,46 @@ def send_digest(store: Store, notifier: Notifier, *, zone: str, at: time) -> boo
     with store.transaction():
         store.mark_digest_sent(claimed.id, at=now)
     return True
+
+
+LOOP_SECONDS = 30
+
+
+@dataclass(frozen=True)
+class PassResult:
+    sent: int
+    digest: bool
+    failed: tuple[str, ...]
+
+
+class Stop(Protocol):
+    def is_set(self) -> bool:
+        """True when the caller wants the loop to return."""
+
+    def wait(self, timeout: float) -> bool:
+        """Pause up to timeout seconds. True means the loop should return."""
+
+
+def run_pass(store: Store, notifier: Notifier, *, zone: str, at: time) -> PassResult:
+    sent = 0
+    sent_digest = False
+    failed: list[str] = []
+    try:
+        sent = send_due(store, notifier)
+    except Exception:
+        failed.append("reminders")
+    try:
+        sent_digest = send_digest(store, notifier, zone=zone, at=at)
+    except Exception:
+        failed.append("digest")
+    return PassResult(sent, sent_digest, tuple(failed))
+
+
+def run_loop(store: Store, notifier: Notifier, *, zone: str, at: time, stop: Stop) -> int:
+    passes = 0
+    while not stop.is_set():
+        run_pass(store, notifier, zone=zone, at=at)
+        passes += 1
+        if stop.wait(LOOP_SECONDS):
+            return passes
+    return passes
