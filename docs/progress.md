@@ -301,3 +301,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 6c: Core input checks (2026-11-21)
+- Tests: 1653 -> 1707 (given 53)
+- New public names: docket.core: INVALID_DEADLINE, INVALID_WORK
+- Changed files: 5
+- Deviations:
+  - None
+- Follow-ups:
+  - None

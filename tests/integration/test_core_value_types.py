@@ -59,16 +59,10 @@ def seeded(store: Store, monkeypatch: pytest.MonkeyPatch) -> None:
     fixed_times(monkeypatch)
 
 
-@pytest.mark.xfail(
-    strict=True, reason="Phase 6c given test: remove this marker when core checks value types"
-)
 def test_the_new_codes() -> None:
     assert (core.INVALID_DEADLINE, core.INVALID_WORK) == ("invalid_deadline", "invalid_work")
 
 
-@pytest.mark.xfail(
-    strict=True, reason="Phase 6c given test: remove this marker when core checks value types"
-)
 @pytest.mark.parametrize("value", BAD_DEADLINES, ids=BAD_DEADLINE_IDS)
 def test_edit_task_refuses_a_deadline_that_is_not_one(
     store: Store, path: Path, monkeypatch: pytest.MonkeyPatch, value: object
@@ -79,9 +73,6 @@ def test_edit_task_refuses_a_deadline_that_is_not_one(
     assert dump(path) == before
 
 
-@pytest.mark.xfail(
-    strict=True, reason="Phase 6c given test: remove this marker when core checks value types"
-)
 @pytest.mark.parametrize("value", BAD_WORK, ids=BAD_WORK_IDS)
 def test_edit_task_refuses_a_work_time_that_is_not_one(
     store: Store, path: Path, monkeypatch: pytest.MonkeyPatch, value: object
@@ -92,9 +83,6 @@ def test_edit_task_refuses_a_work_time_that_is_not_one(
     assert dump(path) == before
 
 
-@pytest.mark.xfail(
-    strict=True, reason="Phase 6c given test: remove this marker when core checks value types"
-)
 def test_edit_task_checks_the_deadline_before_the_work_time(
     store: Store, path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -111,9 +99,6 @@ def test_edit_task_checks_the_deadline_before_the_work_time(
     assert dump(path) == before
 
 
-@pytest.mark.xfail(
-    strict=True, reason="Phase 6c given test: remove this marker when core checks value types"
-)
 @pytest.mark.parametrize(("field", "value", "code"), FIELDS, ids=FIELD_IDS)
 def test_create_task_refuses_a_value_that_is_not_one(
     store: Store, path: Path, monkeypatch: pytest.MonkeyPatch, field: str, value: object, code: str
@@ -127,9 +112,6 @@ def test_create_task_refuses_a_value_that_is_not_one(
     assert dump(path) == before
 
 
-@pytest.mark.xfail(
-    strict=True, reason="Phase 6c given test: remove this marker when core checks value types"
-)
 @pytest.mark.parametrize(("field", "value", "code"), FIELDS, ids=FIELD_IDS)
 def test_create_task_once_refuses_a_value_and_keeps_the_key_free(
     store: Store, path: Path, monkeypatch: pytest.MonkeyPatch, field: str, value: object, code: str
@@ -149,9 +131,6 @@ def test_create_task_once_refuses_a_value_and_keeps_the_key_free(
     assert (outcome.task.id, outcome.changed) == ("t1", True)
 
 
-@pytest.mark.xfail(
-    strict=True, reason="Phase 6c given test: remove this marker when core checks value types"
-)
 def test_the_create_paths_check_the_deadline_before_the_work_time(
     store: Store, path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

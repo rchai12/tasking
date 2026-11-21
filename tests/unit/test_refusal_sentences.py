@@ -43,18 +43,12 @@ def codes() -> dict[str, str]:
     }
 
 
-@pytest.mark.xfail(
-    strict=True, reason="Phase 6c given test: remove this marker when every code has a sentence"
-)
 @pytest.mark.parametrize(("code", "expected"), NEW, ids=[code for code, _ in NEW])
 def test_the_new_sentences(code: str, expected: str) -> None:
     assert refusal_text(code) == expected
     assert refusal_text(code, "t4") == expected
 
 
-@pytest.mark.xfail(
-    strict=True, reason="Phase 6c given test: remove this marker when every code has a sentence"
-)
 def test_every_core_code_has_a_sentence() -> None:
     found = codes()
     assert KNOWN <= set(found.values())

@@ -131,6 +131,11 @@ _REFUSALS = {
     "invalid_actor": "That actor is not allowed.",
     "invalid_action": "That is not a state change.",
     "work_after_deadline": "The work time must end by the deadline.",
+    "invalid_client": "That client is not allowed.",
+    "invalid_key": "A request key is 1 to 200 characters.",
+    "key_reused": "That request key was already used for a different request.",
+    "invalid_deadline": "That is not a valid deadline.",
+    "invalid_work": "That is not a valid work time.",
 }
 
 _VERBS = {"start": "Started", "done": "Done", "cancel": "Cancelled", "reopen": "Reopened"}

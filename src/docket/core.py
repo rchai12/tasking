@@ -21,6 +21,8 @@ INVALID_CLIENT = "invalid_client"
 INVALID_KEY = "invalid_key"
 KEY_REUSED = "key_reused"
 INVALID_REMINDER_PLAN = "invalid_reminder_plan"
+INVALID_DEADLINE = "invalid_deadline"
+INVALID_WORK = "invalid_work"
 
 _SOURCES = domain.SOURCES
 _CLIENTS = domain.CORE_CLIENTS
@@ -75,6 +77,7 @@ def create_task(
     if source not in _SOURCES:
         raise CoreError(INVALID_SOURCE)
     _check_reference(source, provider, message_id, link)
+    _check_values(deadline, work)
     if _work_after_deadline(deadline, work):
         raise CoreError(WORK_AFTER_DEADLINE)
     at = clock.now()
@@ -134,6 +137,10 @@ def edit_task(
         raise CoreError(INVALID_ACTOR)
     if title is not UNCHANGED:
         check_title(title)
+    _check_values(
+        None if deadline is UNCHANGED else deadline,
+        None if work is UNCHANGED else work,
+    )
     at = clock.now()
     with store.transaction():
         task = store.task(task_id)
@@ -206,6 +213,7 @@ def create_task_once(
     if not isinstance(source, str) or source != client:
         raise CoreError(INVALID_SOURCE)
     _check_reference(source, provider, message_id, link)
+    _check_values(deadline, work)
     if _work_after_deadline(deadline, work):
         raise CoreError(WORK_AFTER_DEADLINE)
     at = clock.now()
@@ -375,6 +383,13 @@ def _check_reference(source: str, provider: object, message_id: object, link: ob
         return
     if (provider, message_id, link) != (None, None, None):
         raise CoreError(INVALID_REFERENCE)
+
+
+def _check_values(deadline: object, work: object) -> None:
+    if deadline is not None and not isinstance(deadline, Deadline):
+        raise CoreError(INVALID_DEADLINE)
+    if work is not None and not isinstance(work, WorkTime):
+        raise CoreError(INVALID_WORK)
 
 
 def _work_after_deadline(deadline: object, work: object) -> bool:
