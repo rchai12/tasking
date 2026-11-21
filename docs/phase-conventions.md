@@ -85,7 +85,7 @@ When you are run again after a stop or a FAIL (the spec then has a Corrections s
 
 ## For the verifier
 
-- Do not modify any file in the repository, except to write your report (below). Report findings only. The work under review is uncommitted: "the diff" is `git status --short` plus `git diff HEAD` plus the untracked files, read before you write the report.
+- Do not modify any file in the repository, except to write your report (below). Report findings only. The work under review is normally uncommitted: "the diff" is `git status --short` plus `git diff HEAD` plus the untracked files, read before you write the report. If the coder already committed it, the diff is `git diff <spec commit>`, where the spec commit is `git log --diff-filter=A --format=%h -1 -- <the spec>`, and every `git diff HEAD` gate is judged against that commit.
 - Run the guide's gates exactly as written, from the repository root: `.venv/bin/python scripts/accept.py --phase <id> --guide` runs them all and the searches, one line each. The first gate is `scripts/check.py --first <the spec's sections>`; if a section fails, report it with the table's rerun command.
 - **Scope audit**: `git status --short` shows only the spec's Scope paths; `git diff HEAD --stat -- <the given files>` prints nothing; no existing test or unlisted module changed.
 - **The probe.** It is the given file `docs/verification/probe-<NNx>.py`, committed with the spec: run it from the repository root with `.venv/bin/python docs/verification/probe-<NNx>.py`, without editing it. Every line must end in `ok`; the last line must be `FAILURES 0`.

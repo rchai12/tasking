@@ -753,7 +753,11 @@ Stop with FAIL ("the coder stopped") if that entry's first `Follow-ups` line sta
 broke off without reporting" (Scope paths changed; name them under `For the architect`).
 
 Stop with FAIL ("the baseline is not committed") if `git ls-files --error-unmatch {tracked}` \
-fails: the diff gates can only be judged against a committed spec and given files.
+fails: the diff gates can only be judged against a committed spec and given files. If the \
+coder's work is already committed (a commit after the spec's, and a clean tree), judge every \
+`git diff HEAD` gate against the spec's commit instead (`git log --diff-filter=A --format=%h -1 \
+-- docs/phases/{spec_path.name}`), and the `git status --short` gate with \
+`git diff <that commit> --name-status`.
 
 ## 2. Gates
 

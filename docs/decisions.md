@@ -191,3 +191,9 @@ Architect: Phase 6a's strict `xfail` markers on committed given tests are the st
 Owner chose: the architect pins each passed phase's review in `tests/review_pins.json` in the next spec's commit, with `.claude/skills/phase-architect/pin_review.py` (not the verifier pinning its own review, not a test that fails while a review is unpinned).
 
 Architect: the `docket_tools` byte pins and the tooling tests' AST pins retire with the product pins; the tooling-boundary behaviour stays tested. The fake coverage in `tests/tooling_boundary_cases.py` reads the two gate lists, so a new critical module needs no test edit. The kept shared-support tests stay in their files until 2r.
+
+## Phase 6c core input checks (2026-11-21)
+
+Owner chose: `create_task`, `create_task_once` and `edit_task` all refuse a deadline or work time that is not a `Deadline`, `WorkTime` or `None` (not `edit_task` only); two codes, `invalid_deadline` and `invalid_work` (not one shared code); `refusal_text` stays a strict lookup guarded by a test that walks every code `core` defines (no generic fallback sentence).
+
+Architect: the deadline is checked before the work time, after each function's existing checks and before the clock read; `UNCHANGED` passed to a create function is a wrong value; signatures do not change; the five new sentences never echo the value.
