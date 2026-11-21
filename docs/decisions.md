@@ -197,3 +197,9 @@ Architect: the `docket_tools` byte pins and the tooling tests' AST pins retire w
 Owner chose: `create_task`, `create_task_once` and `edit_task` all refuse a deadline or work time that is not a `Deadline`, `WorkTime` or `None` (not `edit_task` only); two codes, `invalid_deadline` and `invalid_work` (not one shared code); `refusal_text` stays a strict lookup guarded by a test that walks every code `core` defines (no generic fallback sentence).
 
 Architect: the deadline is checked before the work time, after each function's existing checks and before the clock read; `UNCHANGED` passed to a create function is a wrong value; signatures do not change; the five new sentences never echo the value.
+
+## Phase 6d MCP write tools (2026-11-21)
+
+Owner chose: `complete_task` and `cancel_task` keep their `request_key` in `request_keys`, as `create_task` does, so a retried step after the owner reopens a task changes nothing (not a stateless check); completing a done task or cancelling a cancelled one answers the task with `changed` false and keeps the key, not a refusal, which drops the `already_done` code from Conductor's handoff (work in Conductor's project); every write answers the task in `get_task`'s fields plus `changed` (not an id alone).
+
+Architect: the deadline argument is null or exactly `{date, time, time_zone}` and is parsed first; the kept request names the tool, so a key moved to another tool is `key_reused`; the key is looked up before the task, and a refused change keeps no key; a non-string id is `unknown_task`; all three write tools are idempotent, not read-only, not destructive, closed-world; `reads.py`, `writes.py` and `mcp_server/server.py` become critical modules.

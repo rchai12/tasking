@@ -39,7 +39,7 @@ flowchart LR
 | --- | --- | --- |
 | Tasks core | Creating, changing and ending tasks; the state rules; the audit log. Every other component calls it | Yes (`docket.core`) |
 | Intake API | FastAPI on 127.0.0.1: approved tasks and follow-up links; proposals later. Each client signs in with its own token | Tasks and links (`docket.intake`, `web`, `server`) |
-| MCP server | `docket mcp serve` on stdio for Conductor: read tools and approved write tools | Read tools; writes in 6d and 6e |
+| MCP server | `docket mcp serve` on stdio for Conductor: read tools and approved write tools | Read tools; create, complete and cancel in 6d; edits in 6e |
 | Reminder engine | Plans reminders for each task, and every 30 seconds sends what is due through the notifier | Yes, through a fake notifier (`docket.reminders`) |
 | Press handler | Receives button presses forwarded by the Discord service and calls the core | Stage 4 |
 | Calendar sync | Writes deadline and work-time events to the Tasks calendar through a queue; reads every connected calendar live | Stages 7 to 9 |
@@ -228,9 +228,9 @@ The shared Discord service (a separate project, planned) owns the bot token and 
 | --- | --- | --- |
 | `list_tasks(status, after)` | read | `open`, `in_progress`, `done`, `cancelled` by state; `due` is open or in progress with a deadline later today in `DOCKET_TIME_ZONE`, `overdue` one whose deadline has passed. 50 a page in id order; `next_after` is the next call's `after` |
 | `get_task(id)` | read | The task with its sent and pending reminders (kind, fire time, sent time), never voided ones. The linked event joins it in Stage 7 |
-| `create_task(title, deadline, request_key)` | write (6d) | An approved task, source `agent` |
-| `complete_task(id, request_key)` | write (6d) | Same path as the Done button |
-| `cancel_task(id, request_key)` | write (6d) | Same path as Cancel |
+| `create_task(title, request_key, deadline)` | write (6d) | An approved task, source `agent`. `deadline` is null or `{date, time, time_zone}` (`time` null for 17:00) |
+| `complete_task(id, request_key)` | write (6d) | Same path as the Done button; a done task is no change |
+| `cancel_task(id, request_key)` | write (6d) | Same path as Cancel; a cancelled task is no change |
 | `change_deadline(id, deadline, request_key)` | write (6e) | Voids and replans reminders, queues the calendar update |
 | `plan_work_time(id, start, minutes, request_key)` | write (6e) | Sets or moves the planned work time; the agent picks the time with `check_availability` first |
 | `snooze_task(id, minutes, request_key)` | write (Stage 4) | Moves the next reminder only |
@@ -238,7 +238,9 @@ The shared Discord service (a separate project, planned) owns the bot token and 
 | `check_availability(range)` | read (Stage 8) | Free and busy across every calendar |
 | `list_proposals` | read (Stage 10) | Pending proposals with their source and evidence |
 
-No tool approves or declines a proposal. A tool returns refusals as a constant code (`invalid_status`, `invalid_cursor`, `unknown_task`, and for writes `already_done` and `invalid_deadline`), never echoing its input.
+No tool approves or declines a proposal. A tool returns refusals as a constant code (`invalid_status`, `invalid_cursor`, `unknown_task`, and for writes `invalid_deadline`, `invalid_title`, `invalid_key`, `key_reused` and `task_ended`), never echoing its input.
+
+**Writes (6d).** `docket.writes` (critical) turns each write into one keyed `docket.core` call: `create_task_once`, or `change_state_once` for complete and cancel. The `request_key` (Conductor's `<run id>:<step id>`) is kept in `request_keys` with the request, including the tool name, so the same key and arguments answer the same task with `changed` false and write nothing, even after the owner reopens it; the same key with other arguments is `key_reused`. A refused write keeps no key. Each write answers the task, as `get_task`'s task fields, plus `changed`.
 
 **Trust boundary.** The app cannot tell whether a stdio caller asked you first; it relies on Conductor's approval policy, as `finances` does for its proposal tools. Every write through MCP is recorded with source `agent` and the request key, and `docket audit` lists them.
 
@@ -298,8 +300,9 @@ docket/
     clients.py          API client tokens
     intake.py           the POST /tasks and /links rules (critical)
     web.py, server.py   the loopback API (critical)
-    reads.py            what the read tools answer: status rules, cursor, paging
-    mcp_server/         server.py: thin read tools over reads (write tools in 6d, 6e)
+    reads.py            what the read tools answer: status rules, cursor, paging (critical)
+    writes.py           agent writes as keyed core calls (critical, 6d)
+    mcp_server/         server.py: thin tools over reads and writes (critical; edit tools in 6e)
     cli.py              thin Typer commands
     discord_client.py   the shared Discord service's client (Stage 4)
     service.py          docket run (Stage 5)

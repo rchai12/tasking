@@ -11,7 +11,6 @@ LIST_TASKS = (
     "cancelled. Up to 50 a page; pass next_after back as after for the next page."
 )
 GET_TASK = "One task by id, with its sent and pending reminders."
-INSTRUCTIONS = "The owner's tasks in docket. These tools only read: none of them changes a task."
 
 
 @pytest.fixture(autouse=True)
@@ -46,16 +45,16 @@ def test_the_server_is_named_and_logs_nothing_below_critical() -> None:
     from docket.mcp_server import server as module
 
     built = server()
-    assert (module.SERVER_NAME, module.INSTRUCTIONS) == ("docket", INSTRUCTIONS)
+    assert module.SERVER_NAME == "docket"
     assert (built.name, built.instructions, built.settings.log_level) == (
         "docket",
-        INSTRUCTIONS,
+        module.INSTRUCTIONS,
         "CRITICAL",
     )
 
 
-def test_it_lists_exactly_two_read_only_tools() -> None:
-    found = tools()
+def test_the_two_read_tools_are_read_only() -> None:
+    found = {name: tool for name, tool in tools().items() if name in ("list_tasks", "get_task")}
     assert sorted(found) == ["get_task", "list_tasks"]
     assert (found["list_tasks"].description, found["get_task"].description) == (
         LIST_TASKS,
@@ -72,7 +71,7 @@ def test_it_lists_exactly_two_read_only_tools() -> None:
 
 
 def test_the_input_schemas_take_plain_strings() -> None:
-    found = tools()
+    found = {name: tool for name, tool in tools().items() if name in ("list_tasks", "get_task")}
     assert shape(found["list_tasks"].input_schema) == (
         {"status": "string", "after": "null|string"},
         ["status"],
