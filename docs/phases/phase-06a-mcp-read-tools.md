@@ -82,7 +82,7 @@ All decided 2026-11-18.
 
 ## Given files
 
-Already committed with this spec; never change them.
+Already committed with this spec; never change them, with one exception. So that `main` passes until this phase lands, the three given test files carry expected-failure markers, each with the reason `Phase 6a given test: remove this marker when docket.mcp_server lands`: a module-level `pytestmark = pytest.mark.xfail(...)` in `test_mcp_reads.py` and `test_cli_mcp.py`, and an `@pytest.mark.xfail(...)` decorator on each of the four failing functions in `test_mcp_server.py`. Delete those markers, all six of them and nothing else, once your code is in place. The markers are strict, so a marked test that passes fails the run until you delete its marker. After the deletion, the three files are byte-identical to their state at commit `b577343`, which the acceptance checks.
 
 | File | What it is |
 |---|---|
@@ -97,7 +97,7 @@ Already committed with this spec; never change them.
 | `tests/e2e/test_cli_mcp.py` | `docket mcp serve` runs on stdio silently, reads no secret, and refuses to start on a missing zone, a bad setting or a newer store |
 | `docs/verification/probe-06a.py` | The verifier's probe |
 
-Given test count: **40** (16 functions: `test_mcp_server.py` 5 functions, 5 tests; `test_mcp_reads.py` 8 functions, 30 tests; `test_cli_mcp.py` 3 functions, 5 tests). Two of them pass before you start: `test_no_tracing_backend_is_installed` and `test_mcp_serve_refuses_to_start[bad-setting]`.
+Given test count: **40** (16 functions: `test_mcp_server.py` 5 functions, 5 tests; `test_mcp_reads.py` 8 functions, 30 tests; `test_cli_mcp.py` 3 functions, 5 tests). Before you start, one of them passes, `test_no_tracing_backend_is_installed`, which carries no marker; the other 39 show as `xfailed`.
 
 ## Tests to write
 
@@ -124,6 +124,9 @@ The given tests cover every requirement's main cases. To reach full coverage, ad
 | `src/docket/mcp_server/server.py` | create |
 | `tests/unit/test_reads.py` | create |
 | `tests/integration/test_mcp_server_more.py` | create |
+| `tests/integration/test_mcp_server.py` | delete the four xfail markers only |
+| `tests/integration/test_mcp_reads.py` | delete the `pytestmark` xfail marker only |
+| `tests/e2e/test_cli_mcp.py` | delete the `pytestmark` xfail marker only |
 | `docs/progress.md` | append your entry |
 
 The installed packages in `.venv/` change too; `.venv/` is gitignored.
@@ -137,7 +140,7 @@ The installed packages in `.venv/` change too; `.venv/` is gitignored.
 - Sorting by deadline, a page size setting, or a total count.
 - Any `logging` import or configuration, a log file, or an OpenTelemetry SDK or exporter.
 - Adding modules to `scripts/critical_modules.txt` or `tests/tooling_boundary_manifest.json`.
-- Any change to a given file, `AGENTS.md` or the design docs.
+- Any change to a given file other than deleting the xfail markers, or to `AGENTS.md` or the design docs.
 
 ## Rules that bite
 
@@ -161,7 +164,8 @@ The installed packages in `.venv/` change too; `.venv/` is gitignored.
 | `.venv/bin/python docs/verification/probe-06a.py` | last line `FAILURES 0` |
 | `grep -c "^## Phase 6a: " docs/progress.md` | `1` |
 | `.venv/bin/python scripts/check_reports.py --phase 6a` | `Reports OK.` |
-| `git diff HEAD --stat -- pyproject.toml src/docket/cli.py tests/product_consolidation_manifest.json tests/product_organization_manifest.json tests/product_support_manifest.json tests/mcp_cases.py tests/integration/test_mcp_server.py tests/integration/test_mcp_reads.py tests/e2e/test_cli_mcp.py docs/verification/probe-06a.py` | no output |
+| `git diff HEAD --stat -- pyproject.toml src/docket/cli.py tests/product_consolidation_manifest.json tests/product_organization_manifest.json tests/product_support_manifest.json tests/mcp_cases.py docs/verification/probe-06a.py` | no output |
+| `git diff b577343 --stat -- tests/integration/test_mcp_server.py tests/integration/test_mcp_reads.py tests/e2e/test_cli_mcp.py` | no output (the markers are gone and nothing else changed) |
 | `git status --short` | only the Scope paths |
 
 ### Searches

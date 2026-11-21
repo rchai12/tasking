@@ -42,6 +42,9 @@ def tools() -> dict:
     return {tool.name: tool for tool in listed(server())}
 
 
+@pytest.mark.xfail(
+    strict=True, reason="Phase 6a given test: remove this marker when docket.mcp_server lands"
+)
 def test_the_server_is_named_and_logs_nothing_below_critical() -> None:
     from docket.mcp_server import server as module
 
@@ -54,6 +57,9 @@ def test_the_server_is_named_and_logs_nothing_below_critical() -> None:
     )
 
 
+@pytest.mark.xfail(
+    strict=True, reason="Phase 6a given test: remove this marker when docket.mcp_server lands"
+)
 def test_it_lists_exactly_two_read_only_tools() -> None:
     found = tools()
     assert sorted(found) == ["get_task", "list_tasks"]
@@ -71,6 +77,9 @@ def test_it_lists_exactly_two_read_only_tools() -> None:
         ) == (True, False, True, False)
 
 
+@pytest.mark.xfail(
+    strict=True, reason="Phase 6a given test: remove this marker when docket.mcp_server lands"
+)
 def test_the_input_schemas_take_plain_strings() -> None:
     found = tools()
     assert shape(found["list_tasks"].input_schema) == (
@@ -112,6 +121,9 @@ DEFS = {
 }
 
 
+@pytest.mark.xfail(
+    strict=True, reason="Phase 6a given test: remove this marker when docket.mcp_server lands"
+)
 def test_the_output_schemas_promise_every_field() -> None:
     found = tools()
     page = found["list_tasks"].output_schema

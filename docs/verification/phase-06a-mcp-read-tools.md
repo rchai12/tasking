@@ -18,7 +18,7 @@ Stop with FAIL ("the baseline is not committed") if `git ls-files --error-unmatc
 
 ## 2. Gates
 
-Run each from the repository root, in this order: `.venv/bin/python scripts/accept.py --phase 6a --guide` runs them and the searches, one line each. Given test count: 40.
+Run each from the repository root, in this order: `.venv/bin/python scripts/accept.py --phase 6a --guide` runs them and the searches, one line each. Given test count: 40. The three given test files were committed with strict xfail markers so `main` stayed green; the spec has the coder delete them. HEAD has the markers and `b577343` does not, so G9 compares the other given files with HEAD and G10 compares the three test files with `b577343`. A given test still marked shows in G4 as `xfailed`, or fails the run as a strict XPASS. Either one is a finding.
 
 | # | Command | Must show |
 |---|---|---|
@@ -30,9 +30,10 @@ Run each from the repository root, in this order: `.venv/bin/python scripts/acce
 | G6 | `.venv/bin/python docs/verification/probe-06a.py` | last line `FAILURES 0` |
 | G7 | `grep -c "^## Phase 6a: " docs/progress.md` | `1` |
 | G8 | `.venv/bin/python scripts/check_reports.py --phase 6a` | `Reports OK.` |
-| G9 | `git diff HEAD --stat -- pyproject.toml src/docket/cli.py tests/product_consolidation_manifest.json tests/product_organization_manifest.json tests/product_support_manifest.json tests/mcp_cases.py tests/integration/test_mcp_server.py tests/integration/test_mcp_reads.py tests/e2e/test_cli_mcp.py docs/verification/probe-06a.py` | no output |
-| G10 | `git status --short` | only the Scope paths |
-| G11 | `.venv/bin/python -m pip list --format=freeze \| wc -l` | `52` (39 before this phase, plus `mcp` and the 12 packages the spec names) |
+| G9 | `git diff HEAD --stat -- pyproject.toml src/docket/cli.py tests/product_consolidation_manifest.json tests/product_organization_manifest.json tests/product_support_manifest.json tests/mcp_cases.py docs/verification/probe-06a.py` | no output |
+| G10 | `git diff b577343 --stat -- tests/integration/test_mcp_server.py tests/integration/test_mcp_reads.py tests/e2e/test_cli_mcp.py` | no output (the markers are gone and nothing else changed) |
+| G11 | `git status --short` | only the Scope paths |
+| G12 | `.venv/bin/python -m pip list --format=freeze \| wc -l` | `52` (39 before this phase, plus `mcp` and the 12 packages the spec names) |
 
 ## 3. Spot checks
 
