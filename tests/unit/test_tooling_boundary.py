@@ -1,6 +1,4 @@
 import ast
-import hashlib
-import importlib
 import os
 import shutil
 import subprocess
@@ -11,26 +9,14 @@ from pathlib import Path
 import pytest
 
 from tests.support import load_script
-from tests.tooling_boundary_cases import MANIFEST, ROOT, CoverageRunner, normalized_test
-
-
-@pytest.mark.parametrize("path", list(MANIFEST["modules"]))
-def test_moved_modules_are_byte_identical_and_old_sources_are_removed(path: str) -> None:
-    assert hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == MANIFEST["modules"][path]
-    assert not (ROOT / "src/docket" / Path(path).name).exists()
-    assert importlib.import_module(path[:-3].replace("/", ".")).__file__ == str(ROOT / path)
-
-
-@pytest.mark.parametrize("path", list(MANIFEST["tests"]))
-def test_prior_test_cases_and_assertions_only_change_import_namespace(path: str) -> None:
-    old, digest = normalized_test(ROOT / path)
-    assert old == [], f"old tooling import still present in {path}"
-    assert digest == MANIFEST["tests"][path]
+from tests.tooling_boundary_cases import ROOT, CoverageRunner
 
 
 def test_product_and_tooling_gate_lists_are_separate_and_complete() -> None:
     check = load_script("check")
-    assert check.read_critical(check.CRITICAL_FILE.read_text()) == MANIFEST["product_critical"]
+    product = check.read_critical(check.CRITICAL_FILE.read_text())
+    assert product == check.read_critical((ROOT / "scripts/critical_modules.txt").read_text())
+    assert all((ROOT / "src/docket" / name).is_file() for name in product)
     assert check.TOOLING_FILE == ROOT / "scripts/tooling_modules.txt"
     assert check.read_critical(check.TOOLING_FILE.read_text()) == [
         "docket_tools/reports.py",

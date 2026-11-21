@@ -292,3 +292,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 6b: Retire the freeze manifests (2026-11-21)
+- Tests: 1719 -> 1653 (given 35)
+- New public names: None
+- Changed files: 18
+- Deviations:
+  - None
+- Follow-ups:
+  - None

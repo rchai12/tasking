@@ -7,9 +7,9 @@ from pathlib import Path
 import pytest
 
 from docket.core import CoreError
-from tests.product_support_cases import ROOT
 from tests.support import refused
 
+ROOT = Path(__file__).resolve().parents[2]
 CHILD = textwrap.dedent(
     """\
     import socket

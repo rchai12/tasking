@@ -1,27 +1,14 @@
-"""Given inventories and fake coverage, independent of the implementation's gate lists."""
+"""Fake coverage built from the gate lists in scripts/."""
 
-import ast
-import hashlib
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MANIFEST = json.loads((ROOT / "tests/tooling_boundary_manifest.json").read_text())
-IMPORTS = {
-    "docket.reports": "docket_tools.reports",
-    "docket.acceptance": "docket_tools.acceptance",
-    "docket.spotcheck": "docket_tools.spotcheck",
-}
 
 
-def normalized_test(path):
-    tree = ast.parse(path.read_text())
-    old = []
-    for node in ast.walk(tree):
-        if isinstance(node, ast.ImportFrom) and node.module in IMPORTS:
-            old.append(node.module)
-            node.module = IMPORTS[node.module]
-    return old, hashlib.sha256(ast.dump(tree, include_attributes=False).encode()).hexdigest()
+def _listed(name: str) -> list[str]:
+    lines = (ROOT / "scripts" / name).read_text().splitlines()
+    return [line.split("#", 1)[0].strip() for line in lines if line.split("#", 1)[0].strip()]
 
 
 class CoverageRunner:
@@ -38,8 +25,8 @@ class CoverageRunner:
                     'name="synthetic"/></testsuite>'
                 )
             if arg.startswith("--cov-report=json:"):
-                paths = [f"src/docket/{name}" for name in MANIFEST["product_critical"]]
-                paths += list(MANIFEST["modules"])
+                paths = [f"src/docket/{name}" for name in _listed("critical_modules.txt")]
+                paths += _listed("tooling_modules.txt")
                 # Legacy entries keep baseline product coverage healthy to isolate the new gate.
                 paths += [
                     "src/docket/reports.py",

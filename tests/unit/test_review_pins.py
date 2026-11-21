@@ -64,17 +64,11 @@ def test_a_changed_byte_is_refused(tmp_path: Path) -> None:
     assert changed(review, expected) == "pinned review changed: phase-99-synthetic.md"
 
 
-@pytest.mark.xfail(
-    strict=True, reason="Phase 6b given test: remove this marker when the freezes are retired"
-)
 def test_the_retired_freeze_files_are_gone() -> None:
     assert [path for path in RETIRED_FILES if (ROOT / path).exists()] == []
     assert sorted(path.name for path in (ROOT / "tests").glob("*_manifest.json")) == []
 
 
-@pytest.mark.xfail(
-    strict=True, reason="Phase 6b given test: remove this marker when the freezes are retired"
-)
 def test_no_test_or_script_reads_a_retired_freeze() -> None:
     sources = [
         *(ROOT / "tests").rglob("*.py"),
