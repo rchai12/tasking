@@ -89,7 +89,7 @@ Phase 2i specifies a startup gate at `path.with_name(path.name + ".startup.lock"
 
 Schema-version decisions and each migration's fresh eligibility check run under `BEGIN IMMEDIATE`, preserving individual migration transactions and migration-3-only foreign-key relaxation. Every failed initialization closes its created connection once, without double-closing the reference rebuild path. Phase 2i adds no migration or setting.
 
-When a task is loaded, Phase 2i requires UTC deadline/work instants and created/updated timestamps, plus exact deadline/work zones. Invalid data raises `invalid stored task time: <task id>` without a library-error chain; it is not normalized, repaired or omitted from a requested result. The CLI's private store context guard handles these read failures as plain stderr refusals, with no partial output. Audit/link/request-key timestamp decoding is outside this phase.
+When a task is loaded, Phase 2i requires UTC deadline/work instants and created/updated timestamps, plus exact deadline/work zones. Invalid data raises `invalid stored task time: <task id>` without a library-error chain; it is not normalized, repaired or omitted from a requested result. The CLI's private store context guard handles these read failures as plain stderr refusals, with no partial output. Audit, link and request-key rows are still decoded without these checks; Phase 5a puts them on the same constant `StoreError`.
 
 Phase 2j specifies one private core helper for inserting an open task and its complete create audit snapshot, called directly by both public creation functions. Validation, the single timestamp, transaction and retry-key decisions remain with each public caller. The helper never opens a transaction or reads the clock. `docket.serialization.canonical_json(value: dict[str, object]) -> str` becomes the shared writer for audit snapshots, saved request bodies and both sides of task/link retry comparisons. It preserves the existing `json.dumps` options: sorted keys, unescaped Unicode and compact separators, with all other defaults unchanged. Store decoding remains local; no schema or public core/store contract changes.
 
@@ -203,7 +203,7 @@ Each task with a deadline gets planned reminders:
 
 How it runs:
 
-- A loop every 30 seconds **claims** due reminders (sets the claimed time in one statement), sends them, and sets the sent time. A claim older than 5 minutes with no sent time is released, so a crash mid-send retries and a second loop never sends twice.
+- A loop every 30 seconds **claims** due reminders (sets the claimed time in one statement), sends them, and sets the sent time. A reminder is claimed once, when it is queued into its task's keyed post; it is the post's claim that expires: a post claimed more than 5 minutes ago with no sent time is claimed again and resent with the same key, so a crash mid-send retries and the notifier's once-per-key contract keeps a repeat from showing twice.
 - After downtime, all reminders that came due while the app was down are sent as **one status message** per task, naming the current state, not one message per missed reminder.
 - Done or Cancel voids every pending reminder of the task in the same transaction. Working on it changes the state only; deadline and late reminders continue.
 - A new deadline voids the task's pending deadline reminders and plans new ones; a new work time does the same for its `start` reminder. Snooze moves only the next reminder (by `DOCKET_SNOOZE_MINUTES`, default 30) and never the deadline.
@@ -252,7 +252,7 @@ Phase 6a builds the server and the first two read tools. Each tool returns a typ
 
 No tool approves or declines a proposal. A tool returns refusals as a constant code (`unknown_task`, `already_done`, `invalid_deadline`, and for reads `invalid_status` and `invalid_cursor`), never echoing its input. The one exception is a wrong JSON type, such as a number for `status`: the SDK's own validation message answers it and may quote the value back to the caller, never to a log.
 
-Each deadline in a result carries its UTC instant (`at`) and its `date`, `time` (null when none was given) and `time_zone` in its own zone, the shape the write tools take, so an agent never converts zones. The tools come in stages: the reads in 6a, `create_task`, `complete_task` and `cancel_task` in 6b, `change_deadline` and `plan_work_time` in 6c, then `snooze_task` with Stage 4, `list_events` and `check_availability` with Stage 8, and `list_proposals` with Stage 10.
+Each deadline in a result carries its UTC instant (`at`) and its `date`, `time` (null when none was given) and `time_zone` in its own zone, the shape the write tools take, so an agent never converts zones. The tools come in stages: the reads in 6a, `create_task`, `complete_task` and `cancel_task` in 6d, `change_deadline` and `plan_work_time` in 6e, then `snooze_task` with Stage 4, `list_events` and `check_availability` with Stage 8, and `list_proposals` with Stage 10.
 
 **Trust boundary.** The app cannot tell whether a stdio caller asked you first; it relies on Conductor's approval policy, as `finances` does for its proposal tools. Every write through MCP is recorded with source `agent` and the request key, and `docket audit` lists them.
 
@@ -274,32 +274,47 @@ Each deadline in a result carries its UTC instant (`at`) and its `date`, `time` 
 | Duplicate create | Same key: same answer. Follow-up email in a known thread: the email service sends a link, not a task |
 | A press from anyone else | Ignored, nothing recorded but the attempt |
 
-## Package layout (planned)
+## Package layout
+
+Built through Phase 6a, with planned modules marked by the stage that adds them.
 
 ```
 docket/
   AGENTS.md, CLAUDE.md
   pyproject.toml
   docs/
-  scripts/check.py, scripts/check_reports.py, scripts/critical_modules.txt, scripts/tooling_modules.txt
-  docket_tools/        reports.py, acceptance.py, spotcheck.py (repository-only, Phase 2n)
+  scripts/check.py, scripts/check_reports.py, scripts/accept.py, scripts/spot_check.py,
+    scripts/progress.py, scripts/critical_modules.txt, scripts/tooling_modules.txt
+  docket_tools/         reports.py, acceptance.py, spotcheck.py (repository-only)
   src/docket/
     config.py, clock.py, ids.py, keychain.py
+    domain.py           closed lists and limits: states, sources, providers, reminder kinds
+    parsing.py          strict date, time and zone parsing
+    serialization.py    canonical JSON
     deadlines.py        time rules (critical)
-    references.py       email reference text bounds and characters (critical, Phase 2g)
-    schema.py, store.py the database: migrations, reads, writes in transactions (critical)
+    references.py       email reference text bounds and characters (critical)
+    schema.py           migrations (critical)
+    store.py            startup, transactions and records (critical)
+    _store_tasks.py, _store_audit.py, _store_links.py, _store_keys.py,
+    _store_reminders.py, _store_posts.py, _store_digests.py   each table's SQL (critical)
     core.py             create, change, end tasks; audit (critical)
-    intake/             the API routes: tasks, links, proposals, presses
-    reminders.py        planning and the send loop (critical)
-    discord_client.py   the shared Discord service's client
-    calendar/           google.py, eventkit.py, graph.py, sync.py, reconcile.py
-    reads.py            what the read tools answer: status rules, cursor, paging (Phase 6a)
-    mcp_server/         thin tools over reads and core: server.py (Phase 6a)
-    service.py          docket run
-    cli/                thin Typer commands
-  helpers/eventkit/     the read-only EventKit helper
+    reminders.py        planning, sending, the digest and the loop (critical)
+    notifier.py         the notifier contract and its fake
+    views.py            CLI and notice text
+    clients.py          API client tokens
+    intake.py           the POST /tasks and /links rules (critical)
+    web.py, server.py   the loopback API (critical)
+    reads.py            what the read tools answer: status rules, cursor, paging
+    mcp_server/         server.py: thin read tools over reads (write tools in 6d, 6e)
+    cli.py              thin Typer commands
+    discord_client.py   the shared Discord service's client (Stage 4)
+    service.py          docket run (Stage 5)
+    calendar/           google.py, eventkit.py, graph.py, sync.py, reconcile.py (Stages 7 to 9)
+  helpers/eventkit/     the read-only EventKit helper (Stage 8)
   tests/
 ```
+
+Phases 5a to 5c change this layout: `_store_migrate.py`, per-aggregate store parts, and `reminder_plan.py` (see the roadmap's Nov 21 remediation).
 
 ## Privacy and security boundary
 

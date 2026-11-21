@@ -36,7 +36,7 @@ Product critical modules guard task approval, retry safety, reminder integrity a
 - config.py and keychain.py
 - deadlines.py; Phase 3a adds reminders.py for pure scheduling
 - schema.py and store.py
-- _store_tasks.py, _store_audit.py, _store_links.py and _store_keys.py; Phase 3b adds _store_reminders.py
+- _store_tasks.py, _store_audit.py, _store_links.py and _store_keys.py; Phase 3b adds _store_reminders.py, 3c _store_posts.py and 3d _store_digests.py
 - core.py
 - references.py
 - serialization.py

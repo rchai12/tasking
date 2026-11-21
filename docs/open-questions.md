@@ -1,6 +1,5 @@
 # Open Questions
 
-- [ ] **Package name.** `docket` is assumed; easy to change before Phase 0.
 
 ## Checked (Nov 14, 2026), still to confirm in a spike before each phase
 
@@ -11,6 +10,7 @@
 
 ## Resolved (Nov 14, 2026)
 
+- [x] **Package name.** `docket`, shipped at Phase 0.
 - [x] **Daily schedules.** A planned time to work on a task on one day; it becomes a timed event and a "Time to start" reminder.
 - [x] **Done on the calendar.** Events stay, with "Done: " in front of the title; Cancel deletes them.
 - [x] **Digest time.** 07:00.
