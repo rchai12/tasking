@@ -6,20 +6,37 @@ from zoneinfo import ZoneInfo
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 from mcp.types import ToolAnnotations
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
-from docket import config, reads
+from docket import config, reads, writes
 from docket.config import Settings
 from docket.deadlines import Deadline, WorkTime
 from docket.store import Reminder, Task, open_store
 
 SERVER_NAME = "docket"
-INSTRUCTIONS = "The owner's tasks in docket. These tools only read: none of them changes a task."
+INSTRUCTIONS = (
+    "The owner's tasks in docket. list_tasks and get_task only read. create_task, complete_task "
+    "and cancel_task change tasks once Conductor's step is approved; each takes a request_key, "
+    "and the same key with the same arguments changes nothing twice."
+)
 LIST_TASKS = (
     "List tasks by status: open, in_progress, due (deadline later today), overdue, done or "
     "cancelled. Up to 50 a page; pass next_after back as after for the next page."
 )
 GET_TASK = "One task by id, with its sent and pending reminders."
+CREATE_TASK = (
+    "Create an approved task, source agent. deadline is null or {date, time, time_zone}: "
+    "date YYYY-MM-DD, time HH:MM or null for 17:00, time_zone an IANA name. "
+    "The same request_key with the same arguments returns the same task."
+)
+COMPLETE_TASK = (
+    "Mark a task done, as the Done button does; a task already done is no change. "
+    "The same request_key returns the first answer."
+)
+CANCEL_TASK = (
+    "Cancel a task, as the Cancel button does; a task already cancelled is no change. "
+    "The same request_key returns the first answer."
+)
 
 
 class DeadlineResult(BaseModel):
@@ -55,6 +72,18 @@ class ReminderResult(BaseModel):
     kind: str
     fire_at: str
     sent_at: str | None
+
+
+class DeadlineInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    date: str
+    time: str | None
+    time_zone: str
+
+
+class TaskChangeResult(TaskResult):
+    changed: bool
 
 
 class TaskDetailResult(TaskResult):
@@ -134,12 +163,45 @@ def build_server(settings: Settings) -> MCPServer:
             reminders=[_reminder(r) for r in record.reminders],
         )
 
+    def write(call, *arguments, **keywords) -> TaskChangeResult:
+        store = open_store(settings)
+        try:
+            outcome = call(store, *arguments, **keywords)
+        except writes.WriteRefused as error:
+            raise ToolError(error.code) from None
+        finally:
+            store.close()
+        return TaskChangeResult(**_task(outcome.task), changed=outcome.changed)
+
+    def create_task(
+        title: str, request_key: str, deadline: DeadlineInput | None = None
+    ) -> TaskChangeResult:
+        given = None if deadline is None else deadline.model_dump()
+        return write(writes.create_task, title=title, deadline=given, request_key=request_key)
+
+    def complete_task(id: str, request_key: str) -> TaskChangeResult:
+        return write(writes.complete_task, id, request_key=request_key)
+
+    def cancel_task(id: str, request_key: str) -> TaskChangeResult:
+        return write(writes.cancel_task, id, request_key=request_key)
+
     server = MCPServer(name=SERVER_NAME, instructions=INSTRUCTIONS, log_level="CRITICAL")
     hints = ToolAnnotations(
         read_only_hint=True, destructive_hint=False, idempotent_hint=True, open_world_hint=False
     )
     server.add_tool(list_tasks, description=LIST_TASKS, annotations=hints, structured_output=True)
     server.add_tool(get_task, description=GET_TASK, annotations=hints, structured_output=True)
+    changes = ToolAnnotations(
+        read_only_hint=False, destructive_hint=False, idempotent_hint=True, open_world_hint=False
+    )
+    for function, description in (
+        (create_task, CREATE_TASK),
+        (complete_task, COMPLETE_TASK),
+        (cancel_task, CANCEL_TASK),
+    ):
+        server.add_tool(
+            function, description=description, annotations=changes, structured_output=True
+        )
     return server
 
 

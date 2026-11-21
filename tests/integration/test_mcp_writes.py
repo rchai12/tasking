@@ -81,7 +81,6 @@ def owner_task(title: str = "Pay rent") -> None:
         core.create_task(store, title=title, source="owner")
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_it_lists_three_write_tools_that_are_not_read_only(ticker: Clock) -> None:
     assert server().instructions == INSTRUCTIONS
     found = tools()
@@ -107,7 +106,6 @@ def test_it_lists_three_write_tools_that_are_not_read_only(ticker: Clock) -> Non
         ) == (False, False, True, False), name
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_the_write_input_schemas(ticker: Clock) -> None:
     found = tools()
     create = found["create_task"].input_schema
@@ -133,7 +131,6 @@ def test_the_write_input_schemas(ticker: Clock) -> None:
             assert "enum" not in value, name
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_the_write_output_schema_is_the_task_and_whether_it_changed(ticker: Clock) -> None:
     found = tools()
     for name in WRITES:
@@ -145,7 +142,6 @@ def test_the_write_output_schema_is_the_task_and_whether_it_changed(ticker: Cloc
         assert sorted(schema["$defs"]) == ["DeadlineResult", "WorkResult"], name
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_create_task_answers_the_task_and_a_retry_changes_nothing(ticker: Clock) -> None:
     built = server()
     arguments = {"title": "Pay rent", "deadline": FRIDAY, "request_key": "run-1:step-1"}
@@ -178,7 +174,6 @@ def test_create_task_answers_the_task_and_a_retry_changes_nothing(ticker: Clock)
         assert [(e.action, e.actor) for e in store.audit("t1")] == [("create", "agent")]
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_complete_and_cancel_answer_the_task(ticker: Clock) -> None:
     owner_task()
     owner_task("Call the bank")
@@ -201,7 +196,6 @@ def test_complete_and_cancel_answer_the_task(ticker: Clock) -> None:
         ]
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("tool", "arguments", "text"),
     [
@@ -275,7 +269,6 @@ def test_refusals_are_constant_codes(ticker: Clock, tool: str, arguments: dict, 
     assert refusal(call(built, tool, arguments)) == (True, None, [text])
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("tool", "arguments", "text"),
     [

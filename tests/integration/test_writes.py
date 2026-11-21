@@ -39,7 +39,6 @@ def refused(code: str, call) -> None:
     assert (raised.value.code, str(raised.value)) == (code, code)
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("value", "expected"),
     [
@@ -68,7 +67,6 @@ def test_a_deadline_is_read_in_its_own_zone(value: object, expected: Deadline | 
     assert writes().parse_deadline(value) == expected
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     "value",
     [
@@ -106,7 +104,6 @@ def test_a_bad_deadline_is_refused(value: object) -> None:
     refused("invalid_deadline", lambda: writes().parse_deadline(value))
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_create_task_makes_an_agent_task_once_per_key(
     store: Store, path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -135,7 +132,6 @@ def test_create_task_makes_an_agent_task_once_per_key(
     assert dump(path) == before
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("title", "deadline"),
     [("Pay the rent", FRIDAY), ("Pay rent", None)],
@@ -154,7 +150,6 @@ def test_create_task_refuses_a_key_reused_with_other_arguments(
     assert dump(path) == before
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("title", "deadline", "key", "code"),
     [
@@ -184,7 +179,6 @@ def test_create_task_refusals_come_before_the_clock(
     assert dump(path) == before
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("tool", "state", "action"),
     [("complete_task", "done", "done"), ("cancel_task", "cancelled", "cancel")],
@@ -210,7 +204,6 @@ def test_complete_and_cancel_are_keyed_state_changes(
     assert dump(path) == before
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("tool", "task_id", "key", "code", "moments"),
     [

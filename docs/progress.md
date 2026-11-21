@@ -310,3 +310,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 6d: MCP write tools (2026-11-21)
+- Tests: 1707 -> 1775 (given 67)
+- New public names: docket.writes: INVALID_DEADLINE, UNKNOWN_TASK, WriteRefused, parse_deadline, create_task, complete_task, cancel_task; docket.core: change_state_once; docket.mcp_server.server: CREATE_TASK, COMPLETE_TASK, CANCEL_TASK, DeadlineInput, TaskChangeResult
+- Changed files: 8
+- Deviations:
+  - None
+- Follow-ups:
+  - None

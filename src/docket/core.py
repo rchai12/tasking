@@ -102,26 +102,63 @@ def change_state(store: Store, task_id: str, action: str, *, actor: str) -> Outc
         raise CoreError(INVALID_ACTOR)
     at = clock.now()
     with store.transaction():
-        task = store.task(task_id)
-        if task is None:
-            raise CoreError(UNKNOWN_TASK)
-        new_state = _next_state(task.state, action)
-        if new_state is None:
-            return Outcome(task, False)
-        updated = store.update_task(task_id, at=at, state=new_state)
-        store.append_audit(
-            task_id,
+        return _apply_state(store, task_id, action, actor, at)
+
+
+def change_state_once(
+    store: Store,
+    task_id: str,
+    action: str,
+    *,
+    client: object,
+    key: object,
+    request: dict[str, object],
+) -> Outcome:
+    if action not in _ACTIONS:
+        raise CoreError(INVALID_ACTION)
+    if not isinstance(client, str) or client not in _CLIENTS:
+        raise CoreError(INVALID_CLIENT)
+    _check_key(key)
+    at = clock.now()
+    with store.transaction():
+        found = store.request_key(client, cast(str, key))
+        if found is not None:
+            if found.link_id is None and _same_request(found.request, request):
+                return Outcome(cast(Task, store.task(found.task_id)), False)
+            raise CoreError(KEY_REUSED)
+        outcome = _apply_state(store, task_id, action, _ACTOR_FOR_SOURCE[client], at)
+        store.insert_request_key(
+            client=client,
+            key=cast(str, key),
+            request=request,
+            task_id=task_id,
+            link_id=None,
             at=at,
-            action=action,
-            actor=actor,
-            before={"state": task.state},
-            after={"state": new_state},
         )
-        if action in ("done", "cancel"):
-            store.void_reminders(task_id, at=at)
-        elif action == "reopen":
-            _persist_plan(store, updated, at)
-        return Outcome(updated, True)
+        return outcome
+
+
+def _apply_state(store: Store, task_id: str, action: str, actor: str, at: datetime) -> Outcome:
+    task = store.task(task_id)
+    if task is None:
+        raise CoreError(UNKNOWN_TASK)
+    new_state = _next_state(task.state, action)
+    if new_state is None:
+        return Outcome(task, False)
+    updated = store.update_task(task_id, at=at, state=new_state)
+    store.append_audit(
+        task_id,
+        at=at,
+        action=action,
+        actor=actor,
+        before={"state": task.state},
+        after={"state": new_state},
+    )
+    if action in ("done", "cancel"):
+        store.void_reminders(task_id, at=at)
+    elif action == "reopen":
+        _persist_plan(store, updated, at)
+    return Outcome(updated, True)
 
 
 def edit_task(

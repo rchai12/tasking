@@ -48,7 +48,6 @@ def pending(store: Store) -> list[str]:
     return [r.kind for r in store.reminders("t1") if r.voided_at is None and r.sent_at is None]
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_keyed_done_changes_the_task_once_and_keeps_its_key(
     store: Store, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -72,7 +71,6 @@ def test_a_keyed_done_changes_the_task_once_and_keeps_its_key(
     assert len(store.audit("t1")) == 2
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_retried_step_changes_nothing_after_the_owner_reopens(
     store: Store, path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -85,7 +83,6 @@ def test_a_retried_step_changes_nothing_after_the_owner_reopens(
     assert dump(path) == before
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_new_key_on_a_finished_task_is_no_change_and_is_kept(
     store: Store, path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -106,7 +103,6 @@ def test_a_new_key_on_a_finished_task_is_no_change_and_is_kept(
     assert dump(path) == before
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("key", "request_body"),
     [
@@ -137,7 +133,6 @@ def test_a_key_used_for_another_request_is_refused_and_writes_nothing(
     assert dump(path) == before
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("fields", "code"),
     [
@@ -160,13 +155,11 @@ def test_a_bad_client_or_key_is_refused_before_the_clock(
     assert dump(path) == before
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_bad_action_is_refused_first(store: Store, monkeypatch: pytest.MonkeyPatch) -> None:
     seeded(store, monkeypatch)
     refused("invalid_action", lambda: once(store, "finish", "", DONE, client="conductor"))
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_an_unknown_or_ended_task_keeps_the_key_free(
     store: Store, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -182,7 +175,6 @@ def test_an_unknown_or_ended_task_keeps_the_key_free(
     assert pending(store) != []
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_keys_are_per_client(store: Store, monkeypatch: pytest.MonkeyPatch) -> None:
     seeded(store, monkeypatch, LATER, LAST)
     assert once(store, "start", "shared-key", {"tool": "start", "id": "t1"}).changed is True
