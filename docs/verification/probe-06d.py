@@ -239,8 +239,8 @@ async def hints(built) -> None:
 
     async with Client(built) as client:
         tools = {tool.name: tool for tool in (await client.list_tools()).tools}
-    assert sorted(tools) == sorted([*WRITES, "get_task", "list_tasks"]), (
-        f"listed {sorted(tools)}, expected the two read tools and the three writes"
+    assert {*WRITES, "get_task", "list_tasks"} <= set(tools), (
+        f"listed {sorted(tools)}, expected the two read tools and the three writes among them"
     )
     for name in WRITES:
         found = tools[name].annotations

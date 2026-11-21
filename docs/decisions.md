@@ -203,3 +203,9 @@ Architect: the deadline is checked before the work time, after each function's e
 Owner chose: `complete_task` and `cancel_task` keep their `request_key` in `request_keys`, as `create_task` does, so a retried step after the owner reopens a task changes nothing (not a stateless check); completing a done task or cancelling a cancelled one answers the task with `changed` false and keeps the key, not a refusal, which drops the `already_done` code from Conductor's handoff (work in Conductor's project); every write answers the task in `get_task`'s fields plus `changed` (not an id alone).
 
 Architect: the deadline argument is null or exactly `{date, time, time_zone}` and is parsed first; the kept request names the tool, so a key moved to another tool is `key_reused`; the key is looked up before the task, and a refused change keeps no key; a non-string id is `unknown_task`; all three write tools are idempotent, not read-only, not destructive, closed-world; `reads.py`, `writes.py` and `mcp_server/server.py` become critical modules.
+
+## Phase 6e MCP edit tools (2026-11-21)
+
+Owner chose: `change_deadline` takes `deadline` null to remove the deadline (not refused); `plan_work_time`'s `start` is `{date, time, time_zone}` with `time` required (not a local ISO string and a separate zone); `minutes` is required, with no default from `DOCKET_WORK_MINUTES`; clearing a work time stays the owner's `docket tasks plan --clear`, not an MCP call.
+
+Architect: `change_deadline`'s `deadline` is required in the schema, so omitting it never removes a deadline; in `writes` a non-string id is refused first, then the value, then the key; the kept requests name the tool and hold the arguments as given; `minutes` must be an `int` exactly; `edit_task_once` takes no title; the instructions say every tool but the two reads writes, and 6d's listing test and probe allow tools beyond their own.
