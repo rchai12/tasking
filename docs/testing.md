@@ -23,9 +23,7 @@ Applies to every phase. Phase specs list the specific tests; this file sets the 
 9. **Expected values are literal**, never built by the code under test.
 10. **HTTP concurrency:** use events and temporary SQLite locks to prove loop progress and connection thread ownership. Timeouts are failure watchdogs; do not assert elapsed performance or coordinate with wall-clock sleeps. ASGI fakes match the installed server scope and never open a socket.
 11. **Store startup:** use spawn-mode processes and standard-library IPC against synthetic temporary databases to test independent openers and lock release on process exit. Probe entry points have a main guard so spawned children do not recursively run them. Keep process/queue cleanup in finally blocks; no real database or account is used.
-12. **Shared product support (Phase 2o):** import `path as path` and `store as store` explicitly from tests.support in the assigned consumer modules. Fixtures are function-scoped with no explicit decorator name/autouse; the store fixture depends directly on builtin `tmp_path` rather than a consumer-visible `path` dependency. Seeded adapters borrow `store as base_store`, declare `__all__ = ["base_store"]` for the fixture re-export and never own a second context or use a no-op decorator. Validate shared fixtures by executing consumers with colliding parametrized names; collection and identity checks are insufficient. Use the shared strict `refused` helper for CoreError code/text assertions. Preserve existing cases, body assertions, data and node IDs; later file consolidation requires an explicit selector/manifest migration first.
-
-13. **Test consolidation (Phase 2p onward):** pin each old/new node ID before moving a case. Preserve exact non-import AST bodies and import meaning, fixture scope, parameter IDs and section ownership. A historical positive file selector must exclude later additions; a historical file ignore must keep those later additions selected. Check the mapped case sets and execute actual consumers. Preserve original counts/reviews as history, and migrate only explicitly authorized command references and manifests. Collection subprocesses use one quiet flag so node IDs remain visible.
+12. **Pins (Phase 6b onward):** given tests are committed behind strict `xfail` markers that the coder deletes. The verifier reviews in `docs/reviews/` are pinned by sha256 in `tests/review_pins.json`; the architect pins each passed phase's review in the next spec's commit. Nothing else is byte- or AST-pinned: a verifier judges given files with `git diff` against the phase's base commit.
 
 ## Critical modules
 
@@ -43,7 +41,7 @@ Product critical modules guard task approval, retry safety, reminder integrity a
 - domain.py and parsing.py
 - intake.py, clients.py, web.py and server.py
 
-Tooling coverage preserves the existing complete coverage of reports.py, acceptance.py and spotcheck.py under docket_tools. Their bodies move byte-identically; existing tests change only the explicitly scoped imports. The checker itself is exercised by fake-runner/gate tests; this phase does not create a new 100% promise for scripts/check.py.
+Tooling coverage preserves the existing complete coverage of reports.py, acceptance.py and spotcheck.py under docket_tools. The checker itself is exercised by fake-runner/gate tests; this phase does not create a new 100% promise for scripts/check.py.
 
 Future reminder, press and calendar-sync/reconciliation modules join the product critical inventory when their phases add them. Product packaging remains confined to src; repository tooling is not installed or imported by product code. The Phase 2n packaging check uses unchanged discovery plus an isolated src-copy CLI smoke test with network and Keychain access blocked; it does not claim a wheel was built.
 

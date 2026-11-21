@@ -312,6 +312,21 @@ def stub_check(clone: Path, stubs: list[str], tests: list[str]) -> int:
     return 0
 
 
+def existing_ids(clone: Path, test_ids: list[str]) -> set[str]:
+    """The ids among these that the clone's own tests collect (tests the phase does not give)."""
+    if not test_ids:
+        return set()
+    done = subprocess.run(
+        [".venv/bin/python", "-m", "pytest", "--collect-only", "-q", "-p", "no:cacheprovider"]
+        + sorted(set(test_ids)),
+        cwd=clone,
+        env=clone_env(),
+        capture_output=True,
+        text=True,
+    )
+    return {line for line in done.stdout.splitlines() if line in test_ids}
+
+
 def collected_ids(clone: Path, tests: list[str]) -> dict[str, list[str]]:
     """Every test id per file, collected in a throwaway copy with names-only stubs."""
     copy = clone.resolve().with_name(clone.resolve().name + "-lint")
@@ -397,16 +412,21 @@ def lint(spec_path: Path, guide_path: Path, clone: Path, promoted: bool = False)
         if start is None or int(start.group(1)) != n:
             problems.append(f"spec: the Start count should be {n}")
         least = re.search(r"at least ([0-9]+) passed", section(spec, "## Acceptance"))
-        if least is None or int(least.group(1)) != n + total:
-            problems.append(f"spec: acceptance should say at least {n + total} passed")
+        retired = retired_count(spec)
+        if least is None or int(least.group(1)) != n + total - retired:
+            problems.append(f"spec: acceptance should say at least {n + total - retired} passed")
     if f"`{total} passed`" not in section(spec, "## Acceptance"):
         problems.append(f"spec: acceptance should name `{total} passed` for the given tests")
-    wanted = [gate_row(row) for row in table_rows(section(spec, "## Acceptance"))]
+    wanted = [
+        gate_row(row, retired_count(spec)) for row in table_rows(section(spec, "## Acceptance"))
+    ]
     gates = [" | ".join(row[1:3]) for row in table_rows(section(guide, "## 2. Gates"))]
     if gates[: len(wanted)] != wanted:
         problems.append("guide: its gates differ from the spec's acceptance (regenerate the guide)")
     known = {line for found in ids.values() for line in found}
-    for test_id in re.findall(r"`(tests/[^`]+::[^`]+)`", guide):
+    named = re.findall(r"`(tests/[^`]+::[^`]+)`", guide)
+    known |= existing_ids(clone, [test_id for test_id in named if test_id not in known])
+    for test_id in named:
         if test_id not in known:
             problems.append(f"guide: {test_id} is not a collected test id")
     if search_commands(spec) != [
@@ -704,7 +724,8 @@ def guide_from_spec(spec_path: Path) -> str:
     count = re.search(r"Given test count: \*\*([0-9]+)\*\*", spec)
     tracked = " ".join([f"docs/phases/{spec_path.name}", *given])
     gates = "\n".join(
-        f"| G{number} | {gate_row(row)} |" for number, row in enumerate(acceptance, start=1)
+        f"| G{number} | {gate_row(row, retired_count(spec))} |"
+        for number, row in enumerate(acceptance, start=1)
     )
     last = len(acceptance) + 1
     search_rows = "\n".join(
@@ -799,11 +820,23 @@ it must print `Reports OK.`
 """
 
 
-def gate_row(row: list[str]) -> str:
+def retired_count(spec: str) -> int:
+    """Tests a phase deletes, from its line "this phase retires R tests" (0 when absent)."""
+    found = re.search(r"this phase retires ([0-9]+) tests", spec)
+    return int(found.group(1)) if found else 0
+
+
+def gate_row(row: list[str], retired: int = 0) -> str:
     """A spec's acceptance row as a gate; the coder's Start row becomes an at-least count."""
     command, shows = row[0], row[1]
     found = re.fullmatch(r"(`[^`]+`) \(before you start\)", command)
     passed = re.fullmatch(r"`([0-9]+) passed`", shows)
+    if found and passed and retired:
+        start = int(passed.group(1))
+        return (
+            f"{found.group(1)} | at least {start - retired} passed, 0 failed "
+            f"({start} before, less the {retired} retired tests)"
+        )
     if found and passed:
         return (
             f"{found.group(1)} | at least {passed.group(1)} passed, 0 failed (the coder's "

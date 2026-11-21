@@ -185,3 +185,9 @@ Architect: Stage 6 splits into 6a (the SDK, `docket mcp serve`, `list_tasks`, `g
 Owner chose: retire the freezes and prepare 6b's inputs first (Phase 6b freezes, 6c core input checks), then the MCP write tools as 6d and 6e, then the store and loop work as 5a to 5d before `docket run` (not all remediation first, not Stage 6 first). Replace the freeze manifests with one manifest pinning `docs/reviews/`; verifiers judge given files with `git diff` against the phase's base commit (not every pin retired, not kept). Split `Store` by aggregate behind thin delegating methods (not helpers only). Defer the lockfile and decide its tool with the 2s type-checker dependency (not a hashed requirements file now, not uv now).
 
 Architect: Phase 6a's strict `xfail` markers on committed given tests are the standard, which settles finding 2 without phase branches. The MCP modules join `scripts/critical_modules.txt` with the write tools in 6d (was 6b). Probes stay frozen given files, excluded from ruff. `docs/architecture.md` is rewritten as the present design (Nov 21): no phase changelog, planned parts marked by stage, reasons left to this file.
+
+## Phase 6b review pins (2026-11-21)
+
+Owner chose: the architect pins each passed phase's review in `tests/review_pins.json` in the next spec's commit, with `.claude/skills/phase-architect/pin_review.py` (not the verifier pinning its own review, not a test that fails while a review is unpinned).
+
+Architect: the `docket_tools` byte pins and the tooling tests' AST pins retire with the product pins; the tooling-boundary behaviour stays tested. The fake coverage in `tests/tooling_boundary_cases.py` reads the two gate lists, so a new critical module needs no test edit. The kept shared-support tests stay in their files until 2r.
