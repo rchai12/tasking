@@ -1,6 +1,6 @@
 # Architecture
 
-Status: see `docs/roadmap.md`.
+This is the design as it stands. What is built and what comes next is in `docs/roadmap.md`; why each choice was made, with its date, is in `docs/decisions.md`; how a part was built is in its phase spec under `docs/phases/`. Parts not built yet carry the stage that adds them.
 
 ## Goal
 
@@ -35,89 +35,77 @@ flowchart LR
     CS -->|read| CAL[Google, iCloud via EventKit helper, Outlook]
 ```
 
-| Component | Job |
-| --- | --- |
-| Tasks core | Creating, changing and ending tasks; the state rules; the audit log. Every other component calls it |
-| Intake API | FastAPI on 127.0.0.1: approved tasks, follow-up links, proposals. Each client signs in with its own token |
-| MCP server | `docket mcp serve` on stdio for Conductor: read tools and approved write tools |
-| Reminder engine | Plans reminders for each task, and every 30 seconds sends what is due through the Discord service |
-| Press handler | Receives button presses forwarded by the Discord service and calls the core |
-| Calendar sync | Writes due-date events to the Tasks calendar through a queue; reads every connected calendar live |
-| CLI | `docket` commands: run the service, sign in to calendars, list and change tasks, decide proposals. From Phase 1e: `docket tasks add`, `list` and `show`; from Phase 1f: `start`, `done`, `cancel` and `reopen` (a repeat says so and exits 0); from Phase 1g: `edit` (title and deadline) and `plan` (the work time); each needs `DOCKET_TIME_ZONE`, writes only through `docket.core`, and refuses with a plain sentence on stderr and exit code 1 |
+| Component | Job | Built |
+| --- | --- | --- |
+| Tasks core | Creating, changing and ending tasks; the state rules; the audit log. Every other component calls it | Yes (`docket.core`) |
+| Intake API | FastAPI on 127.0.0.1: approved tasks and follow-up links; proposals later. Each client signs in with its own token | Tasks and links (`docket.intake`, `web`, `server`) |
+| MCP server | `docket mcp serve` on stdio for Conductor: read tools and approved write tools | Read tools; writes in 6d and 6e |
+| Reminder engine | Plans reminders for each task, and every 30 seconds sends what is due through the notifier | Yes, through a fake notifier (`docket.reminders`) |
+| Press handler | Receives button presses forwarded by the Discord service and calls the core | Stage 4 |
+| Calendar sync | Writes deadline and work-time events to the Tasks calendar through a queue; reads every connected calendar live | Stages 7 to 9 |
+| CLI | `docket` commands; thin, with no decisions | See below |
+
+The CLI today: `docket version`; `docket serve` (the intake API); `docket mcp serve`; `docket clients add <client> [--replace]` (prints a new token once and stores it in the Keychain); and `docket tasks add`, `list [--all]`, `show`, `start`, `done`, `cancel`, `reopen`, `edit` (title and deadline) and `plan` (the work time). Task commands need `DOCKET_TIME_ZONE`, write only through `docket.core`, treat a repeat as no change (exit 0), and refuse with one plain sentence on stderr and exit code 1. `docket run`, `docket status`, `docket audit`, `docket proposals` and the calendar sign-ins come with their stages.
 
 ## Stack
 
 | Concern | Choice | Notes |
 | --- | --- | --- |
-| Language | Python 3.12 (`/opt/homebrew/bin/python3.12`) | |
+| Language | Python 3.12, run as `.venv/bin/python` | |
 | Storage | Standard library `sqlite3`, plain SQL, numbered migrations tracked in `PRAGMA user_version` | As in the email service |
-| API | FastAPI 0.162 on 127.0.0.1, port `DOCKET_WEB_PORT` (default 8767), its own telemetry switched off in code (Phase 2c) | Host check (`127.0.0.1:<port>` and `localhost:<port>` only), as in `finances` and Conductor |
-| Outgoing HTTP | httpx | Google, Microsoft Graph, the Discord service |
-| Agent tools | `mcp` Python SDK 2.x, stdio | The same SDK as `finances` and Conductor |
-| Settings | `pydantic-settings`, prefix `DOCKET_` | |
+| API | FastAPI on 127.0.0.1, port `DOCKET_WEB_PORT` (default 8767), its own telemetry switched off in code | Host check (`127.0.0.1:<port>` and `localhost:<port>` only), as in `finances` and Conductor |
+| Outgoing HTTP | httpx (from Stage 4) | Google, Microsoft Graph, the Discord service |
+| Agent tools | `mcp` Python SDK, pinned `>=2.3,<2.4`, stdio | The same SDK as `finances` and Conductor |
+| Settings | `pydantic-settings`, prefix `DOCKET_` | `DATA_DIR`, `TIME_ZONE`, `WORK_MINUTES`, `WEB_PORT` today |
 | Commands | `typer` | |
-| Secrets | The login Keychain, service `docket`, through `docket.keychain` | Client tokens, calendar refresh tokens |
+| Secrets | The login Keychain, service `docket`, through `docket.keychain` | Client tokens; calendar refresh tokens later |
 | Tests and lint | `pytest`, `pytest-cov`, `ruff` | |
 
 The data folder is `DOCKET_DATA_DIR`, by default `~/Library/Application Support/docket`, mode `0700`; the database file is `docket.sqlite3`, mode `0600`. Unlike the email service's data, it holds no email text, so it is backed up by Time Machine.
 
+Settings errors name the setting with a fixed sentence (`DOCKET_TIME_ZONE is not set`, `DOCKET_WEB_PORT must be 1024 to 65535`); when several fail, the first of data folder, time zone, work minutes and port wins, and anything else is `Invalid docket settings.`, never library text.
+
 ## Data model
+
+Built tables (migrations 1 to 6):
 
 | Table | Holds |
 | --- | --- |
-| `tasks` | id, title (plain text, at most 100 characters), state, deadline (UTC instant and IANA zone, or none), whether a time was given, planned work time (start as a UTC instant and zone, and length in minutes, or none), source (`email`, `agent`, `proposal`, `owner`), the source's reference (for email: provider, message id, link), created and updated times |
-| `request_keys` | Each keyed request's client and key (unique per client), its request as canonical JSON, and the task (and link) it made (migration 2) |
-| `links` | Follow-up emails on a task (the email service's `/links`): provider, message id, link, ids `l1`, `l2` (migration 2). Links and keys of tasks ended more than a year ago are pruned by the service |
-| `proposals` | source, title, optional deadline, evidence quote, confidence, state (pending, approved, declined), the task it became |
-| `reminders` | task, kind, fire time, claimed time, sent time, voided time, and held (waiting on a calendar question) |
-| `calendar_links` | task, kind (`deadline` or `work`), calendar, event id, the title and time last written, last checked |
-| `calendar_queue` | Event writes waiting to be sent, retried each round |
-| `posts` | Each message sent through the notifier: task, retry key, the newest reminder's kind, the missed count, queued, claimed and sent times (migration 5); Stage 4 adds its Discord message id and whether it was answered. `post_reminders` links each reminder to at most one post |
-| `digests` | One daily digest a home day: its day, retry key, queued, claimed and sent times (migration 6). `digest_tasks` holds the tasks it was queued with |
-| `alerts`, `problems` | As in the email service: each problem once when it starts and once when it is fixed |
-| `audit_log` | Every change: when (UTC), what, who or what caused it (press, command, agent, email), before and after |
+| `tasks` | id, title, state, deadline (UTC instant and IANA zone, or none), whether a time was given, planned work time (start as a UTC instant and zone, and length in minutes, or none), source (`email`, `agent`, `proposal`, `owner`), the source's reference (for email: provider, message id, link), created and updated times |
+| `audit_log` | Every change: when (UTC), what, who or what caused it (press, command, agent, email), before and after as canonical JSON |
+| `request_keys` | Each keyed request's client and key (unique per client), its request as canonical JSON, and the task (and link) it made |
+| `links` | Follow-up emails on a task (the email service's `/links`): provider, message id, link |
+| `reminders` | task, kind, fire time, the planning instant, and claimed, sent and voided times |
+| `posts`, `post_reminders` | Each notice sent through the notifier: task, retry key, the newest reminder's kind, the missed count, queued, claimed and sent times; each reminder belongs to at most one post. Stage 4 adds the Discord message id and whether it was answered |
+| `digests`, `digest_tasks` | One daily digest per home day: its day, retry key, queued, claimed and sent times, and the tasks it was queued with |
 
-Task ids are `t` followed by the row's number (`t1`, `t2`), given out in order and never reused once committed; they fit the email service's rule (ASCII letters, digits, `-` and `_`). Titles are 1 to 100 characters with no leading or trailing whitespace and no control, format or line-separator characters (Unicode categories Cc, Cf, Zl, Zp); a title that breaks the rule is refused, never rewritten.
+Planned tables: `proposals` (Stage 10: source, title, optional deadline, evidence quote, confidence, state, the task it became); `calendar_links` and `calendar_queue` (Stage 7: each event's kind, calendar, id and last written title and time; the writes waiting to be sent); `alerts` and `problems` (Stage 5, as in the email service: each problem once when it starts and once when it is fixed). Reminders gain a held flag in Stage 9.
 
-Owner decision (2026-11-18): persistent internal rows use SQLite-assigned, never-reused row numbers. Tasks keep t1, links keep l1, and durable reminders will use r1, r2, onward. Outbound retry keys are generated through docket.ids.new_id(), persisted once for the send operation and reused across attempts and restarts. They are separate from row IDs; no retry allocates a replacement key. Pure planning allocates neither kind of ID. AGENTS.md uses this same rule.
+**Ids.** Internal rows use SQLite-assigned, never-reused row numbers shown with a letter: tasks `t1`, links `l1`, reminders `r1`. Outbound retry keys come from `docket.ids.new_id()`, are stored once with the post or digest they send, and are reused on every attempt. Task ids fit the email service's rule (ASCII letters, digits, `-` and `_`).
 
-Phase 2g specifies email references as plain text: `message_id` is 1–512 Unicode code points and `link` is 1–2,048, with no Cc, Cf, Zl or Zp characters. Neither field is trimmed, normalized or parsed as a URL. `docket.references` supplies the pure policy to core and the upgrade preflight. Migration 3 bounds stored lengths and prevents NUL length bypasses, rebuilding tasks and links without changing IDs, audit rows, retry JSON or sequences. Invalid legacy references stop the upgrade with `invalid stored reference: <task/link id> <field>`; no automatic repair is performed. Foreign keys are disabled only for that rebuild and restored on every exit.
+**Titles** are 1 to 100 characters with no leading or trailing whitespace and no control, format or line-separator characters (Unicode categories Cc, Cf, Zl, Zp); a title that breaks the rule is refused, never rewritten.
 
-The store (`docket.store`, Phase 1b) is one SQLite file, `docket.sqlite3`, mode `0600`, in WAL mode with a 5-second busy timeout, so the service, the `docket` command and the MCP server can each open it. Every write runs inside `Store.transaction()` (`BEGIN IMMEDIATE`), so a change and its audit row commit together or not at all. Tasks are never deleted and audit rows never changed or removed; triggers enforce both.
+**Email references** are plain text: `message_id` is 1 to 512 code points and `link` 1 to 2,048, with no Cc, Cf, Zl or Zp characters, never trimmed, normalized or parsed as a URL. `docket.references` holds the rule for the core and for the upgrade check.
 
-Phase 2i specifies a startup gate at `path.with_name(path.name + ".startup.lock")` (normally `docket.sqlite3.startup.lock`), empty and mode 0600. An exclusive standard-library flock is acquired before SQLite opens, held through WAL/setup/migrations and failed-constructor cleanup, then released. The gate waits until the initializer finishes; SQLite keeps its own five-second busy timeout. The file is retained, never unlinked as stale; the OS releases the lock when its process exits. Normal writes continue through SQLite, outside this startup gate. Gate acquisition failures report only `store startup unavailable`.
+**Never deleted.** Tasks, audit rows, reminders, posts and digests are never removed, and their contents (a reminder's plan, a post's members) never change; triggers enforce this. Links and keys of tasks ended more than a year ago will be pruned by the service (Stage 5).
 
-Schema-version decisions and each migration's fresh eligibility check run under `BEGIN IMMEDIATE`, preserving individual migration transactions and migration-3-only foreign-key relaxation. Every failed initialization closes its created connection once, without double-closing the reference rebuild path. Phase 2i adds no migration or setting.
+## Store (`docket.store`, critical)
 
-When a task is loaded, Phase 2i requires UTC deadline/work instants and created/updated timestamps, plus exact deadline/work zones. Invalid data raises `invalid stored task time: <task id>` without a library-error chain; it is not normalized, repaired or omitted from a requested result. The CLI's private store context guard handles these read failures as plain stderr refusals, with no partial output. Audit, link and request-key rows are still decoded without these checks; Phase 5a puts them on the same constant `StoreError`.
+- **One file.** `docket.sqlite3` in WAL mode with a 5-second busy timeout, so the API, the CLI, the MCP server and later the service can each open it.
+- **One transaction per change.** Every write runs inside `Store.transaction()` (`BEGIN IMMEDIATE`), so a change, its audit row and its reminder rows commit together or not at all.
+- **Startup.** An exclusive flock on `docket.sqlite3.startup.lock` (empty, mode `0600`, never removed) is held from before SQLite opens until setup and migrations finish, so two processes never migrate at once; a failure to take it is `store startup unavailable`. Each migration checks the schema version under `BEGIN IMMEDIATE` and runs in its own transaction. A failed start closes its connection.
+- **Migrations.** 1 tasks and the audit log; 2 links and request keys; 3 bounds stored references, rebuilding `tasks` and `links` without changing ids, audit rows or keys, and stops with `invalid stored reference: <id> <field>` on a bad legacy row instead of repairing it; 4 reminders, backfilling each open or in-progress task's plan once from its stored state; 5 posts; 6 digests.
+- **Table modules.** Each table's SQL lives in a private module (`_store_tasks`, `_store_audit`, `_store_links`, `_store_keys`, `_store_reminders`, `_store_posts`, `_store_digests`) that receives the Store's connection and never opens one, manages a transaction or decodes values. `Store` keeps the public records, the checks and the encoding. Column names come from fixed internal lists; every value is a bound parameter.
+- **Stored values are checked when read.** A task, reminder, post or digest whose times are not UTC or whose zone is not exact raises a constant `StoreError` naming only the row (`invalid stored task time: t3`), never repaired, never left out of a result. The CLI shows it as a plain refusal. Audit, link and request-key rows are not checked yet (Phase 5a).
+- **One JSON writer.** `docket.serialization.canonical_json` (sorted keys, unescaped Unicode, compact) writes audit snapshots and saved request bodies and compares retries.
 
-Phase 2j specifies one private core helper for inserting an open task and its complete create audit snapshot, called directly by both public creation functions. Validation, the single timestamp, transaction and retry-key decisions remain with each public caller. The helper never opens a transaction or reads the clock. `docket.serialization.canonical_json(value: dict[str, object]) -> str` becomes the shared writer for audit snapshots, saved request bodies and both sides of task/link retry comparisons. It preserves the existing `json.dumps` options: sorted keys, unescaped Unicode and compact separators, with all other defaults unchanged. Store decoding remains local; no schema or public core/store contract changes.
+## Shared rules
 
-## Store table boundaries
-
-Phase 2l specifies three private SQL modules, `_store_audit`, `_store_links` and `_store_keys`, receiving the same Store connection for normal audit-log, link and request-key operations. They do not open or close connections, manage transactions, configure SQLite, import product layers or encode/decode data. Store retains public records, sentinel, guards, ID checks, JSON/time conversion, startup and migrations, including reference preflight. It calls table functions through their modules after the existing guards. Task SQL stays in Store until Phase 2m completes the split. Both phases preserve the public Store API and schema; every extracted path remains under the 100% critical line/branch gate.
-
-Phase 2m specifies `_store_tasks` for ordinary task SELECT/INSERT/UPDATE, existence/readback, task columns and SQL construction, completing the four-table boundary. It follows the same connection-only SQL contract as the 2l modules. Store retains field selection, None versus UNCHANGED handling, timestamp/domain encoding and `_task_from` validation. Update identifiers come from its fixed internal field map; values and state filters are bound parameters. Startup/reference preflight continues to use local migration SQL. Public records, errors, sentinel, IDs and signatures remain in Store; the new module joins the 100% critical gate.
-
-## Repository phase tooling
-
-Phase 2n specifies root `docket_tools/` for repository-only report, acceptance and spot-check utilities, moved byte-for-byte out of src/docket. Product discovery stays src-only, with no compatibility shims or tooling dependency in the application. Four command wrappers and the architect linter bootstrap their resolved repository root before imports; the existing Phase 2e probe retains its root semantics and gets its scoped import/bootstrap migration. Commands, parser behavior, mutation allowlist and report formats remain unchanged. Full checks measure product and tooling together but enforce separate 100% `critical coverage` and `tooling coverage` inventories; no dependency is added.
-
-## Shared product test support
-
-Phase 2o specifies shared product-test support without changing runtime or tooling code. `tests.support` supplies explicit default function-scoped `path` and `store` fixtures and one `refused(code, call)` helper that requires CoreError with matching code and string. The store fixture depends directly on builtin `tmp_path`, independently of the optional shared `path` fixture, because consumers use `path` as a parametrized case label. Eight consumer modules import the same fixtures locally; the seeded link-store fixture declares `__all__ = ["base_store"]`, borrows that fixture and retains its exact transaction/seed data without a no-op decorator. No conftest plugin or eager/global connection is added. Existing files, 304 scoped case IDs, assertions, support helpers and global guards remain pinned. Product and tooling file consolidation are separate later phases with explicit selector/manifest migration.
-
-## Shared domain rules and parsing
-
-Phase 2k specifies `docket.domain` as the shared owner of immutable state/source/client/actor/action/provider definitions, state labels, source actors, forbidden text categories and repeated title/key/work limits. Core, views, CLI, references, deadlines, settings and intake/HTTP consume those definitions while retaining their existing boundary checks. The core client list includes email and agent; token issuance and HTTP intake remain email-only. Shipped SQL stays literal and unchanged, with tests comparing the current CHECKs and bounds against the shared definitions, including both provider constraints.
-
-`docket.parsing.parse_date(value: object) -> date` and `parse_time(value: object) -> time` enforce full ASCII YYYY-MM-DD and HH:MM shapes and valid calendar/clock values. Their typed ParseError has fixed text; CLI and intake map it to their existing messages and refusal order. Optional time stays a caller concern, and stored-time decoding keeps its existing semantics. `domain.zone_names()` supplies one cached frozenset of exact zone names to settings and deadlines. No DST, UTC, date-only or work-time rule changes.
-
-Settings validation explicitly maps data_dir, time_zone, work_minutes and web_port in that priority. Unknown/root/empty validation failures become `Invalid docket settings.`, with no library text or chained error; a recognized field still wins over an unknown one in the same failure. No setting or dependency is added.
+`docket.domain` is the one source for the closed lists and limits: states and their labels, sources and the actor each implies, clients, actions, providers, reminder kinds, the forbidden character categories, and the title, key and work-time bounds. The schema's CHECKs stay literal SQL, and tests compare them with `domain`. `docket.parsing` reads dates (`YYYY-MM-DD`) and times (`HH:MM`) strictly with a fixed-text `ParseError`, which the CLI and intake turn into their own messages. `domain.zone_names()` is the one set of exact zone names.
 
 ## Task states
 
-Stored states are **open**, **in progress**, **done** and **cancelled**. **Due** (at or after the deadline, within the first late reminder) and **overdue** (later) are worked out from the deadline and the clock when read; they are never stored. Time passing can make a task overdue but never done.
+Stored states are **open**, **in progress**, **done** and **cancelled**. **Due** and **overdue** are worked out from the deadline and the clock when read; they are never stored. Time passing can make a task overdue but never done.
 
 | From | Event | To |
 | --- | --- | --- |
@@ -129,7 +117,7 @@ Stored states are **open**, **in progress**, **done** and **cancelled**. **Due**
 
 Only done and cancelled stop reminders. A new deadline, a new work time, a snooze or a title edit keeps the state.
 
-`docket.core` (Phase 1c) is the only code that creates or changes a task: `create_task`, `change_state` (start, done, cancel, reopen) and `edit_task` (title, deadline, work time). Each runs in one store transaction with its audit rows; a repeat (Done on a done task, the same title again) reports no change and writes nothing. An ended task must be reopened before an edit, a change that leaves a work time ending after the deadline is refused, and past dates are allowed. Refusals are constant codes: `unknown_task`, `invalid_title`, `invalid_source`, `invalid_reference`, `invalid_actor`, `invalid_action`, `task_ended`, `work_after_deadline`.
+`docket.core` is the only code that creates or changes a task: `create_task`, `create_task_once` (keyed, for intake and agents), `add_link` (keyed), `change_state` (start, done, cancel, reopen) and `edit_task` (title, deadline, work time). Each runs in one store transaction with its audit rows and reminder changes; both create paths share one private insert-and-audit helper. A repeat (Done on a done task, the same title again) reports no change and writes nothing. An ended task must be reopened before an edit, a change that leaves a work time ending after the deadline is refused, and past dates are allowed. Refusals are constant codes: `unknown_task`, `invalid_title`, `invalid_source`, `invalid_reference`, `invalid_actor`, `invalid_action`, `invalid_client`, `invalid_key`, `key_reused`, `task_ended`, `work_after_deadline`, `invalid_reminder_plan`.
 
 ## Time rules (`docket.deadlines`, critical)
 
@@ -138,7 +126,7 @@ Only done and cancelled stop reminders. A new deadline, a new work time, a snooz
 - A deadline is upcoming before its instant, due for the 30 minutes after it (until the first late reminder), then overdue.
 - A date with no time gets 17:00 in the given zone. The task remembers that no time was given, and cards show "Fri Nov 20 (17:00, no time given)".
 - A planned work time is a start instant plus a length of 5 to 720 real minutes (default `DOCKET_WORK_MINUTES`, 60), on one day. It must end by midnight of that day in its zone, and by the deadline when there is one. A task has at most one planned work time.
-- Times are shown in your zone (`DOCKET_TIME_ZONE`, which has no default: a command that needs it refuses with `DOCKET_TIME_ZONE is not set`), and also in the zone a deadline or work time was set in when that differs: `Fri Nov 20 17:00 EST (Sat Nov 21 07:00 JST where set)`. Names are English whatever the locale, the year appears only when it isn't this year, and a deadline with no time given says so. `docket.views` (Phase 1d) is the one place that writes this text.
+- Times are shown in your zone (`DOCKET_TIME_ZONE`, which has no default: a command that needs it refuses with `DOCKET_TIME_ZONE is not set`), and also in the zone a deadline or work time was set in when that differs: `Fri Nov 20 17:00 EST (Sat Nov 21 07:00 JST where set)`. Names are English whatever the locale, the year appears only when it isn't this year, and a deadline with no time given says so. `docket.views` is the one place that writes this text.
 - Every offset (1 hour before, 30 minutes after) is computed from the stored instant. Days, such as the daily digest, are counted in your zone (`DOCKET_TIME_ZONE`), so daylight-saving changes never shift a reminder.
 
 ## Intake
@@ -154,13 +142,18 @@ Only done and cancelled stop reminders. A new deadline, a new work time, a snooz
 | deadline | `null`, or `date` (YYYY-MM-DD), `time` (HH:MM or `null`) and `time_zone` |
 | provider, message_id, link | The email's reference, stored with the task |
 
-- Built in `docket.intake` (Phase 2b, no HTTP): `accept_task` and `accept_link` return the status and body below; every refusal body is `{"error": <code>}`, and every text field must be a JSON string.
-- Phase 2f requires an explicit keyword-only `client` on both intake functions, with no default. HTTP passes the identity matched to the bearer token; the body never supplies it. These routes remain email-only: after checking the retry key, intake refuses any non-string or non-email identity with 422 `invalid_client`, before looking up a task or parsing the body. Missing or unmatched tokens remain 401 `unauthorized`. Valid agent writes still go directly through the core, later through MCP; no agent HTTP client is enabled.
-- Phase 2h specifies a bounded stream read before JSON parsing: at most 65,536 actual bytes, with no reliance on Content-Length and no read after the decisive overflow chunk. Once size, key and JSON are checked, one awaited framework worker call opens the store, invokes intake with the matched client, and closes the store on that same thread. SQLite waits leave the event loop free; the existing 5-second busy timeout and connection thread checks stay in force. Responses, validation order and retry records are unchanged. No executor, queue or new dependency is added.
-- **201** `{"id": ...}` for a new task; **200** with the same id when the key is sent again with the same body; **409** when the key is sent again with a different body; **400** for a missing `Idempotency-Key` (1 to 200 characters); **401** for a missing or wrong token; **422** for an invalid body (exactly the fields above; a title of one line). These match the email service's `FakeTasksApp`, plus 401.
-- The task is created **open**, its reminders are planned and its calendar write is queued, all in one transaction.
+- **201** `{"id": ...}` for a new task; **200** with the same id when the key is sent again with the same body; **409** when the key is sent again with a different body; **400** for a missing `Idempotency-Key` (1 to 200 characters); **401** for a missing or wrong token; **422** for an invalid body (exactly the fields above, every text field a JSON string). Every refusal body is `{"error": <code>}`. These match the email service's `FakeTasksApp`, plus 401.
+- The task is created **open** with its reminders planned, in one transaction (its calendar write joins it in Stage 7).
 
 `POST /tasks/<id>/links` adds a follow-up email to a task, keyed the same way, with exactly `source`, `provider`, `message_id` and `link`: 201 `{"id": ...}` (the link's id), 200 with the same id on repeats, 409 for the same key with another task or body, 404 for an unknown task.
+
+How a request is handled:
+
+- The bearer token is matched to a client identity, and that identity, never the body, is passed to `docket.intake` as `client`. These routes are email-only: any other identity is 422 `invalid_client`.
+- The body is read as a stream and refused past 65,536 bytes, whatever `Content-Length` says. Size, then key, then JSON are checked before the store is touched.
+- The store work runs on one framework worker thread, which opens the store, calls intake and closes it, so a SQLite wait never blocks the event loop.
+- `docket.intake` (`accept_task`, `accept_link`) has no HTTP in it: it returns the status and body above.
+- Tokens are read once when the server starts, so `docket clients add --replace` takes effect at the next start.
 
 A token is always required. The email service's stub sends none today; its Phase 3c adds it, so 3c must land before the two are connected.
 
@@ -168,49 +161,40 @@ A token is always required. The email service's stub sends none today; its Phase
 
 Conductor calls `create_task` and the other write tools over MCP only after you approve the step (see [MCP tools](#mcp-tools-for-conductor)). They use the same core function as `POST /tasks`, with source `agent`. Each carries a `request_key` that Conductor's code fills with `<run id>:<step id>`, so a step retried after a timeout updates nothing twice.
 
-### Proposals
+### Proposals (Stage 10)
 
 `POST /proposals` with a source, title, optional deadline, evidence quote and confidence. A proposal posts a card; only your press (or `docket proposals approve`) makes it a task. One follow-up after 30 minutes, then it waits in the daily digest. Nothing is created on a timeout. No source sends proposals in v1; cameras will.
 
 ## Reminder engine (`docket.reminders`, critical)
 
-Phase 3c specifies sending. One pass (`send_due`) reads the clock once; in one transaction it groups each task's due, unclaimed reminders into one post with a key from `ids.new_id()` and claims every unsent post that has no claim or one older than 5 minutes and still has a live reminder; then it sends each claimed post's notice through the `Notifier`, marking it sent on success and releasing its claim on a `NotifierError`. Owner decisions (2026-11-18): two or more due reminders in one pass become one message, "Missed while docket was offline: N reminders." plus the newest reminder's line; only reminders that came due after they were planned count as missed; a refused send is retried every pass with the same key. Delivering once per key is the notifier's contract (the shared Discord service's keyed request).
+Each task with a deadline or a work time gets planned reminders:
 
-Phase 3d specifies the digest. One pass (`send_digest`) reads the clock once and takes the home day and its slot (`DOCKET_DIGEST_TIME` in your zone, passed in by the caller). From the slot on, if that day has no digest and some open task's deadline plus 720 minutes is at or before the slot, it queues one with a key from `ids.new_id()` and those tasks; it claims the day's digest when it is unsent, unclaimed or claimed more than 5 minutes ago, and still has a member overdue; then it sends a `Digest` of the still-overdue members, in deadline order, marking it sent or releasing the claim on a `NotifierError`. Owner decisions (2026-11-18): a day with nothing overdue sends and stores nothing; a missed 07:00 goes out on the first pass later that home day, never for an earlier day; the heading is "Still open past their deadlines: N tasks."; a retry leaves out tasks that ended.
-
-Phase 3e specifies the loop. `run_loop` checks the caller's stop, runs one pass, then waits 30 seconds on the stop, and repeats; it reads no clock or settings of its own and owns no store. A pass (`run_pass`) runs the reminder half and then the digest half, each in its own `except Exception`, and returns `PassResult(sent, digest, failed)`. Owner decisions (2026-11-18): an unexpected error never stops the loop, which tries again 30 seconds later; each half fails alone. A crash (`KeyboardInterrupt`, `SystemExit`, the process dying) is not caught, and the claims make every retry safe.
-
-Phase 3b specifies durable reminder plans in migration 4. Each row has a never-reused r<number>, task FK, shared-domain kind, original UTC fire time, approved planning instant and nullable claimed/sent/voided metadata. Plan identity and time are immutable; rows remain as history. Normal reminder SQL belongs to _store_reminders on the Store connection, with validation/conversion in Store. Reserved claimed/sent fields do not implement a sender in this phase.
-
-Core creation persists the Phase 3a plan inside the existing task/audit/request-key transaction. Done/Cancel void only pending rows; Reopen adds a fresh plan. Actual deadline edits replace deadline-kind rows, work edits replace start rows, and title/no-op/start/link operations retain existing reminders. No clock or outbound key is allocated beyond the established core operation time. Reads and restarts load stored rows rather than regenerate plans.
-
-Owner decision (2026-11-18): migration 4 backfills existing open/in_progress tasks once, ordered by task number, from each stored snapshot and updated_at. It preserves past slots for the later catch-up sender, changes no task/audit data and sends nothing. Backfill is inside the startup transaction under the existing flock/version gate; an invalid stored task or overflowing plan rolls back DDL, rows and version without repair. Overflow uses invalid reminder plan: t<number>; new core scheduling overflow is invalid_reminder_plan, safely rendered by CLI and returned as 422 by intake. Store reminder reads reject malformed/non-UTC stored times with invalid stored reminder time: r<number>. No new live connection, claim operation or key generation is authorized.
-
-Phase 3a specifies the pure plan only: frozen PlannedReminder(kind, fire_at) values and plan_reminders(task, now), with an explicit canonical UTC planning instant and no persistence or sends. It includes all due/late instants even when past, for the later single-status catch-up sender; due_soon exists only for a strictly future deadline under one elapsed hour away. At exactly one hour the before reminder fires at now. Active planned work retains its original start instant, independent of deadline. Done/cancelled produce no plan. Results sort by UTC fire_at, then start, before, due_soon, due, late for ties. All seven late slots are deadline offsets of 30, 60, 120, 180, 240, 480 and 720 elapsed minutes.
-
-The supplied now is the approved creation/replanning instant, not each poll's time. Durable integration will persist a plan atomically with task changes and load it after restart; it must not recreate warnings on every poll. The pure function exposes standard OverflowError for an unrepresentable datetime offset; future integration must handle scheduling failure before committing a task change. Digest planning, claims, delivery retry/catch-up, snooze and lifecycle wiring remain subsequent Stage 3 work. Phase 3a alone does not claim crash-safe delivery.
-
-Each task with a deadline gets planned reminders:
-
-| Kind | When | Message | Buttons |
+| Kind | When | Message | Buttons (Stage 4) |
 | --- | --- | --- | --- |
 | `before` | 1 hour before | "Are you working on this?" | Working on it, Done, Snooze, Edit deadline |
 | `due_soon` | At creation, instead of `before`, when the deadline is under an hour away | "This is due soon." | Working on it, Done, Snooze, Edit deadline |
 | `due` | At the deadline | "This is now due." | Done, Need more time, Cancel |
-| `late` | 30 minutes and 1 hour after, then hourly 3 times, then every 4 hours twice | "This is late." | Done, New deadline, Cancel |
+| `late` | 30 and 60 minutes after, then at 2, 3 and 4 hours, then at 8 and 12 hours | "This is late." | Done, New deadline, Cancel |
 | `start` | At the planned work time's start | "Time to start." | Working on it, Done, Snooze, Move work time |
-| digest | Daily at `DOCKET_DIGEST_TIME` (default 07:00) | Every task past its last late reminder, and every pending proposal | One line each, with Done |
+| digest | Daily at the digest time (07:00 by default) | Every open task 12 hours past its deadline (past its last late reminder); pending proposals from Stage 10 | One line each, with Done |
 
-How it runs:
+**Planning** is pure: `plan_reminders(task, now)` returns the plan from the task and the instant it was approved or changed, with no store, clock or ids. Past slots stay in the plan, so a catch-up can count them; `due_soon` exists only for a future deadline under an hour away; a plan sorts by fire time, then kind. An offset that cannot be represented is `invalid_reminder_plan`.
 
-- A loop every 30 seconds **claims** due reminders (sets the claimed time in one statement), sends them, and sets the sent time. A reminder is claimed once, when it is queued into its task's keyed post; it is the post's claim that expires: a post claimed more than 5 minutes ago with no sent time is claimed again and resent with the same key, so a crash mid-send retries and the notifier's once-per-key contract keeps a repeat from showing twice.
-- After downtime, all reminders that came due while the app was down are sent as **one status message** per task, naming the current state, not one message per missed reminder.
-- Done or Cancel voids every pending reminder of the task in the same transaction. Working on it changes the state only; deadline and late reminders continue.
-- A new deadline voids the task's pending deadline reminders and plans new ones; a new work time does the same for its `start` reminder. Snooze moves only the next reminder (by `DOCKET_SNOOZE_MINUTES`, default 30) and never the deadline.
+**Stored plans.** The core writes the plan in the same transaction as the task change. Done and Cancel void the pending rows; Reopen adds a fresh plan; a real deadline edit replaces the deadline rows and a work-time edit the `start` row; anything else keeps them. Restarts read the stored rows and never plan again, so a warning is never recreated.
+
+**Sending** (`send_due`): one clock read; in one transaction, each task's due, unqueued reminders become one post with a key from `ids.new_id()` (a reminder is claimed once, when it is queued), and every unsent post with no claim, or a claim older than 5 minutes, and a live reminder is claimed. Each claimed post's notice then goes through the `Notifier`: marked sent on success, its claim released on `NotifierError` and retried next pass with the same key. Two or more due reminders in one post read "Missed while docket was offline: N reminders." plus the newest reminder's line; only reminders that came due after they were planned count as missed. Delivering once per key is the notifier's contract, so a crash mid-send and a second loop never show a notice twice.
+
+**The digest** (`send_digest`): one clock read and the home day's slot (the caller passes the digest time; `DOCKET_DIGEST_TIME` arrives with `docket run`). From the slot on, the day's digest is queued once with its overdue tasks, claimed the same way as a post while it is unsent and still has an overdue member, and sent as "Still open past their deadlines: N tasks." with those tasks in deadline order. A day with nothing overdue sends and stores nothing; a missed slot goes out on the first pass later that home day, never for an earlier day; a retry leaves out tasks that have ended.
+
+**The loop** (`run_loop`): check the caller's stop, run one pass, wait 30 seconds on the stop, repeat. A pass (`run_pass`) runs sending and then the digest, each in its own `except Exception`, and returns `PassResult(sent, digest, failed)`; an unexpected error never stops the loop, and each half fails alone. A crash is not caught; the claims make the retry safe. The loop owns no store and reads no settings. Phase 5d makes failures visible and stops one bad row from blocking every task.
+
+Still to come:
+
+- Snooze moves only the next reminder (by `DOCKET_SNOOZE_MINUTES`, default 30) and never the deadline (Stage 4).
+- Before sending a reminder for a task with a calendar event, the engine reconciles it (Stage 9, see below).
 - No quiet hours: reminders fire whenever they come due.
-- Before sending a reminder for a task with a calendar event, the engine reconciles it (see below).
 
-## Discord through the shared service
+## Discord through the shared service (Stage 4)
 
 The shared Discord service (a separate project, planned) owns the bot token and the Gateway connection. The tasks app never talks to Discord directly.
 
@@ -220,7 +204,7 @@ The shared Discord service (a separate project, planned) owns the bot token and 
 - **Commands** (`/tasks`, `/done <id>`) call the same core functions as the buttons.
 - **The service down:** sends stay queued in the app and are retried; after 15 minutes of failures the app raises a local alert (`docket status`), and one Discord message when sending works again.
 
-## Calendar sync
+## Calendar sync (Stages 7 to 9)
 
 - **Write path:** creating a task with a deadline or a work time, or changing either or the title, queues one write per event to the Tasks calendar. Each event id is stored with its kind, so a retry updates the event instead of making a second one. Done keeps the events and puts "Done: " in front of their titles; Cancel deletes them. A task with neither a deadline nor a work time never becomes an event.
 - **What an event is:** a deadline becomes a due-date event at the deadline with an alert. A planned work time becomes a timed event from its start for its length. The app never adds a work time on its own.
@@ -232,31 +216,33 @@ The shared Discord service (a separate project, planned) owns the bot token and 
 
 ## MCP tools for Conductor
 
-`docket mcp serve` on stdio. Read tools carry `readOnlyHint: true`; every tool declares an output schema, as Conductor's tool check requires. Results are plain data: ISO times, ids, titles.
+`docket mcp serve` on stdio. Read tools carry `readOnlyHint: true`; every tool declares an output schema, as Conductor's tool check requires.
 
-Phase 6a builds the server and the first two read tools. Each tool returns a typed pydantic model, so its output schema names every field. Parameters are plain strings that docket checks itself, refusing with a constant code, so the SDK never echoes a bad value in an enum message. The decisions (status rules, cursor, paging) live in `docket.reads`; `docket.mcp_server.server` only builds results from them. Each tool call opens and closes its own store, because the SDK runs a plain tool on a worker thread and a SQLite connection belongs to the thread that opened it. The server runs with `log_level="CRITICAL"`, so no exception text, title or path reaches stderr, and stdout carries only the protocol. `docket mcp serve` needs `DOCKET_TIME_ZONE` and reads no secret.
+- **Results** are typed pydantic models, so each output schema names every field. Each deadline carries its UTC instant (`at`) and its `date`, `time` (null when none was given) and `time_zone` in its own zone, the shape the write tools take, so an agent never converts zones.
+- **Parameters** are plain strings that docket checks itself, refusing with a constant code, so the SDK never echoes a bad value in an enum message. The one exception is a wrong JSON type, such as a number for `status`: the SDK's own validation message answers it and may quote the value back to the caller, never to a log.
+- **Decisions** (status rules, cursor, paging) live in `docket.reads`; `docket.mcp_server.server` only builds results from them, and the write tools will call `docket.core`.
+- **One store per call.** The SDK runs a plain tool on a worker thread, and a SQLite connection belongs to the thread that opened it.
+- **Silent.** The server logs at `CRITICAL`, so no exception text, title or path reaches stderr, and stdout carries only the protocol. The command needs `DOCKET_TIME_ZONE` and reads no secret. The SDK loads only for `docket mcp serve`.
 
 | Tool | Conductor effect | Notes |
 | --- | --- | --- |
-| `list_tasks(status, after)` | read | `open`, `in_progress`, `done`, `cancelled` by state; `due` is open or in progress with a deadline later today in `DOCKET_TIME_ZONE`, `overdue` one whose deadline has passed. 50 a page in id order; `next_after` is the next call's `after` (Phase 6a) |
-| `get_task(id)` | read | The task with its sent and pending reminders (kind, fire time, sent time), never voided ones (Phase 6a). The linked event joins it in Stage 7 |
-| `list_proposals` | read | Pending proposals with their source and evidence |
-| `list_events(range)` | read | Across every connected calendar |
-| `check_availability(range)` | read | Free and busy across every calendar |
-| `create_task(title, deadline, request_key)` | write | An approved task, source `agent` |
-| `change_deadline(id, deadline, request_key)` | write | Voids and replans reminders, queues the calendar update |
-| `plan_work_time(id, start, minutes, request_key)` | write | Sets or moves the planned work time; the agent picks the time with `check_availability` first |
-| `snooze_task(id, minutes, request_key)` | write | Moves the next reminder only |
-| `complete_task(id, request_key)` | write | Same path as the Done button |
-| `cancel_task(id, request_key)` | write | Same path as Cancel |
+| `list_tasks(status, after)` | read | `open`, `in_progress`, `done`, `cancelled` by state; `due` is open or in progress with a deadline later today in `DOCKET_TIME_ZONE`, `overdue` one whose deadline has passed. 50 a page in id order; `next_after` is the next call's `after` |
+| `get_task(id)` | read | The task with its sent and pending reminders (kind, fire time, sent time), never voided ones. The linked event joins it in Stage 7 |
+| `create_task(title, deadline, request_key)` | write (6d) | An approved task, source `agent` |
+| `complete_task(id, request_key)` | write (6d) | Same path as the Done button |
+| `cancel_task(id, request_key)` | write (6d) | Same path as Cancel |
+| `change_deadline(id, deadline, request_key)` | write (6e) | Voids and replans reminders, queues the calendar update |
+| `plan_work_time(id, start, minutes, request_key)` | write (6e) | Sets or moves the planned work time; the agent picks the time with `check_availability` first |
+| `snooze_task(id, minutes, request_key)` | write (Stage 4) | Moves the next reminder only |
+| `list_events(range)` | read (Stage 8) | Across every connected calendar |
+| `check_availability(range)` | read (Stage 8) | Free and busy across every calendar |
+| `list_proposals` | read (Stage 10) | Pending proposals with their source and evidence |
 
-No tool approves or declines a proposal. A tool returns refusals as a constant code (`unknown_task`, `already_done`, `invalid_deadline`, and for reads `invalid_status` and `invalid_cursor`), never echoing its input. The one exception is a wrong JSON type, such as a number for `status`: the SDK's own validation message answers it and may quote the value back to the caller, never to a log.
-
-Each deadline in a result carries its UTC instant (`at`) and its `date`, `time` (null when none was given) and `time_zone` in its own zone, the shape the write tools take, so an agent never converts zones. The tools come in stages: the reads in 6a, `create_task`, `complete_task` and `cancel_task` in 6d, `change_deadline` and `plan_work_time` in 6e, then `snooze_task` with Stage 4, `list_events` and `check_availability` with Stage 8, and `list_proposals` with Stage 10.
+No tool approves or declines a proposal. A tool returns refusals as a constant code (`invalid_status`, `invalid_cursor`, `unknown_task`, and for writes `already_done` and `invalid_deadline`), never echoing its input.
 
 **Trust boundary.** The app cannot tell whether a stdio caller asked you first; it relies on Conductor's approval policy, as `finances` does for its proposal tools. Every write through MCP is recorded with source `agent` and the request key, and `docket audit` lists them.
 
-## Service runtime
+## Service runtime (Stage 5)
 
 `docket run` runs the API, the reminder loop and the calendar queue in one process, as a launchd LaunchAgent with `RunAtLoad` and `KeepAlive`, like the email service. The Mac never sleeps. `docket status` shows the last loop time, queued sends and open problems.
 
@@ -273,6 +259,14 @@ Each deadline in a result carries its UTC instant (`at`) and its `date`, `time` 
 | Daylight-saving change | Offsets from the stored instant; days in your zone |
 | Duplicate create | Same key: same answer. Follow-up email in a known thread: the email service sends a link, not a task |
 | A press from anyone else | Ignored, nothing recorded but the attempt |
+
+## Repository tooling and tests
+
+- `docket_tools/` (reports, acceptance, spot checks) is repository-only and never part of the installed package; `scripts/` wraps it. `scripts/check.py` runs lint, format, the tests and two 100% line-and-branch gates: product `critical coverage` from `scripts/critical_modules.txt` and `tooling coverage` from `scripts/tooling_modules.txt`, over a 90% overall floor.
+- `tests/support` holds the shared function-scoped `path` and `store` fixtures and one `refused(code, call)` helper.
+- A phase's given tests are committed with its spec behind strict `xfail` markers, which the coder deletes, so `main` stays green.
+- Byte and structure manifests (`tests/*_manifest.json`) still pin most product files and scripts from the 2n to 2q moves; Phase 6b retires them and keeps a pin on `docs/reviews/` only.
+- Probes (`docs/verification/probe-*.py`) are given files frozen with their phase, excluded from ruff.
 
 ## Package layout
 
@@ -314,7 +308,7 @@ docket/
   tests/
 ```
 
-Phases 5a to 5c change this layout: `_store_migrate.py`, per-aggregate store parts, and `reminder_plan.py` (see the roadmap's Nov 21 remediation).
+Phases 5a to 5c change this layout: `_store_migrate.py`, per-aggregate store parts and `reminder_plan.py` (see the roadmap's Nov 21 remediation).
 
 ## Privacy and security boundary
 
