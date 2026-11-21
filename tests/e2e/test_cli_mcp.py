@@ -9,10 +9,6 @@ from keyring.errors import KeyringError
 from tests.fakes import FakeKeychain
 from tests.support import run
 
-pytestmark = pytest.mark.xfail(
-    strict=True, reason="Phase 6a given test: remove this marker when docket.mcp_server lands"
-)
-
 
 @pytest.fixture
 def ran(monkeypatch: pytest.MonkeyPatch) -> list[tuple]:

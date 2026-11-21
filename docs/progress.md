@@ -283,3 +283,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 6a: MCP read tools (2026-11-21)
+- Tests: 1670 -> 1719 (given 40)
+- New public names: docket.reads: STATUSES, PAGE_SIZE, INVALID_STATUS, INVALID_CURSOR, UNKNOWN_TASK, ReadRefused, TaskPage, TaskRecord, list_tasks, task_record; docket.mcp_server.server: SERVER_NAME, INSTRUCTIONS, LIST_TASKS, GET_TASK, build_server, serve, DeadlineResult, WorkResult, TaskResult, TaskPageResult, ReminderResult, TaskDetailResult
+- Changed files: 7
+- Deviations:
+  - None
+- Follow-ups:
+  - None
