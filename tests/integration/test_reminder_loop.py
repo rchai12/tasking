@@ -57,7 +57,8 @@ def test_the_loop_names_and_result_contract() -> None:
         "zone",
         "at",
     ]
-    assert [field.name for field in dataclasses.fields(reminders.PassResult)] == [
+    # Phase 5e adds `skipped` after these; `test_isolated_passes.py` pins the whole list.
+    assert [field.name for field in dataclasses.fields(reminders.PassResult)][:3] == [
         "sent",
         "digest",
         "failed",

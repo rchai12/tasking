@@ -33,6 +33,7 @@
     "docs/reviews/phase-05a-shared-store-decoding.md": "aaf04295b721dd305e82a2762cda13294eba05923bb6813fd08744959088961d",
     "docs/reviews/phase-05b-store-migrations-and-task-columns.md": "e9dd2d0d78ee590158d453b70acac218f88755381099b66b2454ecc0c06d87f2",
     "docs/reviews/phase-05c-import-direction.md": "af75c122aa2520d1caedfa0c1fb098bf183166149cdb3aa0889fa1db08c18a39",
+    "docs/reviews/phase-05d-one-source-per-closed-list.md": "d76ff7a773b074d5228c5dfe6bfe0a18467e312d2d7959063d727582075d959d",
     "docs/reviews/phase-06a-mcp-read-tools.md": "4c8466f8586af4a3fc39f0aacdee514c7dd795540106c419453145b60153b8f6",
     "docs/reviews/phase-06b-retire-freeze-manifests.md": "74b147dc3378988190d94c209d7684edb4ffff098f7a5831d257a845a0667db6",
     "docs/reviews/phase-06c-core-input-checks.md": "a6b8f26d4e8d56ef4e384e2105dd7b014e20ee10bb27251fec12b6b018d3c0a1",
