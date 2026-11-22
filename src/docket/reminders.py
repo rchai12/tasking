@@ -1,60 +1,19 @@
 from dataclasses import dataclass
-from datetime import UTC, date, datetime, time, timedelta
-from typing import Literal, Protocol
+from datetime import date, datetime, time, timedelta
+from typing import Protocol
 from zoneinfo import ZoneInfo
 
 from docket import clock, ids
-from docket.deadlines import INSTANT_MESSAGE, DeadlineError, make_deadline
+from docket.deadlines import make_deadline
 from docket.domain import OPEN_STATES
 from docket.notifier import Digest, DigestLine, Notice, Notifier, NotifierError
+from docket.reminder_plan import LATE_MINUTES, PlannedReminder, plan_reminders
 from docket.store import Store, Task
+from docket.views import deadline_text, digest_heading, notice_text
 
-LATE_MINUTES = (30, 60, 120, 180, 240, 480, 720)
+__all__ = ["LATE_MINUTES", "PlannedReminder", "plan_reminders", "notice_text", "digest_heading"]
+
 CLAIM_MINUTES = 5
-_HOUR = timedelta(hours=1)
-_KIND_ORDER = {"start": 0, "before": 1, "due_soon": 2, "due": 3, "late": 4}
-_NOTICE = {
-    "start": "Time to start.",
-    "before": "Are you working on this?",
-    "due_soon": "This is due soon.",
-    "due": "This is now due.",
-    "late": "This is late.",
-}
-
-
-@dataclass(frozen=True)
-class PlannedReminder:
-    kind: Literal["start", "before", "due_soon", "due", "late"]
-    fire_at: datetime
-
-
-def plan_reminders(task: Task, now: datetime) -> tuple[PlannedReminder, ...]:
-    if now.tzinfo is not UTC:
-        raise DeadlineError(INSTANT_MESSAGE)
-    if task.state not in OPEN_STATES or (task.deadline is None and task.work is None):
-        return ()
-    rows: list[PlannedReminder] = []
-    if task.work is not None:
-        rows.append(PlannedReminder("start", task.work.start))
-    deadline = task.deadline
-    if deadline is not None:
-        remaining = deadline.at - now
-        if remaining >= _HOUR:
-            rows.append(PlannedReminder("before", deadline.at - _HOUR))
-        elif remaining > timedelta(0):
-            rows.append(PlannedReminder("due_soon", now))
-        rows.append(PlannedReminder("due", deadline.at))
-        for minutes in LATE_MINUTES:
-            rows.append(PlannedReminder("late", deadline.at + timedelta(minutes=minutes)))
-    rows.sort(key=lambda row: (row.fire_at, _KIND_ORDER[row.kind]))
-    return tuple(rows)
-
-
-def notice_text(kind: str, missed: int) -> str:
-    line = _NOTICE[kind]
-    if missed >= 2:
-        return f"Missed while docket was offline: {missed} reminders.\n{line}"
-    return line
 
 
 def send_due(store: Store, notifier: Notifier) -> int:
@@ -99,11 +58,6 @@ def digest_slot(now: datetime, zone: str, at: time) -> tuple[date, datetime]:
     return home, make_deadline(home, at, zone).at
 
 
-def digest_heading(count: int) -> str:
-    noun = "task" if count == 1 else "tasks"
-    return f"Still open past their deadlines: {count} {noun}."
-
-
 def _past_last_late(task: Task, slot: datetime) -> bool:
     deadline = task.deadline
     return (
@@ -114,8 +68,6 @@ def _past_last_late(task: Task, slot: datetime) -> bool:
 
 
 def send_digest(store: Store, notifier: Notifier, *, zone: str, at: time) -> bool:
-    from docket.views import deadline_text
-
     now = clock.now()
     day, slot = digest_slot(now, zone, at)
     if now < slot:

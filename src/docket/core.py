@@ -6,7 +6,7 @@ from typing import cast
 from docket import clock, domain, serialization
 from docket.deadlines import Deadline, WorkTime
 from docket.references import LINK_MAX, MESSAGE_ID_MAX, valid_reference
-from docket.reminders import plan_reminders
+from docket.reminder_plan import plan_reminders
 from docket.store import UNCHANGED, Link, Store, Task
 
 UNKNOWN_TASK = "unknown_task"

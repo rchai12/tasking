@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
 from docket import (
     _store_audit,
@@ -24,11 +24,9 @@ from docket import (
 )
 from docket.config import Settings, prepare_data_dir
 from docket.deadlines import INSTANT_MESSAGE, Deadline, DeadlineError, WorkTime
+from docket.reminder_plan import PlannedReminder
 from docket.schema import MIGRATIONS as MIGRATIONS
 from docket.schema import SCHEMA_VERSION as SCHEMA_VERSION
-
-if TYPE_CHECKING:
-    from docket.reminders import PlannedReminder
 
 DB_FILENAME = "docket.sqlite3"
 SCHEMA_MESSAGE = "unsupported schema version"
@@ -461,7 +459,7 @@ class Store:
     def insert_reminders(
         self,
         task_id: str,
-        plans: tuple["PlannedReminder", ...],
+        plans: tuple[PlannedReminder, ...],
         *,
         at: datetime,
     ) -> list[Reminder]:
@@ -499,7 +497,7 @@ class Store:
         self,
         task_id: str,
         number: int,
-        plans: tuple["PlannedReminder", ...],
+        plans: tuple[PlannedReminder, ...],
         at: datetime,
     ) -> list[Reminder]:
         for plan in plans:

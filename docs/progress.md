@@ -346,3 +346,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 5c: Import direction (2026-11-22)
+- Tests: 1896 -> 1908 (given 11)
+- New public names: reminder_plan.Plannable
+- Changed files: 9
+- Deviations:
+  - None
+- Follow-ups:
+  - None

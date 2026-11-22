@@ -1,17 +1,14 @@
 """Schema migrations and the reminder backfill, run once per open by `Store`."""
 
 import sqlite3
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
-from docket import domain
+from docket import domain, reminder_plan
 from docket import store as store_module
 from docket.references import LINK_MAX, MESSAGE_ID_MAX, valid_reference
 
-if TYPE_CHECKING:
-    from docket.store import Store
 
-
-def migrate(db: "Store") -> None:
+def migrate(db: "store_module.Store") -> None:
     while True:
         rebuild = False
         with db.transaction():
@@ -28,7 +25,7 @@ def migrate(db: "Store") -> None:
             _migrate_references(db)
 
 
-def _apply_migration(db: "Store", version: int) -> None:
+def _apply_migration(db: "store_module.Store", version: int) -> None:
     for statement in store_module._statements(store_module.MIGRATIONS[version]):
         db._connection.execute(statement)
     if version == 3:
@@ -36,12 +33,12 @@ def _apply_migration(db: "Store", version: int) -> None:
     db._connection.execute(f"PRAGMA user_version = {version + 1}")
 
 
-def _user_version(db: "Store") -> int:
+def _user_version(db: "store_module.Store") -> int:
     found = cast(sqlite3.Row, db._connection.execute("PRAGMA user_version").fetchone())
     return int(found[0])
 
 
-def _migrate_references(db: "Store") -> None:
+def _migrate_references(db: "store_module.Store") -> None:
     db._connection.execute("PRAGMA foreign_keys = OFF")
     try:
         with db.transaction():
@@ -59,7 +56,7 @@ def _migrate_references(db: "Store") -> None:
         db._connection.execute("PRAGMA foreign_keys = ON")
 
 
-def _refuse_invalid_references(db: "Store") -> None:
+def _refuse_invalid_references(db: "store_module.Store") -> None:
     tasks = db._connection.execute(
         "SELECT number, message_id, link FROM tasks WHERE source = 'email' ORDER BY number"
     )
@@ -77,9 +74,7 @@ def _refuse_reference(identifier: str, message_id: object, link: object) -> None
         raise store_module.StoreError(f"invalid stored reference: {identifier} link")
 
 
-def _backfill_reminders(db: "Store") -> None:
-    from docket import reminders
-
+def _backfill_reminders(db: "store_module.Store") -> None:
     rows = db._connection.execute(
         "SELECT number, title, state, deadline_at, deadline_zone, deadline_time_given, "
         "work_start, work_minutes, work_zone, source, provider, message_id, link, "
@@ -91,7 +86,7 @@ def _backfill_reminders(db: "Store") -> None:
     for row in rows:
         task = db._task_from(row)
         try:
-            plans = reminders.plan_reminders(task, task.updated_at)
+            plans = reminder_plan.plan_reminders(task, task.updated_at)
         except OverflowError:
             raise store_module.StoreError(f"invalid reminder plan: {task.id}") from None
         db._write_reminders(task.id, int(row["number"]), plans, task.updated_at)

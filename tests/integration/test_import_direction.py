@@ -83,7 +83,6 @@ def test_every_module_imports_alone_in_a_fresh_interpreter() -> None:
     assert failed == {}
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_no_docket_import_is_hidden_in_a_function_or_a_type_check() -> None:
     inner = [
         (str(module_path(name).relative_to(PACKAGE)), target)
@@ -94,7 +93,6 @@ def test_no_docket_import_is_hidden_in_a_function_or_a_type_check() -> None:
     assert inner == ALLOWED_INNER
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_the_import_graph_has_no_cycle() -> None:
     edges: dict[str, set[str]] = {}
     for name in modules():
@@ -118,7 +116,6 @@ def test_the_import_graph_has_no_cycle() -> None:
         visit(name, ())
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_the_planner_imports_only_deadlines_and_domain() -> None:
     assert sorted({target for target, _ in docket_imports("docket.reminder_plan")}) == [
         "docket.deadlines",
@@ -126,7 +123,6 @@ def test_the_planner_imports_only_deadlines_and_domain() -> None:
     ]
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_the_planner_needs_no_stored_task() -> None:
     from docket import reminder_plan
 
@@ -149,7 +145,6 @@ def test_the_planner_needs_no_stored_task() -> None:
     ]
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("name", "home"),
     [
@@ -168,7 +163,6 @@ def test_moved_names_stay_reachable_from_reminders(name: str, home: str) -> None
     assert getattr(reminders, name) is getattr(importlib.import_module(f"docket.{home}"), name)
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_core_and_the_store_plan_through_the_planner_module() -> None:
     for name in ("docket.core", "docket.store", "docket._store_migrate"):
         targets = {target for target, _ in docket_imports(name)}

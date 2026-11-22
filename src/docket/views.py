@@ -159,3 +159,24 @@ def _span(start: datetime, end: datetime, zone: str, now: datetime) -> str:
         return f"{when(start, zone, now)} to {ending}"
     shown = when(start, zone, now).removesuffix(f" {start_local.tzname()}")
     return f"{shown} to {ending}"
+
+
+_NOTICE = {
+    "start": "Time to start.",
+    "before": "Are you working on this?",
+    "due_soon": "This is due soon.",
+    "due": "This is now due.",
+    "late": "This is late.",
+}
+
+
+def notice_text(kind: str, missed: int) -> str:
+    line = _NOTICE[kind]
+    if missed >= 2:
+        return f"Missed while docket was offline: {missed} reminders.\n{line}"
+    return line
+
+
+def digest_heading(count: int) -> str:
+    noun = "task" if count == 1 else "tasks"
+    return f"Still open past their deadlines: {count} {noun}."
