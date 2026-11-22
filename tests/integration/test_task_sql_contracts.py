@@ -118,7 +118,7 @@ def test_a_helper_failure_before_sql_leaves_every_table_unchanged(
 ) -> None:
     fixed_times(monkeypatch, NOW, NOW)
 
-    def fail_before_sql(_connection, _values):
+    def fail_before_sql(*_args, **_kwargs):
         raise InjectedSqlFailure
 
     original = _store_tasks.insert_task

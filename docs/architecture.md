@@ -311,7 +311,7 @@ docket/
   tests/
 ```
 
-Phases 5a to 5c change this layout: `_store_migrate.py`, per-aggregate store parts and `reminder_plan.py` (see the roadmap's Nov 21 remediation).
+Phases 5b to 5e change this layout: `_store_migrate.py` (5b), per-aggregate store parts (5c and 5d) and `reminder_plan.py` (5e); see the roadmap's Nov 21 remediation.
 
 ## Privacy and security boundary
 
