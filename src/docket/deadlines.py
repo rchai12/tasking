@@ -6,7 +6,7 @@ from docket import domain
 from docket.domain import WORK_MINUTES_MAX, WORK_MINUTES_MIN
 
 DEFAULT_TIME = time(17, 0)
-DUE_WINDOW = timedelta(minutes=30)
+DUE_WINDOW = timedelta(minutes=domain.DUE_WINDOW_MINUTES)
 
 ZONE_MESSAGE = "unknown time zone"
 TIME_MESSAGE = "a time is hours and minutes only"

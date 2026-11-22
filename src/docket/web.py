@@ -78,7 +78,7 @@ async def _handle(
     if raw is None:
         return _error(TOO_LARGE, 413)
     key = request.headers.get("idempotency-key")
-    if key is None or not 1 <= len(key) <= domain.REQUEST_KEY_MAX:
+    if not domain.valid_request_key(key):
         return _error(MISSING_KEY, 400)
     try:
         body = json.loads(raw.decode("utf-8"))

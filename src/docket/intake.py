@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import date, time
+from typing import cast
 
 from docket import domain, parsing
 from docket.core import (
@@ -25,7 +26,7 @@ _DEADLINE_FIELDS = {"date", "time", "time_zone"}
 _TASK_STATUS = {KEY_REUSED: 409}
 _LINK_STATUS = {KEY_REUSED: 409, UNKNOWN_TASK: 404}
 _CREATED = 201
-_REPLAY = _CREATED - 1
+_REPLAY = 200
 
 
 class _BadDeadline(Exception):
@@ -41,7 +42,7 @@ class Answer:
 def accept_task(store: Store, *, client: object, key: str | None, body: object) -> Answer:
     if not _valid_key(key):
         return Answer(400, {"error": MISSING_KEY})
-    if not isinstance(client, str) or client != "email":
+    if not isinstance(client, str) or client != domain.EMAIL_CLIENT:
         return Answer(422, {"error": INVALID_CLIENT})
     parsed = _object(body, _TASK_FIELDS, _TASK_TEXT)
     if parsed is None:
@@ -57,11 +58,11 @@ def accept_task(store: Store, *, client: object, key: str | None, body: object) 
             key=key,
             request=parsed,
             title=parsed["title"],
-            source=_text(parsed["source"]),
+            source=cast(str, parsed["source"]),
             deadline=deadline,
-            provider=_text(parsed["provider"]),
-            message_id=_text(parsed["message_id"]),
-            link=_text(parsed["link"]),
+            provider=cast(str, parsed["provider"]),
+            message_id=cast(str, parsed["message_id"]),
+            link=cast(str, parsed["link"]),
         )
     except CoreError as error:
         return Answer(_TASK_STATUS.get(error.code, 422), {"error": error.code})
@@ -73,7 +74,7 @@ def accept_link(
 ) -> Answer:
     if not _valid_key(key):
         return Answer(400, {"error": MISSING_KEY})
-    if not isinstance(client, str) or client != "email":
+    if not isinstance(client, str) or client != domain.EMAIL_CLIENT:
         return Answer(422, {"error": INVALID_CLIENT})
     if store.task(task_id) is None:
         return Answer(404, {"error": UNKNOWN_TASK})
@@ -99,7 +100,7 @@ def accept_link(
 
 
 def _valid_key(key: object) -> bool:
-    return isinstance(key, str) and 1 <= len(key) <= domain.REQUEST_KEY_MAX
+    return domain.valid_request_key(key)
 
 
 def _object(

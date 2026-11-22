@@ -341,13 +341,13 @@ def add_link(
     message_id: object,
     link: object,
 ) -> LinkOutcome:
-    if not isinstance(client, str) or client != "email":
+    if not isinstance(client, str) or client != domain.EMAIL_CLIENT:
         raise CoreError(INVALID_CLIENT)
     _check_key(key)
     _check_reference("email", provider, message_id, link)
     at = clock.now()
     with store.transaction():
-        found = store.request_key("email", cast(str, key))
+        found = store.request_key(domain.EMAIL_CLIENT, cast(str, key))
         if found is not None:
             if (
                 found.link_id is not None
@@ -367,7 +367,7 @@ def add_link(
             at=at,
         )
         store.insert_request_key(
-            client="email",
+            client=domain.EMAIL_CLIENT,
             key=cast(str, key),
             request=request,
             task_id=task_id,
@@ -438,17 +438,17 @@ def _replace_reminders(
     work: bool,
 ) -> None:
     if deadline:
-        store.void_reminders(task.id, at=at, kinds=("before", "due_soon", "due", "late"))
+        store.void_reminders(task.id, at=at, kinds=domain.DEADLINE_KINDS)
         if task.deadline is not None:
             _persist_plan(store, replace(task, work=None), at)
     if work:
-        store.void_reminders(task.id, at=at, kinds=("start",))
+        store.void_reminders(task.id, at=at, kinds=domain.WORK_KINDS)
         if task.work is not None:
             _persist_plan(store, replace(task, deadline=None), at)
 
 
 def _check_key(key: object) -> None:
-    if not isinstance(key, str) or not 1 <= len(key) <= domain.REQUEST_KEY_MAX:
+    if not domain.valid_request_key(key):
         raise CoreError(INVALID_KEY)
 
 

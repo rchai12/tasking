@@ -106,7 +106,6 @@ def email_client_uses(tree: ast.Module) -> list[int]:
     return lines
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("name", "spelled", "value"),
     [
@@ -149,7 +148,6 @@ def test_the_states_split_into_open_and_ended() -> None:
     assert tuple(domain.STATE_LABELS) == domain.OPEN_STATES + domain.ENDED_STATES
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("key", "valid"),
     [
@@ -202,7 +200,6 @@ def refuse_store(path: Path) -> object:
     return str(raised.value)
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("refuse", "answer"),
     [
@@ -226,7 +223,6 @@ def test_each_key_check_asks_domain(
     assert (refuse(tmp_path / "docket.sqlite3"), asked) == (answer, [KEY])
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_derived_values_follow_domain() -> None:
     finished = subprocess.run(
         [sys.executable, "-I", "-c", CHILD, str(PACKAGE.parent)],
@@ -242,7 +238,6 @@ def test_derived_values_follow_domain() -> None:
     }
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_no_module_but_domain_lists_states_or_kinds() -> None:
     lists = {"states": set(domain.STATES), "kinds": set(domain.REMINDER_KINDS)}
     found = []
@@ -268,7 +263,6 @@ def test_the_allowed_lists_match_domain() -> None:
     assert tuple(views._NOTICE) == domain.REMINDER_KINDS
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_the_email_client_is_named_only_in_domain() -> None:
     found = [
         (file, line)
@@ -279,13 +273,11 @@ def test_the_email_client_is_named_only_in_domain() -> None:
     assert found == []
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_replay_answers_a_plain_200() -> None:
     tree = ast.parse((PACKAGE / "intake.py").read_text())
     assert ast.unparse(assigned(tree, "_REPLAY")) == "200"
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_intake_reads_only_the_deadline_zone_through_text() -> None:
     tree = ast.parse((PACKAGE / "intake.py").read_text())
     calls = [

@@ -355,3 +355,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 5d: One source per closed list (2026-11-22)
+- Tests: 1908 -> 1936 (given 27)
+- New public names: domain.valid_request_key, domain.EMAIL_CLIENT, domain.API_CLIENTS, domain.WORK_KINDS, domain.DEADLINE_KINDS, domain.DUE_WINDOW_MINUTES
+- Changed files: 11
+- Deviations:
+  - None
+- Follow-ups:
+  - None

@@ -13,10 +13,12 @@ STATE_LABELS: MappingProxyType[str, str] = MappingProxyType(
     }
 )
 STATES = tuple(STATE_LABELS)
-OPEN_STATES = STATES[:2]
-ENDED_STATES = STATES[2:]
+OPEN_STATES = ("open", "in_progress")
+ENDED_STATES = ("done", "cancelled")
 SOURCES = ("email", "agent", "proposal", "owner")
-CORE_CLIENTS = ("email", "agent")
+EMAIL_CLIENT = "email"
+API_CLIENTS = (EMAIL_CLIENT,)
+CORE_CLIENTS = (EMAIL_CLIENT, "agent")
 ACTORS = ("owner", "agent", "email")
 STATE_ACTIONS = ("start", "done", "cancel", "reopen")
 AUDIT_ACTIONS = (
@@ -40,9 +42,16 @@ WORK_MINUTES_MIN = 5
 WORK_MINUTES_MAX = 720
 
 
+def valid_request_key(key: object) -> bool:
+    return isinstance(key, str) and 1 <= len(key) <= REQUEST_KEY_MAX
+
+
 @functools.cache
 def zone_names() -> frozenset[str]:
     return frozenset(zoneinfo.available_timezones())
 
 
-REMINDER_KINDS = ("start", "before", "due_soon", "due", "late")
+WORK_KINDS = ("start",)
+DEADLINE_KINDS = ("before", "due_soon", "due", "late")
+REMINDER_KINDS = WORK_KINDS + DEADLINE_KINDS
+DUE_WINDOW_MINUTES = 30

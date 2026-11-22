@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass
 from zoneinfo import ZoneInfo
 
-from docket import clock
+from docket import clock, domain
 from docket.store import Reminder, Store, Task
 
 STATUSES = ("open", "in_progress", "due", "overdue", "done", "cancelled")
@@ -14,7 +14,6 @@ INVALID_CURSOR = "invalid_cursor"
 UNKNOWN_TASK = "unknown_task"
 
 _ID = re.compile(r"t[1-9][0-9]*")
-_OPEN_STATES = ("open", "in_progress")
 
 
 class ReadRefused(Exception):
@@ -62,7 +61,7 @@ def list_tasks(store: Store, status: object, after: object, *, zone: str) -> Tas
         if not isinstance(after, str) or _ID.fullmatch(after) is None:
             raise ReadRefused(INVALID_CURSOR)
         cursor = int(after[1:])
-    states = _OPEN_STATES if status in ("due", "overdue") else (status,)
+    states = domain.OPEN_STATES if status in ("due", "overdue") else (status,)
     matches = _matcher(status, zone)
     found = [task for task in store.tasks(states) if int(task.id[1:]) > cursor and matches(task)]
     page = found[:PAGE_SIZE]

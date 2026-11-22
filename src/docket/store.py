@@ -191,7 +191,7 @@ def _stored_object(text: str, label: str, identifier: str) -> dict[str, object]:
 
 
 def _check_retry_key(key: object, message: str) -> None:
-    if not isinstance(key, str) or not 1 <= len(key) <= domain.REQUEST_KEY_MAX:
+    if not domain.valid_request_key(key):
         raise StoreError(message)
 
 

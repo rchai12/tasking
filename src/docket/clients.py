@@ -1,8 +1,9 @@
 import secrets
 
+from docket import domain
 from docket.keychain import SecretMissing, get_secret, set_secret
 
-CLIENTS = ("email",)
+CLIENTS = domain.API_CLIENTS
 ALREADY_MESSAGE = "email already has a token; use --replace to issue a new one."
 UNKNOWN_CLIENT_MESSAGE = "Clients are: email."
 
