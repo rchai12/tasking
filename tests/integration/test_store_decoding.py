@@ -55,7 +55,6 @@ def mode(path: Path) -> int:
     return stat.S_IMODE(path.stat().st_mode)
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("at", "before", "after"),
     [
@@ -82,7 +81,6 @@ def test_a_bad_audit_row_is_refused_without_library_text(
     assert snapshot(path) == planted
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize("created_at", BAD_TIMES, ids=BAD_TIME_IDS)
 def test_a_bad_link_row_is_refused_without_library_text(
     opened: tuple[Store, Path], created_at: str
@@ -104,7 +102,6 @@ def test_a_bad_link_row_is_refused_without_library_text(
     assert snapshot(path) == planted
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("request_text", "created_at"),
     [
@@ -132,7 +129,6 @@ def test_a_bad_request_key_row_is_refused_without_library_text(
     assert snapshot(path) == planted
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_keyed_retry_over_a_bad_key_row_writes_nothing(
     opened: tuple[Store, Path], monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -191,7 +187,6 @@ def test_good_audit_link_and_key_rows_still_decode(opened: tuple[Store, Path]) -
     )
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_new_database_is_private_before_sqlite_opens_it(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -214,7 +209,6 @@ def test_a_new_database_is_private_before_sqlite_opens_it(
     assert (seen, mode(path)) == ([0o600], 0o600)
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_leftover_wal_and_shm_files_are_made_private(tmp_path: Path) -> None:
     path = tmp_path / "docket.sqlite3"
     Store(path).close()
@@ -255,7 +249,6 @@ def test_a_side_file_that_vanishes_before_its_chmod_is_not_an_error(
         assert store.tasks() == []
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_database_that_cannot_be_created_gives_the_constant_startup_error(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -281,7 +274,6 @@ def test_a_database_that_cannot_be_created_gives_the_constant_startup_error(
     assert mode(path) == 0o600
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_the_store_side_files_are_ignored_by_git() -> None:
     lines = (Path(__file__).parents[2] / ".gitignore").read_text().splitlines()
     for pattern in ("*.sqlite3-wal", "*.sqlite3-shm", "*.startup.lock"):

@@ -36,11 +36,7 @@ NESTED_MESSAGE = "a transaction is already open"
 UNKNOWN_TASK_MESSAGE = "unknown task"
 UNKNOWN_LINK_MESSAGE = "unknown link"
 
-_TASK_ID = re.compile(r"t[1-9][0-9]*")
-_LINK_ID = re.compile(r"l[1-9][0-9]*")
-_REMINDER_ID = re.compile(r"r[1-9][0-9]*")
-_POST_ID = re.compile(r"p[1-9][0-9]*")
-_DIGEST_ID = re.compile(r"d[1-9][0-9]*")
+_ROW_ID = re.compile(r"[tlrpd]([1-9][0-9]*)")
 
 
 class _Unchanged:
@@ -166,34 +162,38 @@ def _work_values(work: WorkTime | None) -> tuple[str | None, int | None, str | N
     return _instant(work.start), work.minutes, work.zone
 
 
-def _number(task_id: str) -> int | None:
-    if _TASK_ID.fullmatch(task_id) is None:
+def _row_number(prefix: str, value: str) -> int | None:
+    found = _ROW_ID.fullmatch(value)
+    if found is None or value[0] != prefix:
         return None
-    return int(task_id[1:])
+    return int(found.group(1))
 
 
-def _link_number(link_id: str) -> int | None:
-    if _LINK_ID.fullmatch(link_id) is None:
+def _utc(value: str | None, label: str, identifier: str) -> datetime | None:
+    if value is None:
         return None
-    return int(link_id[1:])
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError:
+        raise StoreError(f"invalid stored {label}: {identifier}") from None
+    if parsed.tzinfo is not UTC:
+        raise StoreError(f"invalid stored {label}: {identifier}") from None
+    return parsed
 
 
-def _reminder_number(reminder_id: str) -> int | None:
-    if _REMINDER_ID.fullmatch(reminder_id) is None:
-        return None
-    return int(reminder_id[1:])
+def _stored_object(text: str, label: str, identifier: str) -> dict[str, object]:
+    try:
+        found = json.loads(text)
+    except ValueError:
+        raise StoreError(f"invalid stored {label}: {identifier}") from None
+    if not isinstance(found, dict):
+        raise StoreError(f"invalid stored {label}: {identifier}") from None
+    return found
 
 
-def _post_number(post_id: str) -> int | None:
-    if _POST_ID.fullmatch(post_id) is None:
-        return None
-    return int(post_id[1:])
-
-
-def _digest_number(digest_id: str) -> int | None:
-    if _DIGEST_ID.fullmatch(digest_id) is None:
-        return None
-    return int(digest_id[1:])
+def _check_retry_key(key: object, message: str) -> None:
+    if not isinstance(key, str) or not 1 <= len(key) <= domain.REQUEST_KEY_MAX:
+        raise StoreError(message)
 
 
 def _digest_day(day: object) -> date:
@@ -209,10 +209,19 @@ class Store:
             self._in_transaction = False
             opened = False
             try:
+                try:
+                    os.close(os.open(path, os.O_CREAT | os.O_RDWR, 0o600))
+                except OSError:
+                    raise StoreError("store startup unavailable") from None
                 self._connection = sqlite3.connect(path, isolation_level=None)
                 opened = True
                 self._connection.row_factory = sqlite3.Row
                 path.chmod(0o600)
+                for suffix in ("-wal", "-shm"):
+                    try:
+                        path.with_name(path.name + suffix).chmod(0o600)
+                    except FileNotFoundError:
+                        pass
                 self._connection.execute("PRAGMA busy_timeout = 5000")
                 self._connection.execute("PRAGMA foreign_keys = ON")
                 self._connection.execute("PRAGMA journal_mode = WAL")
@@ -348,7 +357,7 @@ class Store:
         )
 
     def task(self, task_id: str) -> Task | None:
-        number = _number(task_id)
+        number = _row_number("t", task_id)
         if number is None:
             return None
         rows = _store_tasks.select_task(self._connection, number)
@@ -366,18 +375,18 @@ class Store:
         return [self._task_from(row) for row in rows]
 
     def audit(self, task_id: str) -> list[AuditEntry]:
-        number = _number(task_id)
+        number = _row_number("t", task_id)
         if number is None:
             return []
         rows = _store_audit.select_audit(self._connection, number)
         return [
             AuditEntry(
                 task_id=task_id,
-                at=datetime.fromisoformat(row["at"]),
+                at=cast(datetime, _utc(row["at"], "audit entry", task_id)),
                 action=row["action"],
                 actor=row["actor"],
-                before=json.loads(row["before"]),
-                after=json.loads(row["after"]),
+                before=_stored_object(row["before"], "audit entry", task_id),
+                after=_stored_object(row["after"], "audit entry", task_id),
             )
             for row in rows
         ]
@@ -399,7 +408,7 @@ class Store:
         return self._read_link(int(cursor.lastrowid))
 
     def links(self, task_id: str) -> list[Link]:
-        number = _number(task_id)
+        number = _row_number("t", task_id)
         if number is None:
             return []
         rows = _store_links.select_links(self._connection, number)
@@ -440,13 +449,14 @@ class Store:
         row = _store_keys.select_request_key(self._connection, client, key)
         if row is None:
             return None
+        task_id = f"t{row['task']}"
         return RequestKey(
             client=row["client"],
             key=row["key"],
-            request=json.loads(row["request"]),
-            task_id=f"t{row['task']}",
+            request=_stored_object(row["request"], "request key", task_id),
+            task_id=task_id,
             link_id=None if row["link"] is None else f"l{row['link']}",
-            created_at=datetime.fromisoformat(row["created_at"]),
+            created_at=cast(datetime, _utc(row["created_at"], "request key", task_id)),
         )
 
     def _migrate(self) -> None:
@@ -494,7 +504,7 @@ class Store:
         _store_reminders.void_reminders(self._connection, number, _instant(at), selected)
 
     def reminders(self, task_id: str) -> list[Reminder]:
-        number = _number(task_id)
+        number = _row_number("t", task_id)
         if number is None:
             return []
         return [
@@ -608,23 +618,12 @@ class Store:
             id=identifier,
             task_id=f"t{row['task']}",
             kind=row["kind"],
-            fire_at=self._reminder_time(row["fire_at"], identifier),
-            planned_at=self._reminder_time(row["planned_at"], identifier),
-            claimed_at=self._reminder_time(row["claimed_at"], identifier),
-            sent_at=self._reminder_time(row["sent_at"], identifier),
-            voided_at=self._reminder_time(row["voided_at"], identifier),
+            fire_at=_utc(row["fire_at"], "reminder time", identifier),
+            planned_at=_utc(row["planned_at"], "reminder time", identifier),
+            claimed_at=_utc(row["claimed_at"], "reminder time", identifier),
+            sent_at=_utc(row["sent_at"], "reminder time", identifier),
+            voided_at=_utc(row["voided_at"], "reminder time", identifier),
         )
-
-    def _reminder_time(self, value: str | None, identifier: str) -> datetime | None:
-        if value is None:
-            return None
-        try:
-            parsed = datetime.fromisoformat(value)
-        except ValueError:
-            raise StoreError(f"invalid stored reminder time: {identifier}") from None
-        if parsed.tzinfo is not UTC:
-            raise StoreError(f"invalid stored reminder time: {identifier}")
-        return parsed
 
     def _require_write(self, at: datetime) -> None:
         if not self._in_transaction:
@@ -633,7 +632,7 @@ class Store:
             raise StoreError(INSTANT_MESSAGE)
 
     def _require_task(self, task_id: str) -> int:
-        number = _number(task_id)
+        number = _row_number("t", task_id)
         if number is None or not self._exists(number):
             raise StoreError(UNKNOWN_TASK_MESSAGE)
         return number
@@ -642,7 +641,7 @@ class Store:
         return _store_tasks.select_existence(self._connection, number) is not None
 
     def _require_link(self, link_id: str) -> int:
-        number = _link_number(link_id)
+        number = _row_number("l", link_id)
         if number is None or not self._link_exists(number):
             raise StoreError(UNKNOWN_LINK_MESSAGE)
         return number
@@ -655,13 +654,14 @@ class Store:
         return self._link_from(cast(sqlite3.Row, row))
 
     def _link_from(self, row: sqlite3.Row) -> Link:
+        identifier = f"l{row['number']}"
         return Link(
-            id=f"l{row['number']}",
+            id=identifier,
             task_id=f"t{row['task']}",
             provider=row["provider"],
             message_id=row["message_id"],
             link=row["link"],
-            created_at=datetime.fromisoformat(row["created_at"]),
+            created_at=cast(datetime, _utc(row["created_at"], "link", identifier)),
         )
 
     def _read_task(self, number: int) -> Task:
@@ -670,26 +670,20 @@ class Store:
 
     def _task_from(self, row: sqlite3.Row) -> Task:
         task_id = f"t{row['number']}"
+        deadline_at = _utc(row["deadline_at"], "task time", task_id)
+        work_start = _utc(row["work_start"], "task time", task_id)
+        created_at = cast(datetime, _utc(row["created_at"], "task time", task_id))
+        updated_at = cast(datetime, _utc(row["updated_at"], "task time", task_id))
         try:
             deadline = None
-            if row["deadline_at"] is not None:
+            if deadline_at is not None:
                 deadline = Deadline(
-                    datetime.fromisoformat(row["deadline_at"]),
-                    row["deadline_zone"],
-                    bool(row["deadline_time_given"]),
+                    deadline_at, row["deadline_zone"], bool(row["deadline_time_given"])
                 )
             work = None
-            if row["work_start"] is not None:
-                work = WorkTime(
-                    datetime.fromisoformat(row["work_start"]),
-                    row["work_minutes"],
-                    row["work_zone"],
-                )
-            created_at = datetime.fromisoformat(row["created_at"])
-            updated_at = datetime.fromisoformat(row["updated_at"])
-            if created_at.tzinfo is not UTC or updated_at.tzinfo is not UTC:
-                raise DeadlineError(INSTANT_MESSAGE)
-        except (ValueError, DeadlineError):
+            if work_start is not None:
+                work = WorkTime(work_start, row["work_minutes"], row["work_zone"])
+        except DeadlineError:
             raise StoreError(f"invalid stored task time: {task_id}") from None
         return Task(
             id=task_id,
@@ -724,8 +718,7 @@ class Store:
     ) -> Post:
         self._require_write(at)
         task = self._require_task(task_id)
-        if not isinstance(key, str) or not 1 <= len(key) <= domain.REQUEST_KEY_MAX:
-            raise StoreError("invalid post key")
+        _check_retry_key(key, "invalid post key")
         if not isinstance(kind, str) or kind not in domain.REMINDER_KINDS:
             raise StoreError("invalid reminder kind")
         if (
@@ -739,7 +732,7 @@ class Store:
         numbers: list[int] = []
         seen: set[int] = set()
         for reminder_id in reminder_ids:
-            number = _reminder_number(reminder_id)
+            number = _row_number("r", reminder_id)
             if number is None:
                 raise StoreError("invalid reminder id")
             if number in seen or not _store_reminders.pending_reminder(
@@ -793,20 +786,20 @@ class Store:
         )
 
     def posts(self, task_id: str) -> list[Post]:
-        number = _number(task_id)
+        number = _row_number("t", task_id)
         if number is None:
             return []
         return [self._post_from(row) for row in _store_posts.select_posts(self._connection, number)]
 
     def _require_post(self, post_id: str) -> int:
-        number = _post_number(post_id)
+        number = _row_number("p", post_id)
         if number is None or _store_posts.select_post(self._connection, number) is None:
             raise StoreError("unknown post")
         return number
 
     def _post_from(self, row: sqlite3.Row) -> Post:
         identifier = f"p{row['number']}"
-        queued_at = self._post_time(row["queued_at"], identifier)
+        queued_at = _utc(row["queued_at"], "post time", identifier)
         if queued_at is None:
             raise StoreError(f"invalid stored post time: {identifier}")
         links = _store_posts.select_post_reminders(self._connection, int(row["number"]))
@@ -818,20 +811,9 @@ class Store:
             missed=int(row["missed"]),
             reminder_ids=tuple(f"r{link['reminder']}" for link in links),
             queued_at=queued_at,
-            claimed_at=self._post_time(row["claimed_at"], identifier),
-            sent_at=self._post_time(row["sent_at"], identifier),
+            claimed_at=_utc(row["claimed_at"], "post time", identifier),
+            sent_at=_utc(row["sent_at"], "post time", identifier),
         )
-
-    def _post_time(self, value: str | None, identifier: str) -> datetime | None:
-        if value is None:
-            return None
-        try:
-            parsed = datetime.fromisoformat(value)
-        except ValueError:
-            raise StoreError(f"invalid stored post time: {identifier}") from None
-        if parsed.tzinfo is not UTC:
-            raise StoreError(f"invalid stored post time: {identifier}")
-        return parsed
 
     def _require_utc(self, at: datetime) -> None:
         if at.tzinfo is not UTC:
@@ -848,14 +830,13 @@ class Store:
     ) -> DailyDigest:
         self._require_write(at)
         home = _digest_day(day)
-        if not isinstance(key, str) or not 1 <= len(key) <= domain.REQUEST_KEY_MAX:
-            raise StoreError("invalid digest key")
+        _check_retry_key(key, "invalid digest key")
         if not task_ids:
             raise StoreError("a digest needs a task")
         seen: set[int] = set()
         numbers: list[int] = []
         for task_id in task_ids:
-            number = _number(task_id)
+            number = _row_number("t", task_id)
             if number is None:
                 raise StoreError("invalid task id")
             task = self.task(task_id)
@@ -902,7 +883,7 @@ class Store:
         _store_digests.mark_digest_sent(self._connection, number, _instant(at))
 
     def _require_digest(self, digest_id: str) -> int:
-        number = _digest_number(digest_id)
+        number = _row_number("d", digest_id)
         if (
             number is None
             or _store_digests.select_digest_by_number(self._connection, number) is None
@@ -912,7 +893,7 @@ class Store:
 
     def _digest_from(self, row: sqlite3.Row) -> DailyDigest:
         identifier = f"d{row['number']}"
-        queued_at = self._digest_time(row["queued_at"], identifier)
+        queued_at = _utc(row["queued_at"], "digest time", identifier)
         if queued_at is None:
             raise StoreError(f"invalid stored digest time: {identifier}")
         members = _store_digests.select_digest_tasks(self._connection, int(row["number"]))
@@ -922,20 +903,9 @@ class Store:
             key=row["key"],
             task_ids=tuple(f"t{member['task']}" for member in members),
             queued_at=queued_at,
-            claimed_at=self._digest_time(row["claimed_at"], identifier),
-            sent_at=self._digest_time(row["sent_at"], identifier),
+            claimed_at=_utc(row["claimed_at"], "digest time", identifier),
+            sent_at=_utc(row["sent_at"], "digest time", identifier),
         )
-
-    def _digest_time(self, value: str | None, identifier: str) -> datetime | None:
-        if value is None:
-            return None
-        try:
-            parsed = datetime.fromisoformat(value)
-        except ValueError:
-            raise StoreError(f"invalid stored digest time: {identifier}") from None
-        if parsed.tzinfo is not UTC:
-            raise StoreError(f"invalid stored digest time: {identifier}")
-        return parsed
 
 
 def _startup_gate(path: Path) -> int:

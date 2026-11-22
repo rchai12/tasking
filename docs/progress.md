@@ -328,3 +328,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 5a: Shared store decoding (2026-11-21)
+- Tests: 1850 -> 1876 (given 25)
+- New public names: None
+- Changed files: 4
+- Deviations:
+  - None
+- Follow-ups:
+  - None

@@ -18,6 +18,9 @@ secrets/
 *.db-journal
 *.db-wal
 *.db-shm
+*.sqlite3-wal
+*.sqlite3-shm
+*.startup.lock
 data/
 
 # Logs can contain task titles and ids.
