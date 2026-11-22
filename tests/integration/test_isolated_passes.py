@@ -81,7 +81,6 @@ def count(opened: Store, sql: str) -> int:
     return opened._connection.execute(sql).fetchone()[0]
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_bad_reminder_row_silences_only_its_task(tmp_path, moment: Clock) -> None:
     notifier = FakeNotifier()
     with Store(tmp_path / "docket.sqlite3") as opened:
@@ -104,7 +103,6 @@ def test_a_bad_reminder_row_silences_only_its_task(tmp_path, moment: Clock) -> N
         assert text(notifier.delivered[-1]) == ("k3", "t2", BEFORE)
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_bad_task_row_silences_only_its_task(tmp_path, moment: Clock) -> None:
     notifier = FakeNotifier()
     with Store(tmp_path / "docket.sqlite3") as opened:
@@ -119,7 +117,6 @@ def test_a_bad_task_row_silences_only_its_task(tmp_path, moment: Clock) -> None:
         assert count(opened, "SELECT count(*) FROM posts WHERE task = 1") == 0
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_bad_post_row_silences_only_its_task(tmp_path, moment: Clock) -> None:
     notifier = FakeNotifier()
     with Store(tmp_path / "docket.sqlite3") as opened:
@@ -133,7 +130,6 @@ def test_a_bad_post_row_silences_only_its_task(tmp_path, moment: Clock) -> None:
         assert count(opened, "SELECT count(*) FROM posts WHERE claimed_at IS NOT NULL") == 1
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_an_unexpected_error_still_fails_the_whole_half(tmp_path, moment, monkeypatch) -> None:
     def broken(self, at, *, task_id=None):
         raise SyntheticBug()
@@ -163,7 +159,6 @@ def test_the_send_order_stays_by_post_number(tmp_path, moment: Clock) -> None:
         ]
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_pending_task_ids_read_no_row_times(tmp_path, moment: Clock) -> None:
     notifier = FakeNotifier()
     with Store(tmp_path / "docket.sqlite3") as opened:
@@ -181,7 +176,6 @@ def test_pending_task_ids_read_no_row_times(tmp_path, moment: Clock) -> None:
         assert opened.pending_task_ids(at=moment.at, stale_before=stale) == ["t1", "t3"]
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_due_reminders_and_claims_narrow_to_one_task(tmp_path, moment: Clock) -> None:
     with Store(tmp_path / "docket.sqlite3") as opened:
         task_due_in(opened, 120)
@@ -207,7 +201,6 @@ def test_due_reminders_and_claims_narrow_to_one_task(tmp_path, moment: Clock) ->
         assert count(opened, "SELECT count(*) FROM posts WHERE claimed_at IS NOT NULL") == 1
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_an_emptied_digest_is_marked_sent_without_a_send(tmp_path, monkeypatch) -> None:
     created = datetime(2026, 11, 19, 17, tzinfo=UTC)
     held = Clock()
@@ -236,7 +229,6 @@ def test_an_emptied_digest_is_marked_sent_without_a_send(tmp_path, monkeypatch) 
         assert notifier.attempts == []
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_pass_result_names_no_skipped_task_by_default() -> None:
     assert [field.name for field in dataclasses.fields(reminders.PassResult)] == [
         "sent",

@@ -39,12 +39,14 @@ def void_reminders(
     )
 
 
-def select_due_reminders(connection: sqlite3.Connection, at: str) -> list[sqlite3.Row]:
+def select_due_reminders(
+    connection: sqlite3.Connection, at: str, task: int | None = None
+) -> list[sqlite3.Row]:
     return connection.execute(
         "SELECT number, task, kind, fire_at, planned_at, claimed_at, sent_at, voided_at "
         "FROM reminders WHERE fire_at <= ? AND claimed_at IS NULL AND sent_at IS NULL "
-        "AND voided_at IS NULL ORDER BY task, fire_at, number",
-        (at,),
+        "AND voided_at IS NULL AND (? IS NULL OR task = ?) ORDER BY task, fire_at, number",
+        (at, task, task),
     ).fetchall()
 
 

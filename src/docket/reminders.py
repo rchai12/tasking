@@ -8,7 +8,7 @@ from docket.deadlines import make_deadline
 from docket.domain import OPEN_STATES
 from docket.notifier import Digest, DigestLine, Notice, Notifier, NotifierError
 from docket.reminder_plan import LATE_MINUTES, PlannedReminder, plan_reminders
-from docket.store import Store, Task
+from docket.store import Post, Store, StoreError, Task
 from docket.views import deadline_text, digest_heading, notice_text
 
 __all__ = ["LATE_MINUTES", "PlannedReminder", "plan_reminders", "notice_text", "digest_heading"]
@@ -17,30 +17,37 @@ CLAIM_MINUTES = 5
 
 
 def send_due(store: Store, notifier: Notifier) -> int:
+    return _send_due(store, notifier)[0]
+
+
+def _send_due(store: Store, notifier: Notifier) -> tuple[int, tuple[str, ...]]:
     now = clock.now()
-    with store.transaction():
-        grouped: dict[str, list] = {}
-        order: list[str] = []
-        for row in store.due_reminders(now):
-            if row.task_id not in grouped:
-                order.append(row.task_id)
-                grouped[row.task_id] = []
-            grouped[row.task_id].append(row)
-        for task_id in order:
-            due = grouped[task_id]
-            store.queue_post(
-                task_id,
-                tuple(row.id for row in due),
-                key=ids.new_id(),
-                kind=due[-1].kind,
-                missed=sum(row.fire_at > row.planned_at for row in due),
-                at=now,
-            )
-        claimed = store.claim_posts(at=now, stale_before=now - timedelta(minutes=CLAIM_MINUTES))
+    stale_before = now - timedelta(minutes=CLAIM_MINUTES)
+    claimed: list[tuple[Post, str]] = []
+    skipped: list[str] = []
+    for task_id in store.pending_task_ids(at=now, stale_before=stale_before):
+        try:
+            with store.transaction():
+                due = store.due_reminders(now, task_id=task_id)
+                if due:
+                    store.queue_post(
+                        task_id,
+                        tuple(row.id for row in due),
+                        key=ids.new_id(),
+                        kind=due[-1].kind,
+                        missed=sum(row.fire_at > row.planned_at for row in due),
+                        at=now,
+                    )
+                posts = store.claim_posts(at=now, stale_before=stale_before, task_id=task_id)
+                title = store.task(task_id).title
+        except StoreError:
+            skipped.append(task_id)
+            continue
+        claimed.extend((post, title) for post in posts)
+    claimed.sort(key=lambda found: int(found[0].id[1:]))
     sent = 0
-    for post in claimed:
-        task = store.task(post.task_id)
-        notice = Notice(post.key, post.task_id, task.title, notice_text(post.kind, post.missed))
+    for post, title in claimed:
+        notice = Notice(post.key, post.task_id, title, notice_text(post.kind, post.missed))
         try:
             notifier.send(notice)
         except NotifierError:
@@ -50,7 +57,7 @@ def send_due(store: Store, notifier: Notifier) -> int:
         with store.transaction():
             store.mark_post_sent(post.id, at=now)
         sent += 1
-    return sent
+    return sent, tuple(skipped)
 
 
 def digest_slot(now: datetime, zone: str, at: time) -> tuple[date, datetime]:
@@ -95,6 +102,10 @@ def send_digest(store: Store, notifier: Notifier, *, zone: str, at: time) -> boo
         task = store.task(task_id)
         if _past_last_late(task, slot):
             chosen.append(task)
+    if not chosen:
+        with store.transaction():
+            store.mark_digest_sent(claimed.id, at=now)
+        return False
     chosen.sort(key=lambda task: (task.deadline.at, int(task.id[1:])))
     lines = tuple(
         DigestLine(task.id, task.title, "Was due " + deadline_text(task.deadline, zone, now))
@@ -119,6 +130,7 @@ class PassResult:
     sent: int
     digest: bool
     failed: tuple[str, ...]
+    skipped: tuple[str, ...] = ()
 
 
 class Stop(Protocol):
@@ -133,15 +145,16 @@ def run_pass(store: Store, notifier: Notifier, *, zone: str, at: time) -> PassRe
     sent = 0
     sent_digest = False
     failed: list[str] = []
+    skipped: tuple[str, ...] = ()
     try:
-        sent = send_due(store, notifier)
+        sent, skipped = _send_due(store, notifier)
     except Exception:
         failed.append("reminders")
     try:
         sent_digest = send_digest(store, notifier, zone=zone, at=at)
     except Exception:
         failed.append("digest")
-    return PassResult(sent, sent_digest, tuple(failed))
+    return PassResult(sent, sent_digest, tuple(failed), skipped)
 
 
 def run_loop(store: Store, notifier: Notifier, *, zone: str, at: time, stop: Stop) -> int:

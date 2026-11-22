@@ -615,12 +615,19 @@ class Store:
             updated_at=updated_at,
         )
 
-    def due_reminders(self, at: datetime) -> list[Reminder]:
+    def due_reminders(self, at: datetime, *, task_id: str | None = None) -> list[Reminder]:
         self._require_utc(at)
+        number = None if task_id is None else self._require_task(task_id)
         return [
             self._reminder_from(row)
-            for row in _store_reminders.select_due_reminders(self._connection, _instant(at))
+            for row in _store_reminders.select_due_reminders(self._connection, _instant(at), number)
         ]
+
+    def pending_task_ids(self, *, at: datetime, stale_before: datetime) -> list[str]:
+        self._require_utc(at)
+        self._require_utc(stale_before)
+        rows = _store_posts.pending_tasks(self._connection, _instant(at), _instant(stale_before))
+        return [f"t{row['task']}" for row in rows]
 
     def queue_post(
         self,
@@ -675,10 +682,15 @@ class Store:
             sent_at=None,
         )
 
-    def claim_posts(self, *, at: datetime, stale_before: datetime) -> list[Post]:
+    def claim_posts(
+        self, *, at: datetime, stale_before: datetime, task_id: str | None = None
+    ) -> list[Post]:
         self._require_write(at)
         self._require_utc(stale_before)
-        rows = _store_posts.claim_posts(self._connection, _instant(at), _instant(stale_before))
+        number = None if task_id is None else self._require_task(task_id)
+        rows = _store_posts.claim_posts(
+            self._connection, _instant(at), _instant(stale_before), number
+        )
         return [self._post_from(row) for row in sorted(rows, key=lambda row: int(row["number"]))]
 
     def release_post(self, post_id: str, *, claimed_at: datetime) -> None:

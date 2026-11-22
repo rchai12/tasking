@@ -364,3 +364,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 5e: Isolated reminder passes (2026-11-22)
+- Tests: 1936 -> 1946 (given 9)
+- New public names: Store.pending_task_ids, PassResult.skipped
+- Changed files: 6
+- Deviations:
+  - None
+- Follow-ups:
+  - None

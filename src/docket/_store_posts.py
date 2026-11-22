@@ -24,17 +24,39 @@ def insert_post_reminder(connection: sqlite3.Connection, post: int, reminder: in
     )
 
 
-def claim_posts(connection: sqlite3.Connection, at: str, stale_before: str) -> list[sqlite3.Row]:
+_CLAIMABLE = (
+    "sent_at IS NULL AND (claimed_at IS NULL OR claimed_at < ?) "
+    "AND EXISTS ("
+    "SELECT 1 FROM post_reminders "
+    "JOIN reminders ON reminders.number = post_reminders.reminder "
+    "WHERE post_reminders.post = posts.number AND reminders.voided_at IS NULL"
+    ")"
+)
+
+
+def pending_tasks(connection: sqlite3.Connection, at: str, stale_before: str) -> list[sqlite3.Row]:
+    return connection.execute(
+        "SELECT task FROM reminders WHERE fire_at <= ? AND claimed_at IS NULL "
+        "AND sent_at IS NULL AND voided_at IS NULL "
+        f"UNION SELECT task FROM posts WHERE {_CLAIMABLE} ORDER BY task",
+        (at, stale_before),
+    ).fetchall()
+
+
+def claim_posts(
+    connection: sqlite3.Connection, at: str, stale_before: str, task: int | None = None
+) -> list[sqlite3.Row]:
     return connection.execute(
         "UPDATE posts SET claimed_at = ? "
         "WHERE sent_at IS NULL AND (claimed_at IS NULL OR claimed_at < ?) "
+        "AND (? IS NULL OR task = ?) "
         "AND EXISTS ("
         "SELECT 1 FROM post_reminders "
         "JOIN reminders ON reminders.number = post_reminders.reminder "
         "WHERE post_reminders.post = posts.number AND reminders.voided_at IS NULL"
         ") "
         "RETURNING number, task, key, kind, missed, queued_at, claimed_at, sent_at",
-        (at, stale_before),
+        (at, stale_before, task, task),
     ).fetchall()
 
 
