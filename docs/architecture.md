@@ -311,7 +311,7 @@ docket/
   tests/
 ```
 
-Phases 5b to 5e change this layout: `_store_migrate.py` (5b), per-aggregate store parts (5c and 5d) and `reminder_plan.py` (5e); see the roadmap's Nov 21 remediation.
+Phase 5c adds `reminder_plan.py`, the pure planner that `reminders`, `core` and the store import (see the roadmap's Nov 21 remediation).
 
 ## Privacy and security boundary
 

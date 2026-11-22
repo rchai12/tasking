@@ -32,7 +32,7 @@ Phase 2n specifies two independent 100% line-and-branch gates after the same ful
 Product critical modules guard task approval, retry safety, reminder integrity and secrets. The target inventory after Phase 2n is:
 
 - config.py and keychain.py
-- deadlines.py; Phase 3a adds reminders.py for pure scheduling
+- deadlines.py; Phase 3a adds reminders.py for pure scheduling, and 5c moves the pure planner to reminder_plan.py
 - schema.py and store.py
 - _store_tasks.py, _store_audit.py, _store_links.py and _store_keys.py; Phase 3b adds _store_reminders.py, 3c _store_posts.py and 3d _store_digests.py, and 5b _store_migrate.py
 - core.py
