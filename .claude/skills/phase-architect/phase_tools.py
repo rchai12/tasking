@@ -369,6 +369,8 @@ def lint(spec_path: Path, guide_path: Path, clone: Path, promoted: bool = False)
             for word in BANNED:
                 if word in line.lower():
                     problems.append(f"{name}:{number}: banned wording {word!r}")
+            if "git grep" in line and "\\b" in line:
+                problems.append(f"{name}:{number}: git grep -E has no \\b; use ([^A-Za-z_]|$)")
     if not spec.startswith("# Phase "):
         problems.append("spec:1: must start with '# Phase <id>: <title>'")
     given_rows = table_rows(section(spec, "## Given files"))

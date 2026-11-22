@@ -33,6 +33,7 @@
     "docs/reviews/phase-06a-mcp-read-tools.md": "4c8466f8586af4a3fc39f0aacdee514c7dd795540106c419453145b60153b8f6",
     "docs/reviews/phase-06b-retire-freeze-manifests.md": "74b147dc3378988190d94c209d7684edb4ffff098f7a5831d257a845a0667db6",
     "docs/reviews/phase-06c-core-input-checks.md": "a6b8f26d4e8d56ef4e384e2105dd7b014e20ee10bb27251fec12b6b018d3c0a1",
-    "docs/reviews/phase-06d-mcp-write-tools.md": "13fdb6e0719ba38311bca20b4344a7959615c3e2910ed3b4a4e73de20739cb6c"
+    "docs/reviews/phase-06d-mcp-write-tools.md": "13fdb6e0719ba38311bca20b4344a7959615c3e2910ed3b4a4e73de20739cb6c",
+    "docs/reviews/phase-06e-mcp-edit-tools.md": "e091e413812fdbb0af2fbabcda835e0d86888a67fe87273097c9f11e2d8a5761"
   }
 }
