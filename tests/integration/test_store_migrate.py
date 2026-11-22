@@ -218,7 +218,7 @@ def test_each_open_migrates_once_through_the_module(
         assert seen == [first]
     with Store(path) as second:
         assert seen == [first, second]
-    assert user_version(path) == 6
+    assert user_version(path) == 7
 
 
 def test_the_store_has_no_other_way_to_migrate(
@@ -242,7 +242,7 @@ def test_a_current_store_migrates_to_no_change(tmp_path: Path) -> None:
         before = snapshot(path)
         _store_migrate.migrate(store)
         assert snapshot(path) == before
-    assert user_version(path) == 6
+    assert user_version(path) == 7
 
 
 def test_the_migration_module_owns_no_connection_and_no_task_sql() -> None:

@@ -239,6 +239,22 @@ BEGIN
 END;
 """
 
+MIGRATION_7 = """
+CREATE TABLE loop_status (
+    number INTEGER PRIMARY KEY CHECK (number = 1),
+    pass_at TEXT NOT NULL,
+    sent INTEGER NOT NULL CHECK (sent >= 0),
+    digest INTEGER NOT NULL CHECK (digest IN (0, 1)),
+    reminders_failures INTEGER NOT NULL CHECK (reminders_failures >= 0),
+    digest_failures INTEGER NOT NULL CHECK (digest_failures >= 0),
+    skipped TEXT NOT NULL CHECK (json_valid(skipped) AND substr(skipped, 1, 1) = '[')
+) STRICT;
+CREATE TRIGGER loop_status_is_never_removed BEFORE DELETE ON loop_status
+BEGIN
+    SELECT RAISE(ABORT, 'loop status is never removed');
+END;
+"""
+
 MIGRATIONS: tuple[str, ...] = (
     MIGRATION_1,
     MIGRATION_2,
@@ -246,5 +262,6 @@ MIGRATIONS: tuple[str, ...] = (
     MIGRATION_4,
     MIGRATION_5,
     MIGRATION_6,
+    MIGRATION_7,
 )
 SCHEMA_VERSION = len(MIGRATIONS)

@@ -74,7 +74,7 @@ def test_the_loop_waits_thirty_seconds_after_each_pass_until_stopped(tmp_path, m
     with Store(tmp_path / "docket.sqlite3") as opened:
         assert loop(opened, notifier, ticker) == 3
     assert ticker.waits == [30, 30, 30]
-    assert ticker.reads == 6
+    # Phase 5f records each pass, one more clock read; `test_loop_status.py` pins the reads.
     assert ticker.moment == datetime(2026, 11, 20, 16, 1, 30, tzinfo=UTC)
     assert notifier.attempts == []
 

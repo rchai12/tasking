@@ -30,12 +30,12 @@ def test_two_processes_initialize_the_same_database_once(tmp_path: Path, version
         start.set()
         results = [messages.get(timeout=10), messages.get(timeout=10)]
         if version == 2:
-            assert results == [("ok", ["t1"], ["l1"], 6, []), ("ok", ["t1"], ["l1"], 6, [])]
+            assert results == [("ok", ["t1"], ["l1"], 7, []), ("ok", ["t1"], ["l1"], 7, [])]
             assert snapshot(path) == before
         elif version == 1:
-            assert results == [("ok", ["t1"], [], 6, []), ("ok", ["t1"], [], 6, [])]
+            assert results == [("ok", ["t1"], [], 7, []), ("ok", ["t1"], [], 7, [])]
         else:
-            assert results == [("ok", [], [], 6, []), ("ok", [], [], 6, [])]
+            assert results == [("ok", [], [], 7, []), ("ok", [], [], 7, [])]
         for worker in workers:
             worker.join(timeout=10)
             assert worker.exitcode == 0
@@ -186,6 +186,7 @@ def test_migration_foreign_keys_remain_scoped_to_the_reference_rebuild(
         (4, 1),
         (5, 1),
         (5, 1),
+        (6, 1),
     ]
 
 
