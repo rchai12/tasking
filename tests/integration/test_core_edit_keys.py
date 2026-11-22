@@ -53,7 +53,6 @@ def pending(store: Store) -> list[str]:
     return [r.kind for r in store.reminders("t1") if r.voided_at is None and r.sent_at is None]
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_keyed_deadline_change_is_made_once_and_keeps_its_key(
     store: Store, path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -82,7 +81,6 @@ def test_a_keyed_deadline_change_is_made_once_and_keeps_its_key(
     assert dump(path) == before
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_retried_step_changes_nothing_after_the_owner_moves_the_deadline_back(
     store: Store, path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -95,7 +93,6 @@ def test_a_retried_step_changes_nothing_after_the_owner_moves_the_deadline_back(
     assert dump(path) == before
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_keyed_work_time_is_planned_once(
     store: Store, path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -114,7 +111,6 @@ def test_a_keyed_work_time_is_planned_once(
     assert dump(path) == before
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("key", "request_body", "fields"),
     [
@@ -156,7 +152,6 @@ def test_a_key_used_for_another_request_is_refused_and_writes_nothing(
     assert dump(path) == before
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("values", "code"),
     [
@@ -191,7 +186,6 @@ def test_bad_input_is_refused_before_the_clock(
     assert dump(path) == before
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_refused_edit_keeps_the_key_free(
     store: Store, path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -209,7 +203,6 @@ def test_a_refused_edit_keeps_the_key_free(
     assert dump(path) == before
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_moving_the_deadline_before_the_work_time_is_refused(
     store: Store, monkeypatch: pytest.MonkeyPatch
 ) -> None:

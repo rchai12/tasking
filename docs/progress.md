@@ -319,3 +319,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 6e: MCP edit tools (2026-11-21)
+- Tests: 1775 -> 1850 (given 74)
+- New public names: docket.core: edit_task_once; docket.writes: INVALID_WORK, parse_work_time, change_deadline, plan_work_time; docket.mcp_server.server: CHANGE_DEADLINE, PLAN_WORK_TIME, WorkStartInput
+- Changed files: 7
+- Deviations:
+  - None
+- Follow-ups:
+  - None

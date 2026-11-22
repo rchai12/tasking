@@ -48,7 +48,6 @@ def seeded(store: Store, monkeypatch: pytest.MonkeyPatch, *moments: str) -> None
     fixed_times(monkeypatch, *moments)
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("start", "minutes", "expected"),
     [
@@ -100,7 +99,6 @@ def test_a_work_time_is_read_in_its_own_zone(
     assert writes().parse_work_time(start, minutes) == expected
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("start", "minutes"),
     [
@@ -154,7 +152,6 @@ def test_a_bad_work_time_is_refused(start: object, minutes: object) -> None:
     refused("invalid_work", lambda: writes().parse_work_time(start, minutes))
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_change_deadline_moves_and_removes_it_once_per_key(
     store: Store, path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -185,7 +182,6 @@ def test_change_deadline_moves_and_removes_it_once_per_key(
     ]
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_plan_work_time_plans_once_per_key(
     store: Store, path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -217,7 +213,6 @@ def test_plan_work_time_plans_once_per_key(
     ]
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("tool", "task_id", "value", "key", "code", "moments"),
     [

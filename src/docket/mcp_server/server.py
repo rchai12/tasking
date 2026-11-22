@@ -15,9 +15,9 @@ from docket.store import Reminder, Task, open_store
 
 SERVER_NAME = "docket"
 INSTRUCTIONS = (
-    "The owner's tasks in docket. list_tasks and get_task only read. create_task, complete_task "
-    "and cancel_task change tasks once Conductor's step is approved; each takes a request_key, "
-    "and the same key with the same arguments changes nothing twice."
+    "The owner's tasks in docket. list_tasks and get_task only read; the other tools change "
+    "tasks once Conductor's step is approved. Each write takes a request_key, and the same key "
+    "with the same arguments changes nothing twice."
 )
 LIST_TASKS = (
     "List tasks by status: open, in_progress, due (deadline later today), overdue, done or "
@@ -28,6 +28,16 @@ CREATE_TASK = (
     "Create an approved task, source agent. deadline is null or {date, time, time_zone}: "
     "date YYYY-MM-DD, time HH:MM or null for 17:00, time_zone an IANA name. "
     "The same request_key with the same arguments returns the same task."
+)
+CHANGE_DEADLINE = (
+    "Set, move or remove a task's deadline, as the owner's edit does. deadline is null to "
+    "remove it, or {date, time, time_zone} as in create_task. Reminders are planned again. "
+    "The same request_key with the same arguments returns the first answer."
+)
+PLAN_WORK_TIME = (
+    "Plan or move the one time to work on a task. start is {date, time, time_zone} with time "
+    "HH:MM; minutes is 5 to 720; the work must end by midnight and by the deadline. "
+    "The same request_key with the same arguments returns the first answer."
 )
 COMPLETE_TASK = (
     "Mark a task done, as the Done button does; a task already done is no change. "
@@ -79,6 +89,14 @@ class DeadlineInput(BaseModel):
 
     date: str
     time: str | None
+    time_zone: str
+
+
+class WorkStartInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    date: str
+    time: str
     time_zone: str
 
 
@@ -185,6 +203,23 @@ def build_server(settings: Settings) -> MCPServer:
     def cancel_task(id: str, request_key: str) -> TaskChangeResult:
         return write(writes.cancel_task, id, request_key=request_key)
 
+    def change_deadline(
+        id: str, request_key: str, deadline: DeadlineInput | None
+    ) -> TaskChangeResult:
+        given = None if deadline is None else deadline.model_dump()
+        return write(writes.change_deadline, id, deadline=given, request_key=request_key)
+
+    def plan_work_time(
+        id: str, start: WorkStartInput, minutes: int, request_key: str
+    ) -> TaskChangeResult:
+        return write(
+            writes.plan_work_time,
+            id,
+            start=start.model_dump(),
+            minutes=minutes,
+            request_key=request_key,
+        )
+
     server = MCPServer(name=SERVER_NAME, instructions=INSTRUCTIONS, log_level="CRITICAL")
     hints = ToolAnnotations(
         read_only_hint=True, destructive_hint=False, idempotent_hint=True, open_world_hint=False
@@ -198,6 +233,8 @@ def build_server(settings: Settings) -> MCPServer:
         (create_task, CREATE_TASK),
         (complete_task, COMPLETE_TASK),
         (cancel_task, CANCEL_TASK),
+        (change_deadline, CHANGE_DEADLINE),
+        (plan_work_time, PLAN_WORK_TIME),
     ):
         server.add_tool(
             function, description=description, annotations=changes, structured_output=True

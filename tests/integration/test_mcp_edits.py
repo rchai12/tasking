@@ -92,7 +92,6 @@ def seed() -> None:
         core.change_state(store, "t2", "done", actor="owner")
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_it_lists_the_two_edit_tools_with_the_write_hints(ticker: Clock) -> None:
     assert server().instructions == INSTRUCTIONS
     found = tools()
@@ -119,7 +118,6 @@ def test_it_lists_the_two_edit_tools_with_the_write_hints(ticker: Clock) -> None
         ) == (False, False, True, False), name
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_the_edit_schemas(ticker: Clock) -> None:
     found = tools()
     change = found["change_deadline"].input_schema
@@ -145,7 +143,6 @@ def test_the_edit_schemas(ticker: Clock) -> None:
         assert sorted(output["$defs"]) == ["DeadlineResult", "WorkResult"], name
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_change_deadline_answers_the_task(ticker: Clock) -> None:
     seed()
     built = server()
@@ -174,7 +171,6 @@ def test_change_deadline_answers_the_task(ticker: Clock) -> None:
         ]
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_plan_work_time_answers_the_task(ticker: Clock) -> None:
     seed()
     built = server()
@@ -188,7 +184,6 @@ def test_plan_work_time_answers_the_task(ticker: Clock) -> None:
     assert answer(built, "plan_work_time", arguments) == planned | {"changed": False}
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("tool", "arguments", "code"),
     [
@@ -268,7 +263,6 @@ def test_refusals_are_constant_codes(ticker: Clock, tool: str, arguments: dict, 
     assert refusal(call(built, tool, arguments)) == (True, None, [text])
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("tool", "arguments"),
     [

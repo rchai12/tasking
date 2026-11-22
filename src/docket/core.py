@@ -180,53 +180,101 @@ def edit_task(
     )
     at = clock.now()
     with store.transaction():
-        task = store.task(task_id)
-        if task is None:
-            raise CoreError(UNKNOWN_TASK)
-        if task.state not in _OPEN:
-            raise CoreError(TASK_ENDED)
-        new_deadline = task.deadline if deadline is UNCHANGED else deadline
-        new_work = task.work if work is UNCHANGED else work
-        if _work_after_deadline(new_deadline, new_work):
-            raise CoreError(WORK_AFTER_DEADLINE)
-        fields: dict[str, object] = {}
-        rows: list[tuple[str, dict[str, object], dict[str, object]]] = []
-        if title is not UNCHANGED and title != task.title:
-            fields["title"] = title
-            rows.append(("retitle", {"title": task.title}, {"title": title}))
-        if deadline is not UNCHANGED and new_deadline != task.deadline:
-            fields["deadline"] = new_deadline
-            rows.append(
-                (
-                    "deadline",
-                    {"deadline": _deadline_snapshot(task.deadline)},
-                    {"deadline": _deadline_snapshot(new_deadline)},
-                )
-            )
-        if work is not UNCHANGED and new_work != task.work:
-            fields["work"] = new_work
-            rows.append(
-                (
-                    "work_time",
-                    {"work": _work_snapshot(task.work)},
-                    {"work": _work_snapshot(new_work)},
-                )
-            )
-        if not rows:
-            return Outcome(task, False)
-        updated = store.update_task(task_id, at=at, **fields)
-        for action, before, after in rows:
-            store.append_audit(
-                task_id, at=at, action=action, actor=actor, before=before, after=after
-            )
-        _replace_reminders(
-            store,
-            updated,
-            at,
-            deadline="deadline" in fields,
-            work="work" in fields,
+        return _apply_edit(store, task_id, actor, title, deadline, work, at)
+
+
+def edit_task_once(
+    store: Store,
+    task_id: str,
+    *,
+    client: object,
+    key: object,
+    request: dict[str, object],
+    deadline: object = UNCHANGED,
+    work: object = UNCHANGED,
+) -> Outcome:
+    if not isinstance(client, str) or client not in _CLIENTS:
+        raise CoreError(INVALID_CLIENT)
+    _check_key(key)
+    _check_values(
+        None if deadline is UNCHANGED else deadline,
+        None if work is UNCHANGED else work,
+    )
+    at = clock.now()
+    with store.transaction():
+        found = store.request_key(client, cast(str, key))
+        if found is not None:
+            if found.link_id is None and _same_request(found.request, request):
+                return Outcome(cast(Task, store.task(found.task_id)), False)
+            raise CoreError(KEY_REUSED)
+        outcome = _apply_edit(
+            store, task_id, _ACTOR_FOR_SOURCE[client], UNCHANGED, deadline, work, at
         )
-        return Outcome(updated, True)
+        store.insert_request_key(
+            client=client,
+            key=cast(str, key),
+            request=request,
+            task_id=task_id,
+            link_id=None,
+            at=at,
+        )
+        return outcome
+
+
+def _apply_edit(
+    store: Store,
+    task_id: str,
+    actor: str,
+    title: object,
+    deadline: object,
+    work: object,
+    at: datetime,
+) -> Outcome:
+    task = store.task(task_id)
+    if task is None:
+        raise CoreError(UNKNOWN_TASK)
+    if task.state not in _OPEN:
+        raise CoreError(TASK_ENDED)
+    new_deadline = task.deadline if deadline is UNCHANGED else deadline
+    new_work = task.work if work is UNCHANGED else work
+    if _work_after_deadline(new_deadline, new_work):
+        raise CoreError(WORK_AFTER_DEADLINE)
+    fields: dict[str, object] = {}
+    rows: list[tuple[str, dict[str, object], dict[str, object]]] = []
+    if title is not UNCHANGED and title != task.title:
+        fields["title"] = title
+        rows.append(("retitle", {"title": task.title}, {"title": title}))
+    if deadline is not UNCHANGED and new_deadline != task.deadline:
+        fields["deadline"] = new_deadline
+        rows.append(
+            (
+                "deadline",
+                {"deadline": _deadline_snapshot(task.deadline)},
+                {"deadline": _deadline_snapshot(new_deadline)},
+            )
+        )
+    if work is not UNCHANGED and new_work != task.work:
+        fields["work"] = new_work
+        rows.append(
+            (
+                "work_time",
+                {"work": _work_snapshot(task.work)},
+                {"work": _work_snapshot(new_work)},
+            )
+        )
+    if not rows:
+        return Outcome(task, False)
+    updated = store.update_task(task_id, at=at, **fields)
+    for action, before, after in rows:
+        store.append_audit(task_id, at=at, action=action, actor=actor, before=before, after=after)
+    _replace_reminders(
+        store,
+        updated,
+        at,
+        deadline="deadline" in fields,
+        work="work" in fields,
+    )
+    return Outcome(updated, True)
 
 
 def create_task_once(
