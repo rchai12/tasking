@@ -11,11 +11,59 @@ _COLUMNS = (
 _SELECT = "number, " + _COLUMNS
 
 
-def insert_task(connection: sqlite3.Connection, values: tuple[object, ...]) -> sqlite3.Cursor:
+def insert_task(
+    connection: sqlite3.Connection,
+    *,
+    title: str,
+    state: str,
+    deadline_at: str | None,
+    deadline_zone: str | None,
+    deadline_time_given: int | None,
+    work_start: str | None,
+    work_minutes: int | None,
+    work_zone: str | None,
+    source: str,
+    provider: str | None,
+    message_id: str | None,
+    link: str | None,
+    created_at: str,
+    updated_at: str,
+) -> sqlite3.Cursor:
     return connection.execute(
-        f"INSERT INTO tasks ({_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        values,
+        "INSERT INTO tasks (title, state, deadline_at, deadline_zone, deadline_time_given, "
+        "work_start, work_minutes, work_zone, source, provider, message_id, link, "
+        "created_at, updated_at) VALUES (:title, :state, :deadline_at, :deadline_zone, "
+        ":deadline_time_given, :work_start, :work_minutes, :work_zone, :source, :provider, "
+        ":message_id, :link, :created_at, :updated_at)",
+        {
+            "title": title,
+            "state": state,
+            "deadline_at": deadline_at,
+            "deadline_zone": deadline_zone,
+            "deadline_time_given": deadline_time_given,
+            "work_start": work_start,
+            "work_minutes": work_minutes,
+            "work_zone": work_zone,
+            "source": source,
+            "provider": provider,
+            "message_id": message_id,
+            "link": link,
+            "created_at": created_at,
+            "updated_at": updated_at,
+        },
     )
+
+
+_UPDATABLE = (
+    "title",
+    "state",
+    "deadline_at",
+    "deadline_zone",
+    "deadline_time_given",
+    "work_start",
+    "work_minutes",
+    "work_zone",
+)
 
 
 def update_task(
@@ -24,32 +72,14 @@ def update_task(
     updated_at: str,
     fields: Mapping[str, object],
 ) -> sqlite3.Cursor:
+    if any(key not in _UPDATABLE for key in fields):
+        raise ValueError("unknown task column")
     assignments = ["updated_at = ?"]
     parameters: list[object] = [updated_at]
-    if "title" in fields:
-        assignments.append("title = ?")
-        parameters.append(fields["title"])
-    if "state" in fields:
-        assignments.append("state = ?")
-        parameters.append(fields["state"])
-    if "deadline_at" in fields:
-        assignments.append("deadline_at = ?")
-        parameters.append(fields["deadline_at"])
-    if "deadline_zone" in fields:
-        assignments.append("deadline_zone = ?")
-        parameters.append(fields["deadline_zone"])
-    if "deadline_time_given" in fields:
-        assignments.append("deadline_time_given = ?")
-        parameters.append(fields["deadline_time_given"])
-    if "work_start" in fields:
-        assignments.append("work_start = ?")
-        parameters.append(fields["work_start"])
-    if "work_minutes" in fields:
-        assignments.append("work_minutes = ?")
-        parameters.append(fields["work_minutes"])
-    if "work_zone" in fields:
-        assignments.append("work_zone = ?")
-        parameters.append(fields["work_zone"])
+    for column in _UPDATABLE:
+        if column in fields:
+            assignments.append(f"{column} = ?")
+            parameters.append(fields[column])
     parameters.append(number)
     return connection.execute(
         "UPDATE tasks SET " + ", ".join(assignments) + " WHERE number = ?",

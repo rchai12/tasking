@@ -15,6 +15,7 @@ from docket import (
     _store_digests,
     _store_keys,
     _store_links,
+    _store_migrate,
     _store_posts,
     _store_reminders,
     _store_tasks,
@@ -23,8 +24,8 @@ from docket import (
 )
 from docket.config import Settings, prepare_data_dir
 from docket.deadlines import INSTANT_MESSAGE, Deadline, DeadlineError, WorkTime
-from docket.references import LINK_MAX, MESSAGE_ID_MAX, valid_reference
-from docket.schema import MIGRATIONS, SCHEMA_VERSION
+from docket.schema import MIGRATIONS as MIGRATIONS
+from docket.schema import SCHEMA_VERSION as SCHEMA_VERSION
 
 if TYPE_CHECKING:
     from docket.reminders import PlannedReminder
@@ -225,7 +226,7 @@ class Store:
                 self._connection.execute("PRAGMA busy_timeout = 5000")
                 self._connection.execute("PRAGMA foreign_keys = ON")
                 self._connection.execute("PRAGMA journal_mode = WAL")
-                self._migrate()
+                _store_migrate.migrate(self)
             except BaseException:
                 if opened:
                     self.close()
@@ -277,22 +278,20 @@ class Store:
         instant = _instant(at)
         cursor = _store_tasks.insert_task(
             self._connection,
-            (
-                title,
-                state,
-                deadline_at,
-                deadline_zone,
-                deadline_time_given,
-                work_start,
-                work_minutes,
-                work_zone,
-                source,
-                provider,
-                message_id,
-                link,
-                instant,
-                instant,
-            ),
+            title=title,
+            state=state,
+            deadline_at=deadline_at,
+            deadline_zone=deadline_zone,
+            deadline_time_given=deadline_time_given,
+            work_start=work_start,
+            work_minutes=work_minutes,
+            work_zone=work_zone,
+            source=source,
+            provider=provider,
+            message_id=message_id,
+            link=link,
+            created_at=instant,
+            updated_at=instant,
         )
         return self._read_task(int(cursor.lastrowid))
 
@@ -459,22 +458,6 @@ class Store:
             created_at=cast(datetime, _utc(row["created_at"], "request key", task_id)),
         )
 
-    def _migrate(self) -> None:
-        while True:
-            rebuild = False
-            with self.transaction():
-                version = self._user_version()
-                if version > SCHEMA_VERSION:
-                    raise StoreError(f"{SCHEMA_MESSAGE}: {version}")
-                if version == SCHEMA_VERSION:
-                    return
-                if version == 2:
-                    rebuild = True
-                else:
-                    self._apply_migration(version)
-            if rebuild:
-                self._migrate_references()
-
     def insert_reminders(
         self,
         task_id: str,
@@ -511,71 +494,6 @@ class Store:
             self._reminder_from(row)
             for row in _store_reminders.select_reminders(self._connection, number)
         ]
-
-    def _apply_migration(self, version: int) -> None:
-        for statement in _statements(MIGRATIONS[version]):
-            self._connection.execute(statement)
-        if version == 3:
-            self._backfill_reminders()
-        self._connection.execute(f"PRAGMA user_version = {version + 1}")
-
-    def _user_version(self) -> int:
-        found = cast(sqlite3.Row, self._connection.execute("PRAGMA user_version").fetchone())
-        return int(found[0])
-
-    def _migrate_references(self) -> None:
-        self._connection.execute("PRAGMA foreign_keys = OFF")
-        try:
-            with self.transaction():
-                version = self._user_version()
-                if version > SCHEMA_VERSION:
-                    raise StoreError(f"{SCHEMA_MESSAGE}: {version}")
-                if version == 2:
-                    self._refuse_invalid_references()
-                    for statement in _statements(MIGRATIONS[2]):
-                        self._connection.execute(statement)
-                    if self._connection.execute("PRAGMA foreign_key_check").fetchall():
-                        raise StoreError("invalid reference migration")
-                    self._connection.execute("PRAGMA user_version = 3")
-        finally:
-            self._connection.execute("PRAGMA foreign_keys = ON")
-
-    def _refuse_invalid_references(self) -> None:
-        tasks = self._connection.execute(
-            "SELECT number, message_id, link FROM tasks WHERE source = 'email' ORDER BY number"
-        )
-        for row in tasks:
-            self._refuse_reference(f"t{row['number']}", row["message_id"], row["link"])
-        links = self._connection.execute(
-            "SELECT number, message_id, link FROM links ORDER BY number"
-        )
-        for row in links:
-            self._refuse_reference(f"l{row['number']}", row["message_id"], row["link"])
-
-    def _refuse_reference(self, identifier: str, message_id: object, link: object) -> None:
-        if not valid_reference(message_id, MESSAGE_ID_MAX):
-            raise StoreError(f"invalid stored reference: {identifier} message_id")
-        if not valid_reference(link, LINK_MAX):
-            raise StoreError(f"invalid stored reference: {identifier} link")
-
-    def _backfill_reminders(self) -> None:
-        from docket import reminders
-
-        rows = self._connection.execute(
-            "SELECT number, title, state, deadline_at, deadline_zone, deadline_time_given, "
-            "work_start, work_minutes, work_zone, source, provider, message_id, link, "
-            "created_at, updated_at FROM tasks WHERE state IN ("
-            + ", ".join("?" for _ in domain.OPEN_STATES)
-            + ") ORDER BY number",
-            domain.OPEN_STATES,
-        ).fetchall()
-        for row in rows:
-            task = self._task_from(row)
-            try:
-                plans = reminders.plan_reminders(task, task.updated_at)
-            except OverflowError:
-                raise StoreError(f"invalid reminder plan: {task.id}") from None
-            self._write_reminders(task.id, int(row["number"]), plans, task.updated_at)
 
     def _write_reminders(
         self,

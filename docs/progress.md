@@ -337,3 +337,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 5b: Store migrations and task columns (2026-11-22)
+- Tests: 1876 -> 1896 (given 19)
+- New public names: None
+- Changed files: 6
+- Deviations:
+  - None
+- Follow-ups:
+  - None

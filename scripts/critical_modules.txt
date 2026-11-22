@@ -23,6 +23,7 @@ reminders.py
 _store_reminders.py
 _store_posts.py
 _store_digests.py
+_store_migrate.py
 reads.py
 writes.py
 mcp_server/server.py

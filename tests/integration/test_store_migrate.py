@@ -73,7 +73,6 @@ def user_version(path: Path) -> int:
         return int(db.execute("PRAGMA user_version").fetchone()[0])
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_the_task_insert_takes_named_columns_only() -> None:
     parameters = inspect.signature(_store_tasks.insert_task).parameters.values()
     assert [(item.name, item.kind.name) for item in parameters] == [
@@ -82,7 +81,6 @@ def test_the_task_insert_takes_named_columns_only() -> None:
     ]
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_positional_tuple_is_refused_and_writes_nothing(
     connection: sqlite3.Connection,
 ) -> None:
@@ -91,7 +89,6 @@ def test_a_positional_tuple_is_refused_and_writes_nothing(
     assert connection.execute("SELECT count(*) FROM tasks").fetchone()[0] == 1
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_each_named_column_lands_in_its_own_column(connection: sqlite3.Connection) -> None:
     cursor = _store_tasks.insert_task(connection, **COLUMNS)  # type: ignore[arg-type]
     assert cursor.lastrowid == 2
@@ -185,7 +182,6 @@ def test_every_allowed_update_column_is_written(connection: sqlite3.Connection) 
     )
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize("column", ["source", "number", "updated_at"])
 def test_an_unknown_update_column_is_refused_before_any_write(
     connection: sqlite3.Connection, column: str
@@ -199,13 +195,11 @@ def test_an_unknown_update_column_is_refused_before_any_write(
     assert row(connection, 1) == before
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize("name", MOVED)
 def test_the_store_keeps_no_migration_step(name: str) -> None:
     assert not hasattr(Store, name)
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_each_open_migrates_once_through_the_module(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -227,7 +221,6 @@ def test_each_open_migrates_once_through_the_module(
     assert user_version(path) == 6
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_the_store_has_no_other_way_to_migrate(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -241,7 +234,6 @@ def test_the_store_has_no_other_way_to_migrate(
         assert db.execute("SELECT name FROM sqlite_master").fetchall() == []
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_current_store_migrates_to_no_change(tmp_path: Path) -> None:
     from docket import _store_migrate
 
@@ -253,7 +245,6 @@ def test_a_current_store_migrates_to_no_change(tmp_path: Path) -> None:
     assert user_version(path) == 6
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_the_migration_module_owns_no_connection_and_no_task_sql() -> None:
     tree = ast.parse(MIGRATE_SOURCE.read_text())
     forbidden = {"connect", "close", "commit", "rollback", "executescript", "now"}
