@@ -101,7 +101,7 @@ Planned tables: `proposals` (Stage 10: source, title, optional deadline, evidenc
 
 ## Shared rules
 
-`docket.domain` is the one source for the closed lists and limits: states and their labels, sources and the actor each implies, clients, actions, providers, reminder kinds, the forbidden character categories, and the title, key and work-time bounds. The schema's CHECKs stay literal SQL, and tests compare them with `domain`. `docket.parsing` reads dates (`YYYY-MM-DD`) and times (`HH:MM`) strictly with a fixed-text `ParseError`, which the CLI and intake turn into their own messages. `domain.zone_names()` is the one set of exact zone names.
+`docket.domain` is the one source for the closed lists and limits: states and their labels with the open and ended split, sources and the actor each implies, the email client and the clients, actions, providers, reminder kinds with the work and deadline split, the forbidden character categories, the title, key and work-time bounds, and the 30-minute due window. `domain.valid_request_key` is the one retry-key check; each caller keeps its own refusal. Other modules derive from these names and never spell the lists again, except the planner's `Literal` and the notice table, which tests compare with `domain`. The schema's CHECKs stay literal SQL, and tests compare them with `domain`. `docket.parsing` reads dates (`YYYY-MM-DD`) and times (`HH:MM`) strictly with a fixed-text `ParseError`, which the CLI and intake turn into their own messages. `domain.zone_names()` is the one set of exact zone names.
 
 ## Task states
 

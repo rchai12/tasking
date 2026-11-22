@@ -76,6 +76,28 @@ def test_current_sql_bounds_match_shared_limits(
         assert domain.WORK_MINUTES_MIN == minimum
 
 
+LIMITS = {5, 100, 200, 720}
+BOUND_KEYWORDS = {"ge", "gt", "le", "lt", "min_length", "max_length"}
+
+
+def copied_limits(tree: ast.Module) -> list[int]:
+    """Lines where a domain limit is a bound: compared against, or a bound keyword (ge=5).
+
+    Another use of the same number, such as the HTTP status 200, is not a copied limit.
+    """
+    parts: list[ast.expr] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Compare):
+            parts += [node.left, *node.comparators]
+        elif isinstance(node, ast.keyword) and node.arg in BOUND_KEYWORDS:
+            parts.append(node.value)
+    return [
+        part.lineno
+        for part in parts
+        if isinstance(part, ast.Constant) and type(part.value) is int and part.value in LIMITS
+    ]
+
+
 def test_consumers_do_not_keep_copied_parsers_domains_or_limits() -> None:
     for module in (cli, intake):
         tree = ast.parse(inspect.getsource(module))
@@ -112,12 +134,8 @@ def test_consumers_do_not_keep_copied_parsers_domains_or_limits() -> None:
                     assert set(value) not in copied, f"{module.__name__} duplicates a domain"
                 except (ValueError, TypeError):
                     pass
-            if module in (core, intake, config, deadlines, web):
-                assert not (
-                    isinstance(node, ast.Constant)
-                    and isinstance(node.value, int)
-                    and node.value in {5, 100, 200, 720}
-                ), f"{module.__name__} duplicates a limit"
+        if module in (core, intake, config, deadlines, web):
+            assert copied_limits(tree) == [], f"{module.__name__} duplicates a limit"
     for module in (config, deadlines):
         assert "available_timezones" not in inspect.getsource(module)
 

@@ -228,3 +228,8 @@ Owner chose: drop the per-aggregate store split (the old 5c and 5d). Measured, t
 
 Architect: the planner takes a `Plannable` protocol (`state`, `deadline`, `work`) so `reminder_plan` imports no store, keeping `plan_reminders(task, now)` as it was; `reminders` re-exports every moved name, since tests reach them there; `cli.py`'s function-level MCP import stays, so other commands never load the SDK; the given cycle test treats `store` and its `_store_*` parts as one node, since their two-way top-level import works in either order.
 
+## Phase 5d One source per closed list (2026-11-22)
+
+Owner chose: one `domain.DUE_WINDOW_MINUTES = 30`, from which `deadlines.DUE_WINDOW` and the first late reminder are built; one `domain.valid_request_key(key)` helper, with core, intake, web and the store each keeping its own refusal and message; domain constants `EMAIL_CLIENT` and `API_CLIENTS`, with `clients.CLIENTS` being `API_CLIENTS` and the client messages keeping their words.
+
+Architect: `REMINDER_KINDS = WORK_KINDS + DEADLINE_KINDS`, so the order and the split cannot drift; `OPEN_STATES` and `ENDED_STATES` are spelled out rather than sliced from `STATES`; the planner's `Literal`, `views._NOTICE`, the schema's CHECKs and `reads.STATUSES` stay spelled out, the first two checked against `REMINDER_KINDS` by tests; the helper is called through the module, so a test replaces it in one place; the copied-limits guard in `test_domain_schema.py` now refuses a limit only where it is a bound (a comparison or a `ge`/`le`-style keyword), because its old form refused the HTTP status 200 and had pushed `intake` into writing `_REPLAY = _CREATED - 1`.
