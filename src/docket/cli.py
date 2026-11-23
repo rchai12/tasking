@@ -25,6 +25,7 @@ from docket.views import (
     change_text,
     deadline_text,
     edited_text,
+    loop_status_lines,
     planned_text,
     refusal_text,
     task_detail,
@@ -139,6 +140,16 @@ def show(task_id: str) -> None:
     if found is None:
         _fail(refusal_text("unknown_task", task_id))
     for line in task_detail(found, home, now):
+        print(line)
+
+
+@app.command()
+def status() -> None:
+    settings, home = _home()
+    with _store(settings) as store:
+        now = clock.now()
+        found = store.loop_status()
+    for line in loop_status_lines(found, home, now):
         print(line)
 
 

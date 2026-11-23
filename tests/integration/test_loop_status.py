@@ -104,7 +104,6 @@ def test_the_status_row_is_never_removed(tmp_path) -> None:
         assert raw(opened) == [SOUND]
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_saved_status_replaces_the_one_row(tmp_path) -> None:
     first = status(T0, 3, True, 0, 0)
     second = status(T0 + timedelta(seconds=30), 2, True, 0, 3, ("t2", "t5"))
@@ -119,7 +118,6 @@ def test_a_saved_status_replaces_the_one_row(tmp_path) -> None:
         assert raw(opened) == [(1, "2026-11-20T16:00:30.000000+00:00", 2, 1, 0, 3, '["t2","t5"]')]
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_saving_needs_a_transaction_and_a_utc_time(tmp_path) -> None:
     with Store(tmp_path / "docket.sqlite3") as opened:
         with pytest.raises(StoreError) as outside:
@@ -133,7 +131,6 @@ def test_saving_needs_a_transaction_and_a_utc_time(tmp_path) -> None:
         assert raw(opened) == []
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     "fields",
     [
@@ -165,7 +162,6 @@ def test_a_bad_status_is_refused_before_it_is_written(tmp_path, fields: dict) ->
         assert (str(raised.value), raw(opened)) == ("invalid loop status", [])
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     "row",
     [
@@ -184,7 +180,6 @@ def test_a_bad_stored_status_raises_a_constant_error(tmp_path, row: tuple) -> No
         assert str(raised.value) == "invalid stored loop status"
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("previous", "result", "counts"),
     [
@@ -213,7 +208,6 @@ def test_next_status_counts_each_half(previous, result, counts) -> None:
     assert found == status(at, result[0], result[1], *counts, result[3])
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_the_loop_records_each_pass_after_it_runs(tmp_path, monkeypatch) -> None:
     ticker = Ticker(3)
     counted(monkeypatch, ticker)
@@ -230,7 +224,6 @@ def test_the_loop_records_each_pass_after_it_runs(tmp_path, monkeypatch) -> None
     ]
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_the_loop_reads_the_clock_once_more_per_pass_to_record_it(tmp_path, monkeypatch) -> None:
     ticker = Ticker(3)
     counted(monkeypatch, ticker)
@@ -240,7 +233,6 @@ def test_the_loop_reads_the_clock_once_more_per_pass_to_record_it(tmp_path, monk
     assert ticker.reads == 9
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_the_counts_carry_on_across_a_restart(tmp_path, monkeypatch) -> None:
     path = tmp_path / "docket.sqlite3"
     first = Ticker(2)
@@ -261,7 +253,6 @@ def test_the_counts_carry_on_across_a_restart(tmp_path, monkeypatch) -> None:
         assert opened.loop_status() == status(T0 + timedelta(minutes=20), 0, False, 0, 0)
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_skipped_task_counts_against_the_reminders_half(tmp_path, monkeypatch) -> None:
     ticker = Ticker(2)
     counted(monkeypatch, ticker)
@@ -284,7 +275,6 @@ def test_a_skipped_task_counts_against_the_reminders_half(tmp_path, monkeypatch)
     assert [sent.task_id for sent in notifier.delivered] == ["t2"]
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_bad_stored_status_starts_the_counts_again(tmp_path, monkeypatch) -> None:
     ticker = Ticker(1)
     counted(monkeypatch, ticker)
@@ -295,7 +285,6 @@ def test_a_bad_stored_status_starts_the_counts_again(tmp_path, monkeypatch) -> N
         assert opened.loop_status() == status(T0, 0, False, 0, 1)
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_failed_status_write_never_stops_the_loop(tmp_path, monkeypatch) -> None:
     def broken(self, found) -> None:
         raise SyntheticBug()
@@ -309,7 +298,6 @@ def test_a_failed_status_write_never_stops_the_loop(tmp_path, monkeypatch) -> No
     assert ticker.waits == [30, 30, 30]
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_a_crash_while_recording_is_not_caught(tmp_path, monkeypatch) -> None:
     def killed(self, found) -> None:
         raise Killed()
@@ -323,14 +311,12 @@ def test_a_crash_while_recording_is_not_caught(tmp_path, monkeypatch) -> None:
     assert ticker.waits == []
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_the_stale_bound_is_five_minutes() -> None:
     from docket import domain
 
     assert domain.LOOP_STALE_MINUTES == 5
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("found", "seconds", "lines"),
     [

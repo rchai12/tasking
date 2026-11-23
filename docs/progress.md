@@ -373,3 +373,12 @@ One entry per phase, written by the coder, in the form `docs/phase-conventions.m
   - None
 - Follow-ups:
   - None
+
+## Phase 5f: Visible loop status (2026-11-23)
+- Tests: 1946 -> 1995 (given 48)
+- New public names: store.LoopStatus, Store.save_loop_status, Store.loop_status, reminders.next_status, views.loop_status_lines, domain.LOOP_STALE_MINUTES, docket status
+- Changed files: 11
+- Deviations:
+  - None
+- Follow-ups:
+  - None

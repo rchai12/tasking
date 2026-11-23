@@ -15,6 +15,7 @@ from docket import (
     _store_digests,
     _store_keys,
     _store_links,
+    _store_loop,
     _store_migrate,
     _store_posts,
     _store_reminders,
@@ -30,6 +31,8 @@ from docket.schema import SCHEMA_VERSION as SCHEMA_VERSION
 
 DB_FILENAME = "docket.sqlite3"
 SCHEMA_MESSAGE = "unsupported schema version"
+LOOP_STATUS_MESSAGE = "invalid loop status"
+STORED_LOOP_STATUS_MESSAGE = "invalid stored loop status"
 TRANSACTION_MESSAGE = "a write needs a transaction"
 NESTED_MESSAGE = "a transaction is already open"
 UNKNOWN_TASK_MESSAGE = "unknown task"
@@ -121,6 +124,16 @@ class DailyDigest:
 
 
 @dataclass(frozen=True)
+class LoopStatus:
+    pass_at: datetime
+    sent: int
+    digest: bool
+    reminders_failures: int
+    digest_failures: int
+    skipped: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class RequestKey:
     client: str
     key: str
@@ -188,6 +201,12 @@ def _stored_object(text: str, label: str, identifier: str) -> dict[str, object]:
     if not isinstance(found, dict):
         raise StoreError(f"invalid stored {label}: {identifier}") from None
     return found
+
+
+def _task_ids(value: object) -> bool:
+    return isinstance(value, tuple | list) and all(
+        isinstance(item, str) and _row_number("t", item) is not None for item in value
+    )
 
 
 def _check_retry_key(key: object, message: str) -> None:
@@ -741,6 +760,46 @@ class Store:
             queued_at=queued_at,
             claimed_at=_utc(row["claimed_at"], "post time", identifier),
             sent_at=_utc(row["sent_at"], "post time", identifier),
+        )
+
+    def save_loop_status(self, status: LoopStatus) -> None:
+        self._require_write(status.pass_at)
+        counts = (status.sent, status.reminders_failures, status.digest_failures)
+        if (
+            any(type(count) is not int or count < 0 for count in counts)
+            or not isinstance(status.digest, bool)
+            or not isinstance(status.skipped, tuple)
+            or not _task_ids(status.skipped)
+        ):
+            raise StoreError(LOOP_STATUS_MESSAGE)
+        _store_loop.save_status(
+            self._connection,
+            _instant(status.pass_at),
+            status.sent,
+            int(status.digest),
+            status.reminders_failures,
+            status.digest_failures,
+            serialization.canonical_json(list(status.skipped)),
+        )
+
+    def loop_status(self) -> LoopStatus | None:
+        row = _store_loop.select_status(self._connection)
+        if row is None:
+            return None
+        try:
+            pass_at = datetime.fromisoformat(row["pass_at"])
+            skipped = json.loads(row["skipped"])
+        except ValueError:
+            raise StoreError(STORED_LOOP_STATUS_MESSAGE) from None
+        if pass_at.tzinfo is not UTC or not isinstance(skipped, list) or not _task_ids(skipped):
+            raise StoreError(STORED_LOOP_STATUS_MESSAGE)
+        return LoopStatus(
+            pass_at=pass_at,
+            sent=row["sent"],
+            digest=bool(row["digest"]),
+            reminders_failures=row["reminders_failures"],
+            digest_failures=row["digest_failures"],
+            skipped=tuple(skipped),
         )
 
     def _require_utc(self, at: datetime) -> None:

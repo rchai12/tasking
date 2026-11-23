@@ -8,7 +8,7 @@ from docket.deadlines import make_deadline
 from docket.domain import OPEN_STATES
 from docket.notifier import Digest, DigestLine, Notice, Notifier, NotifierError
 from docket.reminder_plan import LATE_MINUTES, PlannedReminder, plan_reminders
-from docket.store import Post, Store, StoreError, Task
+from docket.store import LoopStatus, Post, Store, StoreError, Task
 from docket.views import deadline_text, digest_heading, notice_text
 
 __all__ = ["LATE_MINUTES", "PlannedReminder", "plan_reminders", "notice_text", "digest_heading"]
@@ -157,10 +157,36 @@ def run_pass(store: Store, notifier: Notifier, *, zone: str, at: time) -> PassRe
     return PassResult(sent, sent_digest, tuple(failed), skipped)
 
 
+def next_status(previous: LoopStatus | None, result: PassResult, at: datetime) -> LoopStatus:
+    reminders_before = 0 if previous is None else previous.reminders_failures
+    digest_before = 0 if previous is None else previous.digest_failures
+    reminders_failed = "reminders" in result.failed or bool(result.skipped)
+    return LoopStatus(
+        pass_at=at,
+        sent=result.sent,
+        digest=result.digest,
+        reminders_failures=reminders_before + 1 if reminders_failed else 0,
+        digest_failures=digest_before + 1 if "digest" in result.failed else 0,
+        skipped=result.skipped,
+    )
+
+
+def _record(store: Store, result: PassResult) -> None:
+    try:
+        with store.transaction():
+            try:
+                previous = store.loop_status()
+            except StoreError:
+                previous = None
+            store.save_loop_status(next_status(previous, result, clock.now()))
+    except Exception:
+        return
+
+
 def run_loop(store: Store, notifier: Notifier, *, zone: str, at: time, stop: Stop) -> int:
     passes = 0
     while not stop.is_set():
-        run_pass(store, notifier, zone=zone, at=at)
+        _record(store, run_pass(store, notifier, zone=zone, at=at))
         passes += 1
         if stop.wait(LOOP_SECONDS):
             return passes

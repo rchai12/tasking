@@ -22,7 +22,6 @@ def plant(row: tuple) -> None:
         )
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_status_before_any_pass(monkeypatch: pytest.MonkeyPatch) -> None:
     fixed_times(monkeypatch, "2026-11-20T16:00:00+00:00")
     result = run("status")
@@ -33,7 +32,6 @@ def test_status_before_any_pass(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 @pytest.mark.parametrize(
     ("now", "first"),
     [
@@ -55,7 +53,6 @@ def test_status_prints_the_stored_row(
     )
 
 
-@pytest.mark.xfail(strict=True, reason=MARK)
 def test_status_refuses_a_bad_stored_row(monkeypatch: pytest.MonkeyPatch) -> None:
     plant((1, "2026-11-20T16:00:00", 0, 0, 0, 0, "[]"))
     fixed_times(monkeypatch, "2026-11-20T16:00:30+00:00")

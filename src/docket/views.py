@@ -1,10 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from docket import domain
 from docket.core import Outcome
 from docket.deadlines import Deadline, WorkTime, status
-from docket.store import Task
+from docket.store import LoopStatus, Task
 
 _DAYS = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 _MONTHS = (
@@ -180,3 +180,25 @@ def notice_text(kind: str, missed: int) -> str:
 def digest_heading(count: int) -> str:
     noun = "task" if count == 1 else "tasks"
     return f"Still open past their deadlines: {count} {noun}."
+
+
+def _health(failures: int) -> str:
+    if failures == 0:
+        return "ok"
+    return f"failing for {failures} pass" + ("" if failures == 1 else "es")
+
+
+def loop_status_lines(status: LoopStatus | None, home: str, now: datetime) -> list[str]:
+    if status is None:
+        return ["Reminder loop: no pass recorded yet"]
+    stale = now - status.pass_at > timedelta(minutes=domain.LOOP_STALE_MINUTES)
+    state = "not running" if stale else "running"
+    digest = f"Digest: {_health(status.digest_failures)}" + (", sent" if status.digest else "")
+    lines = [
+        f"Reminder loop: {state}, last pass {when(status.pass_at, home, now)}",
+        f"Reminders: {_health(status.reminders_failures)}, {status.sent} sent",
+        digest,
+    ]
+    if status.skipped:
+        lines.append("Skipped tasks: " + ", ".join(status.skipped))
+    return lines
